@@ -47,6 +47,7 @@ export class CreateWorkoutPlan {
 
       const workoutPlan = await tx.workoutPlan.create({
         data: {
+          id: crypto.randomUUID(),
           name: dto.name,
           userId: dto.userId,
           isActive: true,
@@ -81,9 +82,9 @@ export class CreateWorkoutPlan {
             },
           },
         },
-      })
+      });
 
-      if(!result) {
+      if (!result) {
         throw new NotFoundError("Workout plan not found");
       }
 
