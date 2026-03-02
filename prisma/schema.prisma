@@ -1,9 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
+//#region Configs
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -13,6 +8,22 @@ datasource db {
   provider = "postgresql"
 }
 
+//#endregion
+
+//#region Enums
+enum WeekDay {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+//#endregion
+
+//#region User
 model User {
   id            String        @id
   workoutPlans  WorkoutPlan[]
@@ -29,53 +40,60 @@ model User {
   @@map("user")
 }
 
+//#endregion
+
+//#region Workout
 model WorkoutPlan {
   id          String       @id @default(uuid())
   name        String
   userId      String
-  user        User         @relation(fields: [userId], references: [id])
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   workoutDays WorkoutDay[]
   isActive    Boolean      @default(true)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-}
-
-enum WeekDay {
-  MONDAY
-  TUESDAY
-  WEDNESDAY
-  THURSDAY
-  FRIDAY
-  SATURDAY
-  SUNDAY
+  createdAt   DateTime     @default(now()) @db.Timestamptz()
+  updatedAt   DateTime     @updatedAt @db.Timestamptz()
 }
 
 model WorkoutDay {
   id                         String            @id @default(uuid())
   name                       String
   workoutPlanId              String
-  workoutPlan                WorkoutPlan       @relation(fields: [workoutPlanId], references: [id])
+  workoutPlan                WorkoutPlan       @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
   isRestDay                  Boolean           @default(false)
   weekDay                    WeekDay
   exercises                  WorkoutExercise[]
+  sessions                   WorkoutSession[]
   estimatedDurationInSeconds Int
-  createdAt                  DateTime          @default(now())
-  updatedAt                  DateTime          @updatedAt
+  createdAt                  DateTime          @default(now()) @db.Timestamptz()
+  updatedAt                  DateTime          @updatedAt @db.Timestamptz()
 }
 
 model WorkoutExercise {
-  id                String      @id @default(uuid())
+  id                String     @id @default(uuid())
   name              String
   order             Int
   workoutDayId      String
-  workoutDay        WorkoutDay? @relation(fields: [workoutDayId], references: [id])
+  workoutDay        WorkoutDay @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
   sets              Int
   reps              Int
   restTimeInSeconds Int
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+  createdAt         DateTime   @default(now()) @db.Timestamptz()
+  updatedAt         DateTime   @updatedAt @db.Timestamptz()
 }
 
+model WorkoutSession {
+  id           String     @id @default(uuid())
+  workoutDayId String
+  workoutDay   WorkoutDay @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+  startedAt    DateTime   @db.Timestamptz()
+  completedAt  DateTime?  @db.Timestamptz()
+  createdAt    DateTime   @default(now()) @db.Timestamptz()
+  updatedAt    DateTime   @updatedAt @db.Timestamptz()
+}
+
+//#endregion
+
+//#region Better Auth
 model Session {
   id        String   @id
   expiresAt DateTime
@@ -123,3 +141,5 @@ model Verification {
   @@index([identifier])
   @@map("verification")
 }
+
+//#endregion
