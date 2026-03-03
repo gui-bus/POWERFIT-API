@@ -2,11 +2,12 @@ import { NotFoundError } from "../errors/index.js";
 import { WeekDay } from "../generated/prisma/enums.js";
 import { prisma } from "../lib/db.js";
 
-interface InputDto {
+export interface InputDto {
   userId: string;
   name: string;
   workoutDays: {
     name: string;
+    coverImageUrl?: string | null;
     weekDay: WeekDay;
     isRestDay: boolean;
     estimatedDurationInSeconds: number;
@@ -20,20 +21,36 @@ interface InputDto {
   }[];
 }
 
-// export interface OutputDto {
-//   id: string;
-// }
+export interface OutputDto {
+  id: string;
+  name: string;
+  workoutDays: {
+    name: string;
+    coverImageUrl?: string | null;
+    weekDay: WeekDay;
+    isRestDay: boolean;
+    estimatedDurationInSeconds: number;
+    exercises: {
+      order: number;
+      name: string;
+      sets: number;
+      reps: number;
+      restTimeInSeconds: number;
+    }[];
+  }[];
+}
 
 export class CreateWorkoutPlan {
-  async execute(dto: InputDto) {
-    const existingWorkoutPlan = await prisma.workoutPlan.findFirst({
-      where: {
-        isActive: true,
-      },
-    });
-
+  async execute(dto: InputDto): Promise<OutputDto> {
     // Transaction
     return prisma.$transaction(async (tx) => {
+      const existingWorkoutPlan = await tx.workoutPlan.findFirst({
+        where: {
+          isActive: true,
+          userId: dto.userId,
+        },
+      });
+
       if (existingWorkoutPlan) {
         await tx.workoutPlan.update({
           where: {
@@ -54,6 +71,7 @@ export class CreateWorkoutPlan {
           workoutDays: {
             create: dto.workoutDays.map((workoutDay) => ({
               name: workoutDay.name,
+              coverImageUrl: workoutDay.coverImageUrl,
               weekDay: workoutDay.weekDay,
               isRestDay: workoutDay.isRestDay,
               estimatedDurationInSeconds: workoutDay.estimatedDurationInSeconds,
@@ -75,10 +93,25 @@ export class CreateWorkoutPlan {
         where: {
           id: workoutPlan.id,
         },
-        include: {
+        select: {
+          id: true,
+          name: true,
           workoutDays: {
-            include: {
-              exercises: true,
+            select: {
+              name: true,
+              coverImageUrl: true,
+              weekDay: true,
+              isRestDay: true,
+              estimatedDurationInSeconds: true,
+              exercises: {
+                select: {
+                  order: true,
+                  name: true,
+                  sets: true,
+                  reps: true,
+                  restTimeInSeconds: true,
+                },
+              },
             },
           },
         },
@@ -88,7 +121,7 @@ export class CreateWorkoutPlan {
         throw new NotFoundError("Workout plan not found");
       }
 
-      return result;
+      return result as OutputDto;
     });
   }
 }
