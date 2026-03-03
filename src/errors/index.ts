@@ -18,3 +18,10 @@ export class SessionAlreadyStartedError extends Error {
     this.name = "SessionAlreadyStartedError";
   }
 }
+
+export class ForbiddenError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ForbiddenError";
+  }
+}
