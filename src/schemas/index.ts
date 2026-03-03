@@ -13,7 +13,7 @@ export const WorkoutPlanSchema = z.object({
   workoutDays: z.array(
     z.object({
       name: z.string().trim().min(1),
-      coverImageUrl: z.string().url().optional().nullable(),
+      coverImageUrl: z.string().optional().nullable(),
       weekDay: z.enum(WeekDay),
       isRestDay: z.boolean().default(false),
       estimatedDurationInSeconds: z.number().min(1),
@@ -35,4 +35,28 @@ export const WorkoutSessionSchema = z.object({
   workoutDayId: z.uuid(),
   startedAt: z.string(),
   completedAt: z.string().nullable(),
+});
+
+export const HomeDataSchema = z.object({
+  activeWorkoutPlanId: z.uuid().nullable(),
+  todayWorkoutDay: z
+    .object({
+      workoutPlanId: z.uuid(),
+      id: z.uuid(),
+      name: z.string(),
+      isRestDay: z.boolean(),
+      weekDay: z.enum(WeekDay),
+      estimatedDurationInSeconds: z.number(),
+      coverImageUrl: z.string().optional().nullable(),
+      exercisesCount: z.number(),
+    })
+    .nullable(),
+  workoutStreak: z.number(),
+  consistencyByDay: z.record(
+    z.string(),
+    z.object({
+      workoutDayCompleted: z.boolean(),
+      workoutDayStarted: z.boolean(),
+    }),
+  ),
 });

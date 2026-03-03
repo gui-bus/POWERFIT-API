@@ -11,9 +11,9 @@ import {
   validatorCompiler,
   ZodTypeProvider,
 } from "fastify-type-provider-zod";
-import z from "zod";
 
 import { auth } from "./lib/auth.js";
+import { homeRoutes } from "./routes/home.js";
 import { workoutPlanRoutes } from "./routes/workoutPlan.js";
 //#endregion
 
@@ -70,6 +70,7 @@ await app.register(fastifyApiReference, {
 
 //#region Routes
 await app.register(workoutPlanRoutes, { prefix: "/workout-plans" });
+await app.register(homeRoutes, { prefix: "/home" });
 
 app.withTypeProvider<ZodTypeProvider>().route({
   method: "GET",
@@ -83,25 +84,12 @@ app.withTypeProvider<ZodTypeProvider>().route({
 });
 
 app.withTypeProvider<ZodTypeProvider>().route({
-  method: "GET",
-  url: "/",
-  schema: {
-    description: "Hello World",
-    tags: ["Hello World"],
-    response: {
-      200: z.object({
-        message: z.string(),
-      }),
-    },
-  },
-  handler: () => {
-    return { message: "Hello World" };
-  },
-});
-
-app.route({
   method: ["GET", "POST"],
   url: "/api/auth/*",
+  schema: {
+    tags: ["Auth"],
+    summary: "Better Auth API",
+  },
   async handler(request, reply) {
     try {
       const url = new URL(request.url, `http://${request.headers.host}`);
