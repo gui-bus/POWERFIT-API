@@ -25,3 +25,17 @@ export class ForbiddenError extends Error {
     this.name = "ForbiddenError";
   }
 }
+
+export class SessionAlreadyCompletedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "SessionAlreadyCompletedError";
+  }
+}
+
+export class BadRequestError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "BadRequestError";
+  }
+}

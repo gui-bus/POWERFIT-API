@@ -1,0 +1,82 @@
+import dayjs from "dayjs";
+
+import {
+  ForbiddenError,
+  NotFoundError,
+  SessionAlreadyCompletedError,
+} from "../errors/index.js";
+import { prisma } from "../lib/db.js";
+
+interface InputDto {
+  userId: string;
+  workoutPlanId: string;
+  workoutDayId: string;
+  sessionId: string;
+}
+
+interface OutputDto {
+  id: string;
+  workoutDayId: string;
+  startedAt: string;
+  completedAt: string;
+}
+
+export class CompleteWorkoutSession {
+  async execute(dto: InputDto): Promise<OutputDto> {
+    const workoutPlan = await prisma.workoutPlan.findUnique({
+      where: { id: dto.workoutPlanId },
+    });
+
+    if (!workoutPlan) {
+      throw new NotFoundError("Workout plan not found");
+    }
+
+    if (workoutPlan.userId !== dto.userId) {
+      throw new ForbiddenError(
+        "You do not have permission to access this workout plan",
+      );
+    }
+
+    const workoutDay = await prisma.workoutDay.findUnique({
+      where: {
+        id: dto.workoutDayId,
+        workoutPlanId: dto.workoutPlanId,
+      },
+    });
+
+    if (!workoutDay) {
+      throw new NotFoundError("Workout day not found in this plan");
+    }
+
+    const workoutSession = await prisma.workoutSession.findUnique({
+      where: {
+        id: dto.sessionId,
+        workoutDayId: dto.workoutDayId,
+      },
+    });
+
+    if (!workoutSession) {
+      throw new NotFoundError("Workout session not found");
+    }
+
+    if (workoutSession.completedAt) {
+      throw new SessionAlreadyCompletedError("This session is already completed");
+    }
+
+    const completedAt = dayjs().toDate();
+
+    const updatedSession = await prisma.workoutSession.update({
+      where: { id: dto.sessionId },
+      data: {
+        completedAt,
+      },
+    });
+
+    return {
+      id: updatedSession.id,
+      workoutDayId: updatedSession.workoutDayId,
+      startedAt: updatedSession.startedAt.toISOString(),
+      completedAt: updatedSession.completedAt!.toISOString(),
+    };
+  }
+}

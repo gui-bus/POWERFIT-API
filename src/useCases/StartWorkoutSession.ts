@@ -17,8 +17,8 @@ interface InputDto {
 interface OutputDto {
   id: string;
   workoutDayId: string;
-  startedAt: Date;
-  completedAt: Date | null;
+  startedAt: string;
+  completedAt: string | null;
 }
 
 export class StartWorkoutSession {
@@ -72,8 +72,8 @@ export class StartWorkoutSession {
     return {
       id: workoutSession.id,
       workoutDayId: workoutSession.workoutDayId,
-      startedAt: workoutSession.startedAt,
-      completedAt: workoutSession.completedAt,
+      startedAt: workoutSession.startedAt.toISOString(),
+      completedAt: workoutSession.completedAt ? workoutSession.completedAt.toISOString() : null,
     };
   }
 }
