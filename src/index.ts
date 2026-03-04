@@ -15,6 +15,7 @@ import {
 import { auth } from "./lib/auth.js";
 import { homeRoutes } from "./routes/home.js";
 import { statsRoutes } from "./routes/stats.js";
+import { userRoutes } from "./routes/user.js";
 import { workoutPlanRoutes } from "./routes/workoutPlan.js";
 //#endregion
 
@@ -73,6 +74,7 @@ await app.register(fastifyApiReference, {
 await app.register(workoutPlanRoutes, { prefix: "/workout-plans" });
 await app.register(homeRoutes, { prefix: "/home" });
 await app.register(statsRoutes, { prefix: "/stats" });
+await app.register(userRoutes);
 
 app.withTypeProvider<ZodTypeProvider>().route({
   method: "GET",
