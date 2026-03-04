@@ -26,6 +26,7 @@ interface OutputDto {
       restTimeInSeconds: number;
     }>;
   }>;
+  workoutDaysCount: number;
 }
 
 export class GetWorkoutPlans {
@@ -70,6 +71,7 @@ export class GetWorkoutPlans {
           restTimeInSeconds: ex.restTimeInSeconds,
         })),
       })),
+      workoutDaysCount: plan.workoutDays.length,
     }));
   }
 }
