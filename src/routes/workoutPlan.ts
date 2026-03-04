@@ -16,6 +16,8 @@ import {
   ErrorSchema,
   GetWorkoutDayResponseSchema,
   GetWorkoutPlanByIdResponseSchema,
+  GetWorkoutPlansQuerySchema,
+  GetWorkoutPlansResponseSchema,
   WorkoutPlanSchema,
   WorkoutSessionSchema,
 } from "../schemas/index.js";
@@ -23,9 +25,55 @@ import { CompleteWorkoutSession } from "../useCases/CompleteWorkoutSession.js";
 import { CreateWorkoutPlan } from "../useCases/CreateWorkoutPlan.js";
 import { GetWorkoutDay } from "../useCases/GetWorkoutDay.js";
 import { GetWorkoutPlanById } from "../useCases/GetWorkoutPlanById.js";
+import { GetWorkoutPlans } from "../useCases/GetWorkoutPlans.js";
 import { StartWorkoutSession } from "../useCases/StartWorkoutSession.js";
 
 export const workoutPlanRoutes = async (app: FastifyInstance) => {
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/",
+    schema: {
+      tags: ["Workout Plan"],
+      summary: "Get all workout plans",
+      query: GetWorkoutPlansQuerySchema,
+      response: {
+        200: GetWorkoutPlansResponseSchema,
+        401: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply
+            .status(401)
+            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
+        }
+
+        const { active } = request.query as { active?: boolean };
+
+        const getWorkoutPlans = new GetWorkoutPlans();
+
+        const result = await getWorkoutPlans.execute({
+          userId: session.user.id,
+          active,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
     url: "/:workoutPlanId/days/:workoutDayId",
