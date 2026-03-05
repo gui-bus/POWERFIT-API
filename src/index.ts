@@ -93,6 +93,7 @@ app.withTypeProvider<ZodTypeProvider>().route({
   method: ["GET", "POST"],
   url: "/api/auth/*",
   schema: {
+    hide: true,
     tags: ["Auth"],
     summary: "Better Auth API",
   },
