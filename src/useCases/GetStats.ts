@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
+
 import { prisma } from "../lib/db.js";
 
 dayjs.extend(utc);
@@ -19,6 +20,7 @@ interface OutputDto {
     };
   };
   completedWorkoutsCount: number;
+  completedRestDays: number;
   conclusionRate: number;
   totalTimeInSeconds: number;
 }
@@ -40,6 +42,9 @@ export class GetStats {
           lte: toDate.toDate(),
         },
       },
+      include: {
+        workoutDay: true,
+      },
       orderBy: {
         startedAt: "asc",
       },
@@ -53,6 +58,7 @@ export class GetStats {
     } = {};
 
     let completedWorkoutsCount = 0;
+    let completedRestDays = 0;
     let totalTimeInSeconds = 0;
 
     sessions.forEach((session) => {
@@ -68,15 +74,26 @@ export class GetStats {
 
       if (isCompleted) {
         consistencyByDay[dateKey].workoutDayCompleted = true;
-        completedWorkoutsCount++;
 
-        const duration = dayjs(session.completedAt).diff(dayjs(session.startedAt), "second");
+        if (session.workoutDay.isRestDay) {
+          completedRestDays++;
+        } else {
+          completedWorkoutsCount++;
+        }
+
+        const duration = dayjs(session.completedAt).diff(
+          dayjs(session.startedAt),
+          "second",
+        );
         totalTimeInSeconds += duration;
       }
     });
 
     const totalSessions = sessions.length;
-    const conclusionRate = totalSessions > 0 ? completedWorkoutsCount / totalSessions : 0;
+    const conclusionRate =
+      totalSessions > 0
+        ? (completedWorkoutsCount + completedRestDays) / totalSessions
+        : 0;
 
     // Calcular workoutStreak (mesma lógica do GetHomeData, mas baseada em todos os treinos completados até o fim do range)
     const allCompletedSessions = await prisma.workoutSession.findMany({
@@ -102,7 +119,9 @@ export class GetStats {
     });
 
     const completedDates = new Set(
-      allCompletedSessions.map((s) => dayjs.utc(s.startedAt).format("YYYY-MM-DD"))
+      allCompletedSessions.map((s) =>
+        dayjs.utc(s.startedAt).format("YYYY-MM-DD"),
+      ),
     );
 
     let streak = 0;
@@ -122,6 +141,7 @@ export class GetStats {
       workoutStreak: streak,
       consistencyByDay,
       completedWorkoutsCount,
+      completedRestDays,
       conclusionRate,
       totalTimeInSeconds,
     };

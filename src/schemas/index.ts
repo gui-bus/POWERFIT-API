@@ -150,6 +150,7 @@ export const StatsResponseSchema = z.object({
     }),
   ),
   completedWorkoutsCount: z.number(),
+  completedRestDays: z.number(),
   conclusionRate: z.number(),
   totalTimeInSeconds: z.number(),
 });
