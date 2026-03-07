@@ -6,12 +6,55 @@ import { auth } from "../lib/auth.js";
 import {
   ErrorSchema,
   GetUserTrainDataResponseSchema,
+  UserRankingResponseSchema,
   UserTrainDataSchema,
 } from "../schemas/index.js";
+import { GetStreakRanking } from "../useCases/GetStreakRanking.js";
 import { GetUserTrainData } from "../useCases/GetUserTrainData.js";
 import { UpsertUserTrainData } from "../useCases/UpsertUserTrainData.js";
 
 export const userRoutes = async (app: FastifyInstance) => {
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/ranking",
+    schema: {
+      operationId: "getStreakRanking",
+      tags: ["User"],
+      summary: "Get users streak ranking",
+      response: {
+        200: UserRankingResponseSchema,
+        401: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply
+            .status(401)
+            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
+        }
+
+        const getStreakRanking = new GetStreakRanking();
+        const result = await getStreakRanking.execute({
+          userId: session.user.id,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal server error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
     url: "/me",

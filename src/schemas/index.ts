@@ -172,3 +172,16 @@ export const GetUserTrainDataResponseSchema = z
     bodyFatPercentage: z.number(),
   })
   .nullable();
+
+export const UserRankingSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  image: z.string().nullable(),
+  streak: z.number(),
+});
+
+export const UserRankingResponseSchema = z.object({
+  ranking: z.array(UserRankingSchema),
+  currentUserPosition: z.number().nullable(),
+});
+
