@@ -49,11 +49,24 @@ export class TogglePowerup {
         where: { id: existingPowerup.id },
       });
     } else {
-      await prisma.powerup.create({
-        data: {
-          activityId: dto.activityId,
-          userId: dto.userId,
-        },
+      await prisma.$transaction(async (tx) => {
+        await tx.powerup.create({
+          data: {
+            activityId: dto.activityId,
+            userId: dto.userId,
+          },
+        });
+
+        if (activity.userId !== dto.userId) {
+          await tx.notification.create({
+            data: {
+              recipientId: activity.userId,
+              senderId: dto.userId,
+              type: "POWERUP_RECEIVED",
+              activityId: activity.id,
+            },
+          });
+        }
       });
     }
   }

@@ -50,13 +50,22 @@ export class AddFriend {
       throw new Error("A friend request is already pending");
     }
 
-    await prisma.friendship.create({
-      data: {
-        userId: dto.userId,
-        friendId: friend.id,
-        status: "PENDING",
-      },
-    });
+    await prisma.$transaction([
+      prisma.friendship.create({
+        data: {
+          userId: dto.userId,
+          friendId: friend.id,
+          status: "PENDING",
+        },
+      }),
+      prisma.notification.create({
+        data: {
+          recipientId: friend.id,
+          senderId: dto.userId,
+          type: "FRIEND_REQUEST",
+        },
+      }),
+    ]);
 
     return {
       id: friend.id,

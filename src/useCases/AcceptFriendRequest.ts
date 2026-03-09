@@ -20,9 +20,18 @@ export class AcceptFriendRequest {
       throw new NotFoundError("Friend request not found or unauthorized");
     }
 
-    await prisma.friendship.update({
-      where: { id: dto.requestId },
-      data: { status: "ACCEPTED" },
-    });
+    await prisma.$transaction([
+      prisma.friendship.update({
+        where: { id: dto.requestId },
+        data: { status: "ACCEPTED" },
+      }),
+      prisma.notification.create({
+        data: {
+          recipientId: request.userId, // O remetente da solicitação recebe o aviso
+          senderId: dto.userId,
+          type: "FRIEND_ACCEPTED",
+        },
+      }),
+    ]);
   }
 }

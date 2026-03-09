@@ -1,6 +1,10 @@
 import z from "zod";
 
-import { FriendshipStatus, WeekDay } from "../generated/prisma/enums.js";
+import {
+  FriendshipStatus,
+  NotificationType,
+  WeekDay,
+} from "../generated/prisma/enums.js";
 
 export const ErrorSchema = z.object({
   error: z.string(),
@@ -239,3 +243,20 @@ export const ActivitySchema = z.object({
 });
 
 export const GetFeedResponseSchema = z.array(ActivitySchema);
+
+export const NotificationSchema = z.object({
+  id: z.string().uuid(),
+  type: z.enum(NotificationType),
+  isRead: z.boolean(),
+  createdAt: z.string(),
+  activityId: z.string().uuid().nullable(),
+  sender: z
+    .object({
+      id: z.string(),
+      name: z.string(),
+      image: z.string().nullable(),
+    })
+    .nullable(),
+});
+
+export const GetNotificationsResponseSchema = z.array(NotificationSchema);

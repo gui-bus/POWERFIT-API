@@ -26,26 +26,34 @@ enum FriendshipStatus {
   ACCEPTED
 }
 
+enum NotificationType {
+  FRIEND_REQUEST
+  FRIEND_ACCEPTED
+  POWERUP_RECEIVED
+}
+
 //#endregion
 
 //#region User
 model User {
-  id            String         @id
-  workoutPlans  WorkoutPlan[]
-  name          String
-  email         String
-  emailVerified Boolean        @default(false)
-  image         String?
-  friendCode    String?        @unique
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  sessions      Session[]
-  accounts      Account[]
-  trainData     UserTrainData?
-  friends       Friendship[]   @relation("UserFriends")
-  friendOf      Friendship[]   @relation("FriendOfUser")
-  activities    Activity[]
-  powerupsGiven Powerup[]      @relation("UserGivenPowerups")
+  id                    String         @id
+  workoutPlans          WorkoutPlan[]
+  name                  String
+  email                 String
+  emailVerified         Boolean        @default(false)
+  image                 String?
+  friendCode            String?        @unique
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  sessions              Session[]
+  accounts              Account[]
+  trainData             UserTrainData?
+  friends               Friendship[]   @relation("UserFriends")
+  friendOf              Friendship[]   @relation("FriendOfUser")
+  activities            Activity[]
+  powerupsGiven         Powerup[]      @relation("UserGivenPowerups")
+  notificationsReceived Notification[] @relation("RecipientNotifications")
+  notificationsSent     Notification[] @relation("SenderNotifications")
 
   @@unique([email])
   @@map("user")
@@ -76,6 +84,7 @@ model Activity {
   workoutDay       WorkoutDay     @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
   workoutSession   WorkoutSession @relation(fields: [workoutSessionId], references: [id], onDelete: Cascade)
   powerups         Powerup[]
+  notifications    Notification[]
   createdAt        DateTime       @default(now()) @db.Timestamptz()
 
   @@map("activity")
@@ -91,6 +100,23 @@ model Powerup {
 
   @@unique([activityId, userId])
   @@map("powerup")
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  recipientId String
+  senderId    String?
+  type        NotificationType
+  activityId  String?
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now()) @db.Timestamptz()
+  updatedAt   DateTime         @updatedAt @db.Timestamptz()
+
+  recipient User      @relation("RecipientNotifications", fields: [recipientId], references: [id], onDelete: Cascade)
+  sender    User?     @relation("SenderNotifications", fields: [senderId], references: [id], onDelete: SetNull)
+  activity  Activity? @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@map("notification")
 }
 
 model UserTrainData {
