@@ -33,6 +33,9 @@ enum NotificationType {
   LEVEL_UP
   ACHIEVEMENT_UNLOCKED
   CHALLENGE_INVITE
+  COMMENT_RECEIVED
+  TAGGED_IN_ACTIVITY
+  PERSONAL_RECORD_BROKEN
 }
 
 enum XpReason {
@@ -45,6 +48,7 @@ enum XpReason {
   FRIEND_ACCEPTED
   CHALLENGE_COMPLETED
   CHALLENGE_WON
+  COMMENT_GIVEN
 }
 
 enum ChallengeType {
@@ -79,7 +83,11 @@ model User {
   friends               Friendship[]   @relation("UserFriends")
   friendOf              Friendship[]   @relation("FriendOfUser")
   activities            Activity[]
+  taggedInActivities    Activity[]     @relation("ActivityTags")
   powerupsGiven         Powerup[]      @relation("UserGivenPowerups")
+  comments              Comment[]
+  personalRecords       PersonalRecord[]
+  bodyProgressLogs      BodyProgressLog[]
   notificationsReceived Notification[] @relation("RecipientNotifications")
   notificationsSent     Notification[] @relation("SenderNotifications")
   xpTransactions        XpTransaction[]
@@ -116,10 +124,53 @@ model Activity {
   workoutDay       WorkoutDay     @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
   workoutSession   WorkoutSession @relation(fields: [workoutSessionId], references: [id], onDelete: Cascade)
   powerups         Powerup[]
+  comments         Comment[]
+  taggedUsers      User[]         @relation("ActivityTags")
   notifications    Notification[]
   createdAt        DateTime       @default(now()) @db.Timestamptz()
 
   @@map("activity")
+}
+
+model Comment {
+  id         String   @id @default(uuid())
+  activityId String
+  userId     String
+  content    String
+  createdAt  DateTime @default(now()) @db.Timestamptz()
+  updatedAt  DateTime @updatedAt @db.Timestamptz()
+
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("comment")
+}
+
+model PersonalRecord {
+  id            String   @id @default(uuid())
+  userId        String
+  exerciseName  String
+  weightInGrams Int
+  reps          Int
+  achievedAt    DateTime @default(now()) @db.Timestamptz()
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, exerciseName])
+  @@map("personal_record")
+}
+
+model BodyProgressLog {
+  id                  String   @id @default(uuid())
+  userId              String
+  weightInGrams       Int
+  heightInCentimeters Int
+  age                 Int
+  bodyFatPercentage   Float
+  loggedAt            DateTime @default(now()) @db.Timestamptz()
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, loggedAt])
+  @@map("body_progress_log")
 }
 
 model Powerup {

@@ -20,6 +20,19 @@ interface OutputDto {
   powerupsCount: number;
   hasPowerupByMe: boolean;
   createdAt: string;
+  comments: Array<{
+    id: string;
+    userId: string;
+    userName: string;
+    userImage: string | null;
+    content: string;
+    createdAt: string;
+  }>;
+  taggedUsers: Array<{
+    id: string;
+    name: string;
+    image: string | null;
+  }>;
 }
 
 export class GetFeed {
@@ -66,7 +79,10 @@ export class GetFeed {
 
     const activities = await prisma.activity.findMany({
       where: {
-        userId: { in: userIdsInFeed },
+        OR: [
+          { userId: { in: userIdsInFeed } },
+          { taggedUsers: { some: { id: { in: userIdsInFeed } } } }
+        ]
       },
       include: {
         user: true,
@@ -77,6 +93,11 @@ export class GetFeed {
         },
         workoutSession: true,
         powerups: true,
+        comments: {
+          include: { user: true },
+          orderBy: { createdAt: "asc" }
+        },
+        taggedUsers: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -98,6 +119,19 @@ export class GetFeed {
       powerupsCount: activity.powerups.length,
       hasPowerupByMe: activity.powerups.some((p) => p.userId === dto.userId),
       createdAt: activity.createdAt.toISOString(),
+      comments: activity.comments.map((c) => ({
+        id: c.id,
+        userId: c.user.id,
+        userName: c.user.name,
+        userImage: c.user.image,
+        content: c.content,
+        createdAt: c.createdAt.toISOString(),
+      })),
+      taggedUsers: activity.taggedUsers.map((u) => ({
+        id: u.id,
+        name: u.name,
+        image: u.image,
+      })),
     }));
   }
 }

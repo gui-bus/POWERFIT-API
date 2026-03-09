@@ -237,6 +237,15 @@ export const UserMeResponseSchema = z.object({
   level: z.number(),
 });
 
+export const CommentSchema = z.object({
+  id: z.string().uuid(),
+  userId: z.string(),
+  userName: z.string(),
+  userImage: z.string().nullable(),
+  content: z.string(),
+  createdAt: z.string(),
+});
+
 export const ActivitySchema = z.object({
   id: z.string().uuid(),
   userId: z.string(),
@@ -251,9 +260,19 @@ export const ActivitySchema = z.object({
   powerupsCount: z.number(),
   hasPowerupByMe: z.boolean(),
   createdAt: z.string(),
+  comments: z.array(CommentSchema),
+  taggedUsers: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    image: z.string().nullable(),
+  })),
 });
 
 export const GetFeedResponseSchema = z.array(ActivitySchema);
+
+export const CreateCommentSchema = z.object({
+  content: z.string().trim().min(1).max(500),
+});
 
 export const NotificationSchema = z.object({
   id: z.string().uuid(),
@@ -306,3 +325,26 @@ export const XpTransactionSchema = z.object({
 });
 
 export const GetXpHistoryResponseSchema = z.array(XpTransactionSchema);
+
+export const PersonalRecordSchema = z.object({
+  id: z.string().uuid(),
+  exerciseName: z.string(),
+  weightInGrams: z.number(),
+  reps: z.number(),
+  achievedAt: z.string(),
+});
+
+export const UpsertPersonalRecordSchema = z.object({
+  exerciseName: z.string().trim().min(1),
+  weightInGrams: z.number().int().min(1),
+  reps: z.number().int().min(1),
+});
+
+export const BodyProgressLogSchema = z.object({
+  id: z.string().uuid(),
+  weightInGrams: z.number(),
+  heightInCentimeters: z.number(),
+  age: z.number(),
+  bodyFatPercentage: z.number(),
+  loggedAt: z.string(),
+});

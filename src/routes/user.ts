@@ -1,20 +1,196 @@
 import { fromNodeHeaders } from "better-auth/node";
 import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
+import { z } from "zod";
 
 import { auth } from "../lib/auth.js";
 import {
+  BodyProgressLogSchema,
   ErrorSchema,
   GetRankingQuerySchema,
   GetUserTrainDataResponseSchema,
+  PersonalRecordSchema,
+  UpsertPersonalRecordSchema,
   UserRankingResponseSchema,
   UserTrainDataSchema,
 } from "../schemas/index.js";
+import { GetBodyProgressHistory } from "../useCases/GetBodyProgressHistory.js";
+import { GetPersonalRecords } from "../useCases/GetPersonalRecords.js";
 import { GetRanking } from "../useCases/GetRanking.js";
 import { GetUserTrainData } from "../useCases/GetUserTrainData.js";
+import { LogBodyProgress } from "../useCases/LogBodyProgress.js";
+import { UpsertPersonalRecord } from "../useCases/UpsertPersonalRecord.js";
 import { UpsertUserTrainData } from "../useCases/UpsertUserTrainData.js";
 
 export const userRoutes = async (app: FastifyInstance) => {
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/personal-records",
+    schema: {
+      operationId: "getPersonalRecords",
+      tags: ["User"],
+      summary: "Get user personal records",
+      response: {
+        200: z.array(PersonalRecordSchema),
+        401: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply
+            .status(401)
+            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
+        }
+
+        const getPersonalRecords = new GetPersonalRecords();
+        const result = await getPersonalRecords.execute({
+          userId: session.user.id,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal server error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "POST",
+    url: "/personal-records",
+    schema: {
+      operationId: "upsertPersonalRecord",
+      tags: ["User"],
+      summary: "Upsert a personal record",
+      body: UpsertPersonalRecordSchema,
+      response: {
+        204: z.null(),
+        401: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply
+            .status(401)
+            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
+        }
+
+        const upsertPersonalRecord = new UpsertPersonalRecord();
+        await upsertPersonalRecord.execute({
+          userId: session.user.id,
+          ...request.body,
+        });
+
+        return reply.status(204).send();
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal server error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/body-progress",
+    schema: {
+      operationId: "getBodyProgressHistory",
+      tags: ["User"],
+      summary: "Get body progress history",
+      response: {
+        200: z.array(BodyProgressLogSchema),
+        401: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply
+            .status(401)
+            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
+        }
+
+        const getBodyProgressHistory = new GetBodyProgressHistory();
+        const result = await getBodyProgressHistory.execute({
+          userId: session.user.id,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal server error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "POST",
+    url: "/body-progress",
+    schema: {
+      operationId: "logBodyProgress",
+      tags: ["User"],
+      summary: "Log a new body progress entry",
+      body: UserTrainDataSchema,
+      response: {
+        204: z.null(),
+        401: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply
+            .status(401)
+            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
+        }
+
+        const logBodyProgress = new LogBodyProgress();
+        await logBodyProgress.execute({
+          userId: session.user.id,
+          ...request.body,
+        });
+
+        return reply.status(204).send();
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal server error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
     url: "/ranking",

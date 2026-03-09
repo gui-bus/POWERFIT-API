@@ -341,9 +341,10 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
         workoutDayId: z.uuid(),
         sessionId: z.uuid(),
       }),
-      query: z.object({
+      body: z.object({
         statusMessage: z.string().trim().optional(),
-      }),
+        taggedUserIds: z.array(z.string().uuid()).optional(),
+      }).optional(),
       response: {
         200: WorkoutSessionSchema,
         400: ErrorSchema,
@@ -366,8 +367,6 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
             .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
         }
 
-        const { statusMessage } = request.query as { statusMessage?: string };
-
         const completeWorkoutSession = new CompleteWorkoutSession();
 
         const result = await completeWorkoutSession.execute({
@@ -375,7 +374,8 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
           workoutPlanId: request.params.workoutPlanId,
           workoutDayId: request.params.workoutDayId,
           sessionId: request.params.sessionId,
-          statusMessage,
+          statusMessage: request.body?.statusMessage,
+          taggedUserIds: request.body?.taggedUserIds,
         });
 
         return reply.status(200).send(result);

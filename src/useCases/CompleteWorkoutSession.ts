@@ -15,6 +15,7 @@ interface InputDto {
   workoutDayId: string;
   sessionId: string;
   statusMessage?: string;
+  taggedUserIds?: string[];
 }
 
 interface OutputDto {
@@ -76,14 +77,29 @@ export class CompleteWorkoutSession {
         },
       });
 
-      await tx.activity.create({
+      const activity = await tx.activity.create({
         data: {
           userId: dto.userId,
           workoutDayId: dto.workoutDayId,
           workoutSessionId: updatedSession.id,
           statusMessage: dto.statusMessage,
+          taggedUsers: dto.taggedUserIds ? {
+            connect: dto.taggedUserIds.map(id => ({ id }))
+          } : undefined
         },
       });
+
+      // Notificar usuários marcados
+      if (dto.taggedUserIds && dto.taggedUserIds.length > 0) {
+        await tx.notification.createMany({
+          data: dto.taggedUserIds.map(taggedId => ({
+            recipientId: taggedId,
+            senderId: dto.userId,
+            type: "TAGGED_IN_ACTIVITY",
+            activityId: activity.id,
+          }))
+        });
+      }
 
       const grantXp = new GrantXp();
       await grantXp.execute(
