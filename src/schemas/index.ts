@@ -1,6 +1,6 @@
 import z from "zod";
 
-import { WeekDay } from "../generated/prisma/enums.js";
+import { FriendshipStatus, WeekDay } from "../generated/prisma/enums.js";
 
 export const ErrorSchema = z.object({
   error: z.string(),
@@ -185,3 +185,39 @@ export const UserRankingResponseSchema = z.object({
   currentUserPosition: z.number().nullable(),
 });
 
+export const AddFriendSchema = z.object({
+  codeOrEmail: z.string().trim().min(1),
+});
+
+export const FriendshipRequestSchema = z.object({
+  id: z.string().uuid(),
+  status: z.enum(FriendshipStatus),
+  createdAt: z.string(),
+  user: z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.string().email(),
+    image: z.string().nullable(),
+  }),
+});
+
+export const GetFriendRequestsResponseSchema = z.array(FriendshipRequestSchema);
+
+export const FriendSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string().email(),
+  image: z.string().nullable(),
+  friendCode: z.string().nullable(),
+  since: z.string(),
+});
+
+export const GetFriendsResponseSchema = z.array(FriendSchema);
+
+export const UserMeResponseSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string().email(),
+  image: z.string().nullable(),
+  friendCode: z.string().nullable(),
+});
