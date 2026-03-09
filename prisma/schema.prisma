@@ -44,6 +44,8 @@ model User {
   trainData     UserTrainData?
   friends       Friendship[]   @relation("UserFriends")
   friendOf      Friendship[]   @relation("FriendOfUser")
+  activities    Activity[]
+  powerupsGiven Powerup[]      @relation("UserGivenPowerups")
 
   @@unique([email])
   @@map("user")
@@ -61,6 +63,34 @@ model Friendship {
 
   @@unique([userId, friendId])
   @@map("friendship")
+}
+
+model Activity {
+  id               String         @id @default(uuid())
+  userId           String
+  workoutDayId     String
+  workoutSessionId String         @unique
+  statusMessage    String?
+  imageUrl         String?
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutDay       WorkoutDay     @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+  workoutSession   WorkoutSession @relation(fields: [workoutSessionId], references: [id], onDelete: Cascade)
+  powerups         Powerup[]
+  createdAt        DateTime       @default(now()) @db.Timestamptz()
+
+  @@map("activity")
+}
+
+model Powerup {
+  id         String   @id @default(uuid())
+  activityId String
+  userId     String
+  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  user       User     @relation("UserGivenPowerups", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now()) @db.Timestamptz()
+
+  @@unique([activityId, userId])
+  @@map("powerup")
 }
 
 model UserTrainData {
@@ -106,6 +136,7 @@ model WorkoutDay {
   estimatedDurationInSeconds Int
   createdAt                  DateTime          @default(now()) @db.Timestamptz()
   updatedAt                  DateTime          @updatedAt @db.Timestamptz()
+  activities                 Activity[]
 
   @@map("workout_day")
 }
@@ -133,6 +164,7 @@ model WorkoutSession {
   completedAt  DateTime?  @db.Timestamptz()
   createdAt    DateTime   @default(now()) @db.Timestamptz()
   updatedAt    DateTime   @updatedAt @db.Timestamptz()
+  activity     Activity?
 
   @@map("workout_session")
 }

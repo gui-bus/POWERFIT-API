@@ -5,6 +5,6 @@
     "source.fixAll.eslint": "always"
   },
   "[prisma]": {
-    "editor.defaultFormatter": "Prisma.prisma-insider"
+    "editor.defaultFormatter": "Prisma.prisma"
   }
 }

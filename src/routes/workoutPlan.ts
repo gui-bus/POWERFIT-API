@@ -341,6 +341,9 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
         workoutDayId: z.uuid(),
         sessionId: z.uuid(),
       }),
+      body: z.object({
+        statusMessage: z.string().trim().optional(),
+      }),
       response: {
         200: WorkoutSessionSchema,
         400: ErrorSchema,
@@ -370,6 +373,7 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
           workoutPlanId: request.params.workoutPlanId,
           workoutDayId: request.params.workoutDayId,
           sessionId: request.params.sessionId,
+          statusMessage: request.body.statusMessage,
         });
 
         return reply.status(200).send(result);

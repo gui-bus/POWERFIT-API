@@ -14,6 +14,7 @@ import {
 
 import { auth } from "./lib/auth.js";
 import { aiRoutes } from "./routes/ai.js";
+import { feedRoutes } from "./routes/feed.js";
 import { friendshipRoutes } from "./routes/friendship.js";
 import { homeRoutes } from "./routes/home.js";
 import { statsRoutes } from "./routes/stats.js";
@@ -77,6 +78,7 @@ await app.register(workoutPlanRoutes, { prefix: "/workout-plans" });
 await app.register(homeRoutes, { prefix: "/home" });
 await app.register(statsRoutes, { prefix: "/stats" });
 await app.register(friendshipRoutes, { prefix: "/friendships" });
+await app.register(feedRoutes, { prefix: "/feed" });
 await app.register(userRoutes);
 await app.register(aiRoutes, { prefix: "/ai" });
 

@@ -221,3 +221,21 @@ export const UserMeResponseSchema = z.object({
   image: z.string().nullable(),
   friendCode: z.string().nullable(),
 });
+
+export const ActivitySchema = z.object({
+  id: z.string().uuid(),
+  userId: z.string(),
+  userName: z.string(),
+  userImage: z.string().nullable(),
+  workoutDayName: z.string(),
+  workoutPlanName: z.string(),
+  statusMessage: z.string().nullable(),
+  imageUrl: z.string().nullable(),
+  startedAt: z.string(),
+  completedAt: z.string(),
+  powerupsCount: z.number(),
+  hasPowerupByMe: z.boolean(),
+  createdAt: z.string(),
+});
+
+export const GetFeedResponseSchema = z.array(ActivitySchema);
