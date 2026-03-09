@@ -5,11 +5,12 @@ import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { auth } from "../lib/auth.js";
 import {
   ErrorSchema,
+  GetRankingQuerySchema,
   GetUserTrainDataResponseSchema,
   UserRankingResponseSchema,
   UserTrainDataSchema,
 } from "../schemas/index.js";
-import { GetStreakRanking } from "../useCases/GetStreakRanking.js";
+import { GetRanking } from "../useCases/GetRanking.js";
 import { GetUserTrainData } from "../useCases/GetUserTrainData.js";
 import { UpsertUserTrainData } from "../useCases/UpsertUserTrainData.js";
 
@@ -18,9 +19,10 @@ export const userRoutes = async (app: FastifyInstance) => {
     method: "GET",
     url: "/ranking",
     schema: {
-      operationId: "getStreakRanking",
+      operationId: "getRanking",
       tags: ["User"],
-      summary: "Get users streak ranking",
+      summary: "Get users ranking",
+      querystring: GetRankingQuerySchema,
       response: {
         200: UserRankingResponseSchema,
         401: ErrorSchema,
@@ -39,9 +41,12 @@ export const userRoutes = async (app: FastifyInstance) => {
             .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
         }
 
-        const getStreakRanking = new GetStreakRanking();
-        const result = await getStreakRanking.execute({
+        const { sortBy } = request.query as { sortBy: "STREAK" | "XP" };
+
+        const getRanking = new GetRanking();
+        const result = await getRanking.execute({
           userId: session.user.id,
+          sortBy,
         });
 
         return reply.status(200).send(result);

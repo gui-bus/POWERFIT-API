@@ -185,6 +185,12 @@ export const UserRankingSchema = z.object({
   name: z.string(),
   image: z.string().nullable(),
   streak: z.number(),
+  xp: z.number(),
+  level: z.number(),
+});
+
+export const GetRankingQuerySchema = z.object({
+  sortBy: z.enum(["STREAK", "XP"]).default("STREAK"),
 });
 
 export const UserRankingResponseSchema = z.object({

@@ -7,6 +7,7 @@ dayjs.extend(utc);
 
 interface InputDto {
   userId: string;
+  sortBy: "STREAK" | "XP";
 }
 
 interface UserRanking {
@@ -14,6 +15,8 @@ interface UserRanking {
   name: string;
   image: string | null;
   streak: number;
+  xp: number;
+  level: number;
 }
 
 interface OutputDto {
@@ -21,20 +24,22 @@ interface OutputDto {
   currentUserPosition: number | null;
 }
 
-export class GetStreakRanking {
+export class GetRanking {
   async execute(dto: InputDto): Promise<OutputDto> {
     const today = dayjs.utc().startOf("day");
 
-    // Fetch all users
+    // Fetch all users with basic info
     const users = await prisma.user.findMany({
       select: {
         id: true,
         name: true,
         image: true,
+        xp: true,
+        level: true,
       },
     });
 
-    // Fetch all completed sessions
+    // Fetch all completed sessions for streak calculation
     const sessions = await prisma.workoutSession.findMany({
       where: {
         completedAt: {
@@ -67,8 +72,8 @@ export class GetStreakRanking {
       userSessionsMap.get(userId)!.add(date);
     });
 
-    // Calculate streak for each user
-    const rankings: UserRanking[] = users.map((user) => {
+    // Map users to ranking data with calculated streak
+    let rankings: UserRanking[] = users.map((user) => {
       const completedDates = userSessionsMap.get(user.id) || new Set();
       
       let streak = 0;
@@ -89,19 +94,35 @@ export class GetStreakRanking {
         name: user.name,
         image: user.image,
         streak,
+        xp: user.xp,
+        level: user.level,
       };
     });
 
-    // Sort by streak (descending) and then by name (ascending) for consistency
-    rankings.sort((a, b) => {
-      if (b.streak !== a.streak) {
-        return b.streak - a.streak;
-      }
-      return a.name.localeCompare(b.name);
-    });
+    // Sort based on requested criteria
+    if (dto.sortBy === "STREAK") {
+      rankings.sort((a, b) => {
+        if (b.streak !== a.streak) {
+          return b.streak - a.streak;
+        }
+        if (b.xp !== a.xp) {
+          return b.xp - a.xp;
+        }
+        return a.name.localeCompare(b.name);
+      });
+    } else {
+      rankings.sort((a, b) => {
+        if (b.xp !== a.xp) {
+          return b.xp - a.xp;
+        }
+        if (b.streak !== a.streak) {
+          return b.streak - a.streak;
+        }
+        return a.name.localeCompare(b.name);
+      });
+    }
 
     const top10 = rankings.slice(0, 10);
-    
     const currentUserPosition = rankings.findIndex((r) => r.id === dto.userId) + 1;
 
     return {
