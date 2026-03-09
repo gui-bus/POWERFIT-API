@@ -343,7 +343,7 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
       }),
       body: z.object({
         statusMessage: z.string().trim().optional(),
-        taggedUserIds: z.array(z.string().uuid()).optional(),
+        taggedUserIds: z.array(z.string()).optional(),
       }).optional(),
       response: {
         200: WorkoutSessionSchema,
