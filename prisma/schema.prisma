@@ -30,6 +30,32 @@ enum NotificationType {
   FRIEND_REQUEST
   FRIEND_ACCEPTED
   POWERUP_RECEIVED
+  LEVEL_UP
+  ACHIEVEMENT_UNLOCKED
+  CHALLENGE_INVITE
+}
+
+enum XpReason {
+  WORKOUT_COMPLETED
+  PERSONAL_RECORD
+  STREAK_7_DAYS
+  STREAK_30_DAYS
+  POWERUP_GIVEN
+  POWERUP_RECEIVED
+  FRIEND_ACCEPTED
+  CHALLENGE_COMPLETED
+  CHALLENGE_WON
+}
+
+enum ChallengeType {
+  GLOBAL
+  FRIEND_DUEL
+}
+
+enum ChallengeStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
 }
 
 //#endregion
@@ -43,6 +69,8 @@ model User {
   emailVerified         Boolean        @default(false)
   image                 String?
   friendCode            String?        @unique
+  xp                    Int            @default(0)
+  level                 Int            @default(1)
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
   sessions              Session[]
@@ -54,6 +82,10 @@ model User {
   powerupsGiven         Powerup[]      @relation("UserGivenPowerups")
   notificationsReceived Notification[] @relation("RecipientNotifications")
   notificationsSent     Notification[] @relation("SenderNotifications")
+  xpTransactions        XpTransaction[]
+  achievements          UserAchievement[]
+  challengesParticipated ChallengeParticipant[]
+  challengesCreated     Challenge[]    @relation("ChallengeCreator")
 
   @@unique([email])
   @@map("user")
@@ -117,6 +149,74 @@ model Notification {
   activity  Activity? @relation(fields: [activityId], references: [id], onDelete: Cascade)
 
   @@map("notification")
+}
+
+model XpTransaction {
+  id        String   @id @default(uuid())
+  userId    String
+  amount    Int
+  reason    XpReason
+  relatedId String?
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, reason, relatedId])
+  @@map("xp_transaction")
+}
+
+model Achievement {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  iconUrl     String?
+  xpReward    Int      @default(0)
+  users       UserAchievement[]
+
+  @@map("achievement")
+}
+
+model UserAchievement {
+  id            String   @id @default(uuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime @default(now()) @db.Timestamptz()
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@map("user_achievement")
+}
+
+model Challenge {
+  id          String          @id @default(uuid())
+  name        String
+  description String
+  type        ChallengeType
+  status      ChallengeStatus @default(PENDING)
+  startDate   DateTime?       @db.Timestamptz()
+  endDate     DateTime?       @db.Timestamptz()
+  creatorId   String?
+  xpReward    Int             @default(0)
+  
+  creator      User?          @relation("ChallengeCreator", fields: [creatorId], references: [id], onDelete: SetNull)
+  participants ChallengeParticipant[]
+
+  @@map("challenge")
+}
+
+model ChallengeParticipant {
+  id          String   @id @default(uuid())
+  challengeId String
+  userId      String
+  joinedAt    DateTime @default(now()) @db.Timestamptz()
+  score       Int      @default(0)
+  hasWon      Boolean  @default(false)
+
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([challengeId, userId])
+  @@map("challenge_participant")
 }
 
 model UserTrainData {

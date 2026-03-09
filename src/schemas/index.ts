@@ -1,9 +1,12 @@
 import z from "zod";
 
 import {
+  ChallengeStatus,
+  ChallengeType,
   FriendshipStatus,
   NotificationType,
   WeekDay,
+  XpReason,
 } from "../generated/prisma/enums.js";
 
 export const ErrorSchema = z.object({
@@ -224,6 +227,8 @@ export const UserMeResponseSchema = z.object({
   email: z.string().email(),
   image: z.string().nullable(),
   friendCode: z.string().nullable(),
+  xp: z.number(),
+  level: z.number(),
 });
 
 export const ActivitySchema = z.object({
@@ -260,3 +265,38 @@ export const NotificationSchema = z.object({
 });
 
 export const GetNotificationsResponseSchema = z.array(NotificationSchema);
+
+export const AchievementSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  description: z.string(),
+  iconUrl: z.string().nullable(),
+  xpReward: z.number(),
+  unlockedAt: z.string().optional().nullable(),
+});
+
+export const GetAchievementsResponseSchema = z.array(AchievementSchema);
+
+export const ChallengeSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  description: z.string(),
+  type: z.enum(ChallengeType),
+  status: z.enum(ChallengeStatus),
+  startDate: z.string().nullable(),
+  endDate: z.string().nullable(),
+  xpReward: z.number(),
+  participantsCount: z.number(),
+  isJoined: z.boolean(),
+});
+
+export const GetChallengesResponseSchema = z.array(ChallengeSchema);
+
+export const XpTransactionSchema = z.object({
+  id: z.string().uuid(),
+  amount: z.number(),
+  reason: z.enum(XpReason),
+  createdAt: z.string(),
+});
+
+export const GetXpHistoryResponseSchema = z.array(XpTransactionSchema);

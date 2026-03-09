@@ -6,6 +6,8 @@ import {
   SessionAlreadyCompletedError,
 } from "../errors/index.js";
 import { prisma } from "../lib/db.js";
+import { CheckAchievements } from "./CheckAchievements.js";
+import { GrantXp } from "./GrantXp.js";
 
 interface InputDto {
   userId: string;
@@ -83,12 +85,27 @@ export class CompleteWorkoutSession {
         },
       });
 
+      const grantXp = new GrantXp();
+      await grantXp.execute(
+        {
+          userId: dto.userId,
+          amount: 50,
+          reason: "WORKOUT_COMPLETED",
+          relatedId: updatedSession.id,
+        },
+        tx,
+      );
+
       return {
         id: updatedSession.id,
         workoutDayId: updatedSession.workoutDayId,
         startedAt: updatedSession.startedAt.toISOString(),
         completedAt: updatedSession.completedAt!.toISOString(),
       };
+    }).then(async (result) => {
+      const checkAchievements = new CheckAchievements();
+      checkAchievements.execute({ userId: dto.userId }).catch(console.error);
+      return result;
     });
   }
 }

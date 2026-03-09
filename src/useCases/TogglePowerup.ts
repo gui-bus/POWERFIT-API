@@ -1,5 +1,7 @@
 import { ForbiddenError, NotFoundError } from "../errors/index.js";
 import { prisma } from "../lib/db.js";
+import { CheckAchievements } from "./CheckAchievements.js";
+import { GrantXp } from "./GrantXp.js";
 
 interface InputDto {
   userId: string;
@@ -57,7 +59,21 @@ export class TogglePowerup {
           },
         });
 
+        const grantXp = new GrantXp();
+
+        // XP para quem deu o powerup (apenas uma vez por atividade)
+        await grantXp.execute(
+          {
+            userId: dto.userId,
+            amount: 5,
+            reason: "POWERUP_GIVEN",
+            relatedId: dto.activityId,
+          },
+          tx,
+        );
+
         if (activity.userId !== dto.userId) {
+          // Notificação para o dono da atividade
           await tx.notification.create({
             data: {
               recipientId: activity.userId,
@@ -66,6 +82,24 @@ export class TogglePowerup {
               activityId: activity.id,
             },
           });
+
+          // XP para quem recebeu o powerup (apenas uma vez por atividade por doador)
+          // Aqui usamos uma string composta para o relatedId para garantir unicidade
+          await grantXp.execute(
+            {
+              userId: activity.userId,
+              amount: 10,
+              reason: "POWERUP_RECEIVED",
+              relatedId: `${dto.activityId}_${dto.userId}`,
+            },
+            tx,
+          );
+        }
+      }).then(async () => {
+        const checkAchievements = new CheckAchievements();
+        checkAchievements.execute({ userId: dto.userId }).catch(console.error);
+        if (activity.userId !== dto.userId) {
+          checkAchievements.execute({ userId: activity.userId }).catch(console.error);
         }
       });
     }

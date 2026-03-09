@@ -16,6 +16,7 @@ import { auth } from "./lib/auth.js";
 import { aiRoutes } from "./routes/ai.js";
 import { feedRoutes } from "./routes/feed.js";
 import { friendshipRoutes } from "./routes/friendship.js";
+import { gamificationRoutes } from "./routes/gamification.js";
 import { homeRoutes } from "./routes/home.js";
 import { notificationRoutes } from "./routes/notifications.js";
 import { statsRoutes } from "./routes/stats.js";
@@ -82,6 +83,7 @@ await app.register(statsRoutes, { prefix: "/stats" });
 await app.register(friendshipRoutes, { prefix: "/friendships" });
 await app.register(feedRoutes, { prefix: "/feed" });
 await app.register(notificationRoutes, { prefix: "/notifications" });
+await app.register(gamificationRoutes, { prefix: "/gamification" });
 await app.register(userRoutes);
 await app.register(aiRoutes, { prefix: "/ai" });
 
