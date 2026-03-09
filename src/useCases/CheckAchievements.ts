@@ -69,6 +69,7 @@ export class CheckAchievements {
             data: {
               recipientId: dto.userId,
               type: "ACHIEVEMENT_UNLOCKED",
+              achievementId: achievement.id,
             },
           });
 

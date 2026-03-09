@@ -186,18 +186,21 @@ model Powerup {
 }
 
 model Notification {
-  id          String           @id @default(uuid())
-  recipientId String
-  senderId    String?
-  type        NotificationType
-  activityId  String?
-  isRead      Boolean          @default(false)
-  createdAt   DateTime         @default(now()) @db.Timestamptz()
-  updatedAt   DateTime         @updatedAt @db.Timestamptz()
+  id            String           @id @default(uuid())
+  recipientId   String
+  senderId      String?
+  type          NotificationType
+  activityId    String?
+  achievementId String?
+  content       String?
+  isRead        Boolean          @default(false)
+  createdAt     DateTime         @default(now()) @db.Timestamptz()
+  updatedAt     DateTime         @updatedAt @db.Timestamptz()
 
-  recipient User      @relation("RecipientNotifications", fields: [recipientId], references: [id], onDelete: Cascade)
-  sender    User?     @relation("SenderNotifications", fields: [senderId], references: [id], onDelete: SetNull)
-  activity  Activity? @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  recipient   User         @relation("RecipientNotifications", fields: [recipientId], references: [id], onDelete: Cascade)
+  sender      User?        @relation("SenderNotifications", fields: [senderId], references: [id], onDelete: SetNull)
+  activity    Activity?    @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  achievement Achievement? @relation(fields: [achievementId], references: [id], onDelete: Cascade)
 
   @@map("notification")
 }
@@ -216,12 +219,13 @@ model XpTransaction {
 }
 
 model Achievement {
-  id          String   @id @default(uuid())
-  name        String
-  description String
-  iconUrl     String?
-  xpReward    Int      @default(0)
-  users       UserAchievement[]
+  id            String            @id @default(uuid())
+  name          String
+  description   String
+  iconUrl       String?
+  xpReward      Int               @default(0)
+  users         UserAchievement[]
+  notifications Notification[]
 
   @@map("achievement")
 }

@@ -280,11 +280,20 @@ export const NotificationSchema = z.object({
   isRead: z.boolean(),
   createdAt: z.string(),
   activityId: z.string().uuid().nullable(),
+  achievementId: z.string().uuid().nullable(),
+  content: z.string().nullable(),
   sender: z
     .object({
       id: z.string(),
       name: z.string(),
       image: z.string().nullable(),
+    })
+    .nullable(),
+  achievement: z
+    .object({
+      id: z.string().uuid(),
+      name: z.string(),
+      iconUrl: z.string().nullable(),
     })
     .nullable(),
 });

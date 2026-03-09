@@ -11,10 +11,17 @@ interface OutputDto {
   isRead: boolean;
   createdAt: string;
   activityId: string | null;
+  achievementId: string | null;
+  content: string | null;
   sender: {
     id: string;
     name: string;
     image: string | null;
+  } | null;
+  achievement: {
+    id: string;
+    name: string;
+    iconUrl: string | null;
   } | null;
 }
 
@@ -26,6 +33,7 @@ export class GetNotifications {
       },
       include: {
         sender: true,
+        achievement: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -39,11 +47,20 @@ export class GetNotifications {
       isRead: notification.isRead,
       createdAt: notification.createdAt.toISOString(),
       activityId: notification.activityId,
+      achievementId: notification.achievementId,
+      content: notification.content,
       sender: notification.sender
         ? {
             id: notification.sender.id,
             name: notification.sender.name,
             image: notification.sender.image,
+          }
+        : null,
+      achievement: notification.achievement
+        ? {
+            id: notification.achievement.id,
+            name: notification.achievement.name,
+            iconUrl: notification.achievement.iconUrl,
           }
         : null,
     }));

@@ -29,7 +29,6 @@ export class AddComment {
 
       const grantXp = new GrantXp();
       
-      // Ganha 2 XP por comentar (limitado a uma vez por atividade para evitar spam)
       await grantXp.execute(
         {
           userId: dto.userId,
@@ -40,7 +39,6 @@ export class AddComment {
         tx,
       );
 
-      // Notifica o dono da atividade (se não for o próprio comentador)
       if (activity.userId !== dto.userId) {
         await tx.notification.create({
           data: {
@@ -48,6 +46,7 @@ export class AddComment {
             senderId: dto.userId,
             type: "COMMENT_RECEIVED",
             activityId: activity.id,
+            content: dto.content.length > 50 ? `${dto.content.substring(0, 47)}...` : dto.content,
           },
         });
       }
