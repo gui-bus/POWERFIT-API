@@ -12,6 +12,10 @@ interface OutputDto {
   email: string;
   image: string | null;
   friendCode: string | null;
+  xp: number;
+  level: number;
+  isPublicProfile: boolean;
+  showStats: boolean;
 }
 
 export class AddFriend {
@@ -20,7 +24,7 @@ export class AddFriend {
     const friend = await prisma.user.findFirst({
       where: {
         OR: [
-          { id: dto.codeOrEmail }, // Busca direta pelo ID
+          { id: dto.codeOrEmail },
           { friendCode: dto.codeOrEmail.toUpperCase().startsWith("#") ? dto.codeOrEmail.toUpperCase() : `#${dto.codeOrEmail.toUpperCase()}` },
           { email: dto.codeOrEmail.toLowerCase() },
         ],
@@ -75,6 +79,10 @@ export class AddFriend {
       email: friend.email,
       image: friend.image,
       friendCode: friend.friendCode,
+      xp: friend.xp,
+      level: friend.level,
+      isPublicProfile: friend.isPublicProfile,
+      showStats: friend.showStats,
     };
   }
 }
