@@ -1,5 +1,6 @@
 import { NotFoundError } from "../errors/index.js";
 import { prisma } from "../lib/db.js";
+import { notificationEvents } from "../lib/events.js";
 
 interface InputDto {
   userId: string;
@@ -20,7 +21,6 @@ interface OutputDto {
 
 export class AddFriend {
   async execute(dto: InputDto): Promise<OutputDto> {
-    // Tenta buscar por ID, Código de Amigo ou Email
     const friend = await prisma.user.findFirst({
       where: {
         OR: [
@@ -39,7 +39,6 @@ export class AddFriend {
       throw new Error("You cannot add yourself as a friend");
     }
 
-    // Check if already friends or request exists
     const existingFriendship = await prisma.friendship.findFirst({
       where: {
         OR: [
@@ -56,22 +55,29 @@ export class AddFriend {
       throw new Error("A friend request is already pending");
     }
 
-    await prisma.$transaction([
-      prisma.friendship.create({
+    const result = await prisma.$transaction(async (tx) => {
+      await tx.friendship.create({
         data: {
           userId: dto.userId,
           friendId: friend.id,
           status: "PENDING",
         },
-      }),
-      prisma.notification.create({
+      });
+
+      const notification = await tx.notification.create({
         data: {
           recipientId: friend.id,
           senderId: dto.userId,
           type: "FRIEND_REQUEST",
         },
-      }),
-    ]);
+        include: { sender: true }
+      });
+
+      return notification;
+    });
+
+    // Disparar evento em tempo real
+    notificationEvents.emit("new-notification", result);
 
     return {
       id: friend.id,

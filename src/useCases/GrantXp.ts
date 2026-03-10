@@ -63,12 +63,18 @@ export class GrantXp {
     });
 
     if (newLevel > user.level) {
-      await client.notification.create({
+      const notification = await client.notification.create({
         data: {
           recipientId: dto.userId,
           type: "LEVEL_UP",
         },
       });
+
+      // Emitir evento se não estiver em transação ou após transação
+      // (Neste caso, deixaremos o chamador lidar ou faremos um try simples)
+      import("../lib/events.js").then(({ notificationEvents }) => {
+        notificationEvents.emit("new-notification", notification);
+      }).catch(() => {});
     }
   }
 }

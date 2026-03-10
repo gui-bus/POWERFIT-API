@@ -8,12 +8,52 @@ import { auth } from "../lib/auth.js";
 import {
   ErrorSchema,
   GetNotificationsResponseSchema,
+  PaginationQuerySchema,
 } from "../schemas/index.js";
 import { GetNotifications } from "../useCases/GetNotifications.js";
 import { MarkAllNotificationsAsRead } from "../useCases/MarkAllNotificationsAsRead.js";
 import { MarkNotificationAsRead } from "../useCases/MarkNotificationAsRead.js";
 
+import { notificationEvents } from "../lib/events.js";
+
 export const notificationRoutes = async (app: FastifyInstance) => {
+  app.get("/stream", async (request, reply) => {
+    const session = await auth.api.getSession({
+      headers: fromNodeHeaders(request.headers),
+    });
+
+    if (!session) {
+      return reply.status(401).send({ error: "Unauthorized" });
+    }
+
+    const userId = session.user.id;
+
+    // Configurar headers para SSE
+    reply.raw.setHeader("Content-Type", "text/event-stream");
+    reply.raw.setHeader("Cache-Control", "no-cache");
+    reply.raw.setHeader("Connection", "keep-alive");
+
+    // Evento de "keep-alive" para evitar timeout do navegador
+    const keepAliveInterval = setInterval(() => {
+      reply.raw.write(`: keep-alive\n\n`);
+    }, 30000);
+
+    // Listener para novas notificações do usuário
+    const onNotification = (notification: any) => {
+      if (notification.recipientId === userId) {
+        reply.raw.write(`data: ${JSON.stringify(notification)}\n\n`);
+      }
+    };
+
+    notificationEvents.on("new-notification", onNotification);
+
+    // Quando o usuário fecha a aba ou desconecta
+    request.raw.on("close", () => {
+      clearInterval(keepAliveInterval);
+      notificationEvents.removeListener("new-notification", onNotification);
+    });
+  });
+
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
     url: "/",
@@ -21,6 +61,7 @@ export const notificationRoutes = async (app: FastifyInstance) => {
       operationId: "getNotifications",
       tags: ["Notification"],
       summary: "Get my notifications",
+      querystring: PaginationQuerySchema,
       response: {
         200: GetNotificationsResponseSchema,
         401: ErrorSchema,
@@ -39,9 +80,13 @@ export const notificationRoutes = async (app: FastifyInstance) => {
             .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
         }
 
+        const { cursor, limit } = request.query as { cursor?: string; limit?: number };
+
         const getNotifications = new GetNotifications();
         const result = await getNotifications.execute({
           userId: session.user.id,
+          cursor,
+          limit,
         });
 
         return reply.status(200).send(result);

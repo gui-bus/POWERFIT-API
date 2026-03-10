@@ -1,5 +1,6 @@
 import { ForbiddenError, NotFoundError } from "../errors/index.js";
 import { prisma } from "../lib/db.js";
+import { notificationEvents } from "../lib/events.js";
 import { CheckAchievements } from "./CheckAchievements.js";
 import { GrantXp } from "./GrantXp.js";
 
@@ -18,7 +19,6 @@ export class TogglePowerup {
       throw new NotFoundError("Activity not found");
     }
 
-    // Se não for o próprio dono da atividade, verifica se são amigos
     if (activity.userId !== dto.userId) {
       const friendship = await prisma.friendship.findFirst({
         where: {
@@ -51,7 +51,7 @@ export class TogglePowerup {
         where: { id: existingPowerup.id },
       });
     } else {
-      await prisma.$transaction(async (tx) => {
+      const notification = await prisma.$transaction(async (tx) => {
         await tx.powerup.create({
           data: {
             activityId: dto.activityId,
@@ -61,7 +61,6 @@ export class TogglePowerup {
 
         const grantXp = new GrantXp();
 
-        // XP para quem deu o powerup (apenas uma vez por atividade)
         await grantXp.execute(
           {
             userId: dto.userId,
@@ -72,19 +71,18 @@ export class TogglePowerup {
           tx,
         );
 
+        let notif = null;
         if (activity.userId !== dto.userId) {
-          // Notificação para o dono da atividade
-          await tx.notification.create({
+          notif = await tx.notification.create({
             data: {
               recipientId: activity.userId,
               senderId: dto.userId,
               type: "POWERUP_RECEIVED",
               activityId: activity.id,
             },
+            include: { sender: true }
           });
 
-          // XP para quem recebeu o powerup (apenas uma vez por atividade por doador)
-          // Aqui usamos uma string composta para o relatedId para garantir unicidade
           await grantXp.execute(
             {
               userId: activity.userId,
@@ -95,13 +93,18 @@ export class TogglePowerup {
             tx,
           );
         }
-      }).then(async () => {
-        const checkAchievements = new CheckAchievements();
-        checkAchievements.execute({ userId: dto.userId }).catch(console.error);
-        if (activity.userId !== dto.userId) {
-          checkAchievements.execute({ userId: activity.userId }).catch(console.error);
-        }
+        return notif;
       });
+
+      if (notification) {
+        notificationEvents.emit("new-notification", notification);
+      }
+
+      const checkAchievements = new CheckAchievements();
+      checkAchievements.execute({ userId: dto.userId }).catch(console.error);
+      if (activity.userId !== dto.userId) {
+        checkAchievements.execute({ userId: activity.userId }).catch(console.error);
+      }
     }
   }
 }

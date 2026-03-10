@@ -1,5 +1,6 @@
 import { NotFoundError } from "../errors/index.js";
 import { prisma } from "../lib/db.js";
+import { notificationEvents } from "../lib/events.js";
 import { CheckAchievements } from "./CheckAchievements.js";
 import { GrantXp } from "./GrantXp.js";
 
@@ -22,18 +23,19 @@ export class AcceptFriendRequest {
       throw new NotFoundError("Friend request not found or unauthorized");
     }
 
-    await prisma.$transaction(async (tx) => {
+    const notification = await prisma.$transaction(async (tx) => {
       await tx.friendship.update({
         where: { id: dto.requestId },
         data: { status: "ACCEPTED" },
       });
 
-      await tx.notification.create({
+      const notif = await tx.notification.create({
         data: {
           recipientId: request.userId, // O remetente da solicitação recebe o aviso
           senderId: dto.userId,
           type: "FRIEND_ACCEPTED",
         },
+        include: { sender: true }
       });
 
       const grantXp = new GrantXp();
@@ -59,10 +61,15 @@ export class AcceptFriendRequest {
         },
         tx,
       );
-    }).then(async () => {
-      const checkAchievements = new CheckAchievements();
-      checkAchievements.execute({ userId: dto.userId }).catch(console.error);
-      checkAchievements.execute({ userId: request.userId }).catch(console.error);
+
+      return notif;
     });
+
+    // Disparar evento em tempo real
+    notificationEvents.emit("new-notification", notification);
+
+    const checkAchievements = new CheckAchievements();
+    checkAchievements.execute({ userId: dto.userId }).catch(console.error);
+    checkAchievements.execute({ userId: request.userId }).catch(console.error);
   }
 }

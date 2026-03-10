@@ -1,5 +1,6 @@
 import { NotFoundError } from "../errors/index.js";
 import { prisma } from "../lib/db.js";
+import { notificationEvents } from "../lib/events.js";
 import { GrantXp } from "./GrantXp.js";
 
 interface InputDto {
@@ -18,7 +19,7 @@ export class AddComment {
       throw new NotFoundError("Activity not found");
     }
 
-    await prisma.$transaction(async (tx) => {
+    const notification = await prisma.$transaction(async (tx) => {
       await tx.comment.create({
         data: {
           activityId: dto.activityId,
@@ -39,8 +40,9 @@ export class AddComment {
         tx,
       );
 
+      let notif = null;
       if (activity.userId !== dto.userId) {
-        await tx.notification.create({
+        notif = await tx.notification.create({
           data: {
             recipientId: activity.userId,
             senderId: dto.userId,
@@ -48,8 +50,14 @@ export class AddComment {
             activityId: activity.id,
             content: dto.content.length > 50 ? `${dto.content.substring(0, 47)}...` : dto.content,
           },
+          include: { sender: true }
         });
       }
+      return notif;
     });
+
+    if (notification) {
+      notificationEvents.emit("new-notification", notification);
+    }
   }
 }
