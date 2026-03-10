@@ -9,6 +9,7 @@ import {
   CreateCommentSchema,
   ErrorSchema,
   GetFeedResponseSchema,
+  PaginationQuerySchema,
 } from "../schemas/index.js";
 import { AddComment } from "../useCases/AddComment.js";
 import { DeleteActivity } from "../useCases/DeleteActivity.js";
@@ -23,6 +24,7 @@ export const feedRoutes = async (app: FastifyInstance) => {
       operationId: "getFeed",
       tags: ["Feed"],
       summary: "Get activities feed",
+      querystring: PaginationQuerySchema,
       response: {
         200: GetFeedResponseSchema,
         401: ErrorSchema,
@@ -41,9 +43,13 @@ export const feedRoutes = async (app: FastifyInstance) => {
             .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
         }
 
+        const { cursor, limit } = request.query as { cursor?: string; limit?: number };
+
         const getFeed = new GetFeed();
         const result = await getFeed.execute({
           userId: session.user.id,
+          cursor,
+          limit,
         });
 
         return reply.status(200).send(result);
@@ -67,6 +73,7 @@ export const feedRoutes = async (app: FastifyInstance) => {
       params: z.object({
         userId: z.string(),
       }),
+      querystring: PaginationQuerySchema,
       response: {
         200: GetFeedResponseSchema,
         401: ErrorSchema,
@@ -86,10 +93,14 @@ export const feedRoutes = async (app: FastifyInstance) => {
             .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
         }
 
+        const { cursor, limit } = request.query as { cursor?: string; limit?: number };
+
         const getFeed = new GetFeed();
         const result = await getFeed.execute({
           userId: session.user.id,
           targetUserId: request.params.userId,
+          cursor,
+          limit,
         });
 
         return reply.status(200).send(result);
