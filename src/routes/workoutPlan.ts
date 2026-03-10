@@ -347,6 +347,7 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
       }),
       body: z.object({
         statusMessage: z.string().trim().optional(),
+        imageUrl: z.string().url().optional(),
         taggedUserIds: z.array(z.string()).optional(),
       }).optional(),
       response: {
@@ -379,6 +380,7 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
           workoutDayId: request.params.workoutDayId,
           sessionId: request.params.sessionId,
           statusMessage: request.body?.statusMessage,
+          imageUrl: request.body?.imageUrl,
           taggedUserIds: request.body?.taggedUserIds,
         });
 

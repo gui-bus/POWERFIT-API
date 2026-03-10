@@ -15,6 +15,7 @@ interface InputDto {
   workoutDayId: string;
   sessionId: string;
   statusMessage?: string;
+  imageUrl?: string;
   taggedUserIds?: string[];
 }
 
@@ -83,6 +84,7 @@ export class CompleteWorkoutSession {
           workoutDayId: dto.workoutDayId,
           workoutSessionId: updatedSession.id,
           statusMessage: dto.statusMessage,
+          imageUrl: dto.imageUrl,
           taggedUsers: dto.taggedUserIds ? {
             connect: dto.taggedUserIds.map(id => ({ id }))
           } : undefined
