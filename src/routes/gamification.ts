@@ -13,10 +13,61 @@ import {
 } from "../schemas/index.js";
 import { GetAchievements } from "../useCases/GetAchievements.js";
 import { GetChallenges } from "../useCases/GetChallenges.js";
+import { GetRanking } from "../useCases/GetRanking.js";
 import { GetXpHistory } from "../useCases/GetXpHistory.js";
 import { JoinChallenge } from "../useCases/JoinChallenge.js";
 
 export const gamificationRoutes = async (app: FastifyInstance) => {
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/ranking",
+    schema: {
+      operationId: "getRanking",
+      tags: ["Gamification"],
+      summary: "Get users ranking",
+      querystring: z.object({
+        sortBy: z.enum(["XP", "STREAK"]),
+      }),
+      response: {
+        200: z.object({
+          ranking: z.array(z.any()),
+          currentUserPosition: z.number().nullable(),
+        }),
+        401: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply
+            .status(401)
+            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
+        }
+
+        const { sortBy } = request.query as { sortBy: "XP" | "STREAK" };
+
+        const getRanking = new GetRanking();
+        const result = await getRanking.execute({
+          userId: session.user.id,
+          sortBy,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal server error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
     url: "/achievements",

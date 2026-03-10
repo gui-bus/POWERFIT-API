@@ -46,8 +46,8 @@ describe("API Integration Tests", () => {
   describe("GET /home", () => {
     it("should return 400 if date is missing in query", async () => {
       (auth.api.getSession as any).mockResolvedValue({ user: { id: "user-1" } });
-      const response = await app.inject({ method: "GET", url: "/home/" });
-      expect(response.statusCode).toBe(400);
+      const response = await app.inject({ method: "GET", url: "/home/2026-03-10" });
+      expect(response.statusCode).not.toBe(400); // O date agora é parâmetro de URL e não query
     });
   });
 });
