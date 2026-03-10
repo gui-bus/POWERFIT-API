@@ -115,6 +115,9 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
       operationId: "getFriendRequests",
       tags: ["Friendship"],
       summary: "Get pending friend requests",
+      querystring: z.object({
+        type: z.enum(["RECEIVED", "SENT"]).default("RECEIVED"),
+      }),
       response: {
         200: GetFriendRequestsResponseSchema,
         401: ErrorSchema,
@@ -133,9 +136,12 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
             .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
         }
 
+        const { type } = request.query as { type: "RECEIVED" | "SENT" };
+
         const getFriendRequests = new GetFriendRequests();
         const result = await getFriendRequests.execute({
           userId: session.user.id,
+          type,
         });
 
         return reply.status(200).send(result);
@@ -256,7 +262,7 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "declineFriendRequest",
       tags: ["Friendship"],
-      summary: "Decline a friend request",
+      summary: "Decline or cancel a friend request",
       params: z.object({
         id: z.string().uuid(),
       }),
