@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { GrantXp } from "./GrantXp.js";
+import { GrantXp } from "../src/useCases/GrantXp.js";
 
 describe("GrantXp Use Case", () => {
   it("should correctly increment user XP", async () => {
