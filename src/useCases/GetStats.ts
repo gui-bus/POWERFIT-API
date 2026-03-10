@@ -23,6 +23,7 @@ interface OutputDto {
   completedRestDays: number;
   conclusionRate: number;
   totalTimeInSeconds: number;
+  totalVolumeInGrams: number; // NOVA MÉTRICA
 }
 
 export class GetStats {
@@ -44,6 +45,7 @@ export class GetStats {
       },
       include: {
         workoutDay: true,
+        sets: true, // Incluir as séries para cálculo de volume
       },
       orderBy: {
         startedAt: "asc",
@@ -60,6 +62,7 @@ export class GetStats {
     let completedWorkoutsCount = 0;
     let completedRestDays = 0;
     let totalTimeInSeconds = 0;
+    let totalVolumeInGrams = 0;
 
     sessions.forEach((session) => {
       const dateKey = dayjs.utc(session.startedAt).format("YYYY-MM-DD");
@@ -86,6 +89,11 @@ export class GetStats {
           "second",
         );
         totalTimeInSeconds += duration;
+
+        // Calcular volume: peso * reps de cada série concluída
+        session.sets.forEach(set => {
+          totalVolumeInGrams += (set.weightInGrams * set.reps);
+        });
       }
     });
 
@@ -95,7 +103,6 @@ export class GetStats {
         ? (completedWorkoutsCount + completedRestDays) / totalSessions
         : 0;
 
-    // Calcular workoutStreak (mesma lógica do GetHomeData, mas baseada em todos os treinos completados até o fim do range)
     const allCompletedSessions = await prisma.workoutSession.findMany({
       where: {
         workoutDay: {
@@ -127,7 +134,6 @@ export class GetStats {
     let streak = 0;
     let checkDate = toDate.startOf("day");
 
-    // Se o último dia do range não tem treino completo, começa do dia anterior (conforme GetHomeData)
     if (!completedDates.has(checkDate.format("YYYY-MM-DD"))) {
       checkDate = checkDate.subtract(1, "day");
     }
@@ -144,6 +150,7 @@ export class GetStats {
       completedRestDays,
       conclusionRate,
       totalTimeInSeconds,
+      totalVolumeInGrams,
     };
   }
 }

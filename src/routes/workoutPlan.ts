@@ -18,15 +18,19 @@ import {
   GetWorkoutPlanByIdResponseSchema,
   GetWorkoutPlansQuerySchema,
   GetWorkoutPlansResponseSchema,
+  UpsertWorkoutSetSchema,
+  WorkoutExerciseHistorySchema,
   WorkoutPlanSchema,
   WorkoutSessionSchema,
 } from "../schemas/index.js";
 import { CompleteWorkoutSession } from "../useCases/CompleteWorkoutSession.js";
 import { CreateWorkoutPlan } from "../useCases/CreateWorkoutPlan.js";
 import { GetWorkoutDay } from "../useCases/GetWorkoutDay.js";
+import { GetWorkoutExerciseHistory } from "../useCases/GetWorkoutExerciseHistory.js";
 import { GetWorkoutPlanById } from "../useCases/GetWorkoutPlanById.js";
 import { GetWorkoutPlans } from "../useCases/GetWorkoutPlans.js";
 import { StartWorkoutSession } from "../useCases/StartWorkoutSession.js";
+import { UpsertWorkoutSet } from "../useCases/UpsertWorkoutSet.js";
 
 export const workoutPlanRoutes = async (app: FastifyInstance) => {
   app.withTypeProvider<ZodTypeProvider>().route({
@@ -406,6 +410,109 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
             .send({ error: error.message, code: "SESSION_ALREADY_COMPLETED" });
         }
 
+        return reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  // NOVAS ROTAS DE LOG DE SÉRIES
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "PATCH",
+    url: "/sessions/:sessionId/exercises/:exerciseId/sets/:setIndex",
+    schema: {
+      operationId: "upsertWorkoutSet",
+      tags: ["Workout Session"],
+      summary: "Log or update a workout set",
+      params: z.object({
+        sessionId: z.string().uuid(),
+        exerciseId: z.string().uuid(),
+        setIndex: z.coerce.number().int().min(0),
+      }),
+      body: UpsertWorkoutSetSchema,
+      response: {
+        204: z.null(),
+        401: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply
+            .status(401)
+            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
+        }
+
+        const upsertWorkoutSet = new UpsertWorkoutSet();
+        await upsertWorkoutSet.execute({
+          userId: session.user.id,
+          sessionId: request.params.sessionId,
+          workoutExerciseId: request.params.exerciseId,
+          setIndex: request.params.setIndex,
+          ...request.body,
+        });
+
+        return reply.status(204).send();
+      } catch (error) {
+        app.log.error(error);
+        if (error instanceof NotFoundError) {
+          return reply
+            .status(404)
+            .send({ error: error.message, code: "NOT_FOUND_ERROR" });
+        }
+        return reply.status(500).send({
+          error: "Internal Server Error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/exercises/:exerciseId/history",
+    schema: {
+      operationId: "getWorkoutExerciseHistory",
+      tags: ["Workout Session"],
+      summary: "Get the last log for a specific exercise",
+      params: z.object({
+        exerciseId: z.string().uuid(),
+      }),
+      response: {
+        200: WorkoutExerciseHistorySchema.nullable(),
+        401: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply
+            .status(401)
+            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
+        }
+
+        const getHistory = new GetWorkoutExerciseHistory();
+        const result = await getHistory.execute({
+          userId: session.user.id,
+          workoutExerciseId: request.params.exerciseId,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
         return reply.status(500).send({
           error: "Internal Server Error",
           code: "INTERNAL_SERVER_ERROR",

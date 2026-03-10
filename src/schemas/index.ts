@@ -123,6 +123,26 @@ export const WorkoutSessionSchema = z.object({
   completedAt: z.string().nullable(),
 });
 
+export const WorkoutSetSchema = z.object({
+  id: z.string().uuid(),
+  sessionId: z.string().uuid(),
+  workoutExerciseId: z.string().uuid(),
+  setIndex: z.number().int().min(0),
+  weightInGrams: z.number().int().min(0),
+  reps: z.number().int().min(0),
+  createdAt: z.string(),
+});
+
+export const UpsertWorkoutSetSchema = z.object({
+  weightInGrams: z.number().int().min(0),
+  reps: z.number().int().min(0),
+});
+
+export const WorkoutExerciseHistorySchema = z.object({
+  exerciseId: z.string().uuid(),
+  lastSets: z.array(WorkoutSetSchema),
+});
+
 export const HomeDataSchema = z.object({
   activeWorkoutPlanId: z.uuid().nullable(),
   todayWorkoutDay: z
@@ -160,6 +180,7 @@ export const StatsResponseSchema = z.object({
   completedRestDays: z.number(),
   conclusionRate: z.number(),
   totalTimeInSeconds: z.number(),
+  totalVolumeInGrams: z.number(),
 });
 
 export const UserTrainDataSchema = z.object({

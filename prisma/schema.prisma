@@ -335,21 +335,41 @@ model WorkoutExercise {
   restTimeInSeconds Int
   createdAt         DateTime   @default(now()) @db.Timestamptz()
   updatedAt         DateTime   @updatedAt @db.Timestamptz()
+  loggedSets        WorkoutSet[]
 
   @@map("workout_exercise")
 }
 
 model WorkoutSession {
-  id           String     @id @default(uuid())
+  id           String       @id @default(uuid())
   workoutDayId String
-  workoutDay   WorkoutDay @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
-  startedAt    DateTime   @db.Timestamptz()
-  completedAt  DateTime?  @db.Timestamptz()
-  createdAt    DateTime   @default(now()) @db.Timestamptz()
-  updatedAt    DateTime   @updatedAt @db.Timestamptz()
+  workoutDay   WorkoutDay   @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+  startedAt    DateTime     @db.Timestamptz()
+  completedAt  DateTime?    @db.Timestamptz()
+  createdAt    DateTime     @default(now()) @db.Timestamptz()
+  updatedAt    DateTime     @updatedAt @db.Timestamptz()
   activity     Activity?
+  sets         WorkoutSet[]
 
   @@map("workout_session")
+}
+
+model WorkoutSet {
+  id                String         @id @default(uuid())
+  sessionId         String
+  workoutExerciseId String
+  setIndex          Int
+  weightInGrams     Int
+  reps              Int
+  createdAt         DateTime       @default(now()) @db.Timestamptz()
+  updatedAt         DateTime       @updatedAt @db.Timestamptz()
+
+  session         WorkoutSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  workoutExercise WorkoutExercise @relation(fields: [workoutExerciseId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([workoutExerciseId])
+  @@map("workout_set")
 }
 
 //#endregion

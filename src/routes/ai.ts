@@ -18,7 +18,7 @@ import { GetUserTrainData } from "../useCases/GetUserTrainData.js";
 import { GetWorkoutPlans } from "../useCases/GetWorkoutPlans.js";
 import { UpsertUserTrainData } from "../useCases/UpsertUserTrainData.js";
 
-const SYSTEM_PROMPT = `Você é um personal trainer virtual especialista em montagem de planos de treino personalizados.
+const SYSTEM_PROMPT = `Você é um personal trainer virtual especialista em mo ntagem de planos de treino personalizados.
 
 ## Personalidade
 - Tom amigável, motivador e acolhedor.
