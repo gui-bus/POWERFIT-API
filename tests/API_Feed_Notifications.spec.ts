@@ -1,4 +1,5 @@
-import { describe, expect, it, vi, beforeAll } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
+
 import { app } from "../src/index.js";
 import { auth } from "../src/lib/auth.js";
 
@@ -22,7 +23,7 @@ describe("API Feed & Notifications Endpoints", () => {
       (auth.api.getSession as any).mockResolvedValue(null);
       const response = await app.inject({
         method: "POST",
-        url: "/feed/activities/d62ed5b7-2266-497c-9a99-94d78a57798d/powerup"
+        url: "/feed/activities/d62ed5b7-2266-497c-9a99-94d78a57798d/powerup",
       });
       expect(response.statusCode).toBe(401);
     });
@@ -32,7 +33,7 @@ describe("API Feed & Notifications Endpoints", () => {
       const response = await app.inject({
         method: "POST",
         url: "/feed/activities/d62ed5b7-2266-497c-9a99-94d78a57798d/comments",
-        payload: { content: "" }
+        payload: { content: "" },
       });
       expect(response.statusCode).toBe(400);
     });
@@ -43,7 +44,7 @@ describe("API Feed & Notifications Endpoints", () => {
       (auth.api.getSession as any).mockResolvedValue(null);
       const response = await app.inject({
         method: "PATCH",
-        url: "/notifications/d62ed5b7-2266-497c-9a99-94d78a57798d/read"
+        url: "/notifications/d62ed5b7-2266-497c-9a99-94d78a57798d/read",
       });
       expect(response.statusCode).toBe(401);
     });
@@ -52,7 +53,7 @@ describe("API Feed & Notifications Endpoints", () => {
       (auth.api.getSession as any).mockResolvedValue(mockSession);
       const response = await app.inject({
         method: "PATCH",
-        url: "/notifications/read-all"
+        url: "/notifications/read-all",
       });
       expect(response.statusCode).toBe(204);
     });
