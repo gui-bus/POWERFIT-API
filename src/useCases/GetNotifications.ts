@@ -3,30 +3,37 @@ import { prisma } from "../lib/db.js";
 
 interface InputDto {
   userId: string;
+  cursor?: string;
+  limit?: number;
 }
 
 interface OutputDto {
-  id: string;
-  type: NotificationType;
-  isRead: boolean;
-  createdAt: string;
-  activityId: string | null;
-  achievementId: string | null;
-  content: string | null;
-  sender: {
+  notifications: Array<{
     id: string;
-    name: string;
-    image: string | null;
-  } | null;
-  achievement: {
-    id: string;
-    name: string;
-    iconUrl: string | null;
-  } | null;
+    type: NotificationType;
+    isRead: boolean;
+    createdAt: string;
+    activityId: string | null;
+    achievementId: string | null;
+    content: string | null;
+    sender: {
+      id: string;
+      name: string;
+      image: string | null;
+    } | null;
+    achievement: {
+      id: string;
+      name: string;
+      iconUrl: string | null;
+    } | null;
+  }>;
+  nextCursor: string | null;
 }
 
 export class GetNotifications {
-  async execute(dto: InputDto): Promise<OutputDto[]> {
+  async execute(dto: InputDto): Promise<OutputDto> {
+    const limit = dto.limit || 20;
+
     const notifications = await prisma.notification.findMany({
       where: {
         recipientId: dto.userId,
@@ -35,13 +42,22 @@ export class GetNotifications {
         sender: true,
         achievement: true,
       },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: 20,
+      orderBy: [
+        { createdAt: "desc" },
+        { id: "desc" },
+      ],
+      take: limit + 1,
+      cursor: dto.cursor ? { id: dto.cursor } : undefined,
+      skip: 0,
     });
 
-    return notifications.map((notification) => ({
+    let nextCursor: string | null = null;
+    if (notifications.length > limit) {
+      const nextItem = notifications.pop();
+      nextCursor = nextItem!.id;
+    }
+
+    const result = notifications.map((notification) => ({
       id: notification.id,
       type: notification.type,
       isRead: notification.isRead,
@@ -64,5 +80,10 @@ export class GetNotifications {
           }
         : null,
     }));
+
+    return {
+      notifications: result,
+      nextCursor,
+    };
   }
 }

@@ -4,43 +4,48 @@ import { prisma } from "../lib/db.js";
 interface InputDto {
   userId: string;
   targetUserId?: string;
+  cursor?: string;
+  limit?: number;
 }
 
 interface OutputDto {
-  id: string;
-  userId: string;
-  userName: string;
-  userImage: string | null;
-  workoutDayName: string;
-  workoutPlanName: string;
-  statusMessage: string | null;
-  imageUrl: string | null;
-  startedAt: string;
-  completedAt: string;
-  powerupsCount: number;
-  hasPowerupByMe: boolean;
-  createdAt: string;
-  comments: Array<{
+  activities: Array<{
     id: string;
     userId: string;
     userName: string;
     userImage: string | null;
-    content: string;
+    workoutDayName: string;
+    workoutPlanName: string;
+    statusMessage: string | null;
+    imageUrl: string | null;
+    startedAt: string;
+    completedAt: string;
+    powerupsCount: number;
+    hasPowerupByMe: boolean;
     createdAt: string;
+    comments: Array<{
+      id: string;
+      userId: string;
+      userName: string;
+      userImage: string | null;
+      content: string;
+      createdAt: string;
+    }>;
+    taggedUsers: Array<{
+      id: string;
+      name: string;
+      image: string | null;
+    }>;
   }>;
-  taggedUsers: Array<{
-    id: string;
-    name: string;
-    image: string | null;
-  }>;
+  nextCursor: string | null;
 }
 
 export class GetFeed {
-  async execute(dto: InputDto): Promise<OutputDto[]> {
+  async execute(dto: InputDto): Promise<OutputDto> {
+    const limit = dto.limit || 10;
     let userIdsInFeed: string[] = [];
 
     if (dto.targetUserId && dto.targetUserId !== dto.userId) {
-      // Verificar se são amigos antes de mostrar o feed individual
       const friendship = await prisma.friendship.findFirst({
         where: {
           OR: [
@@ -58,7 +63,6 @@ export class GetFeed {
     } else if (dto.targetUserId === dto.userId) {
       userIdsInFeed = [dto.userId];
     } else {
-      // Feed global: Buscar lista de IDs de amigos aceitos
       const friendships = await prisma.friendship.findMany({
         where: {
           OR: [
@@ -73,7 +77,6 @@ export class GetFeed {
         f.userId === dto.userId ? f.friendId : f.userId,
       );
 
-      // Incluir o próprio usuário no feed
       userIdsInFeed = [...friendIds, dto.userId];
     }
 
@@ -99,13 +102,22 @@ export class GetFeed {
         },
         taggedUsers: true,
       },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: 50,
+      orderBy: [
+        { createdAt: "desc" },
+        { id: "desc" },
+      ],
+      take: limit + 1, // Pegamos um a mais para saber se tem próxima página
+      cursor: dto.cursor ? { id: dto.cursor } : undefined,
+      skip: 0,
     });
 
-    return activities.map((activity) => ({
+    let nextCursor: string | null = null;
+    if (activities.length > limit) {
+      const nextItem = activities.pop();
+      nextCursor = nextItem!.id;
+    }
+
+    const result = activities.map((activity) => ({
       id: activity.id,
       userId: activity.user.id,
       userName: activity.user.name,
@@ -133,5 +145,10 @@ export class GetFeed {
         image: u.image,
       })),
     }));
+
+    return {
+      activities: result,
+      nextCursor,
+    };
   }
 }
