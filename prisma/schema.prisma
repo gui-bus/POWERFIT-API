@@ -75,6 +75,8 @@ model User {
   friendCode            String?        @unique
   xp                    Int            @default(0)
   level                 Int            @default(1)
+  isPublicProfile       Boolean        @default(true)
+  showStats             Boolean        @default(true)
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
   sessions              Session[]

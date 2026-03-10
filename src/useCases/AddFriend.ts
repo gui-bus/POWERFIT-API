@@ -16,9 +16,11 @@ interface OutputDto {
 
 export class AddFriend {
   async execute(dto: InputDto): Promise<OutputDto> {
+    // Tenta buscar por ID, Código de Amigo ou Email
     const friend = await prisma.user.findFirst({
       where: {
         OR: [
+          { id: dto.codeOrEmail }, // Busca direta pelo ID
           { friendCode: dto.codeOrEmail.toUpperCase().startsWith("#") ? dto.codeOrEmail.toUpperCase() : `#${dto.codeOrEmail.toUpperCase()}` },
           { email: dto.codeOrEmail.toLowerCase() },
         ],

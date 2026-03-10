@@ -13,6 +13,8 @@ interface OutputDto {
   friendCode: string | null;
   xp: number;
   level: number;
+  isPublicProfile: boolean;
+  showStats: boolean;
 }
 
 export class GetMe {
@@ -59,6 +61,8 @@ export class GetMe {
         friendCode: updatedUser.friendCode,
         xp: updatedUser.xp,
         level: updatedUser.level,
+        isPublicProfile: updatedUser.isPublicProfile,
+        showStats: updatedUser.showStats,
       };
     }
 
@@ -70,6 +74,8 @@ export class GetMe {
       friendCode: user.friendCode,
       xp: user.xp,
       level: user.level,
+      isPublicProfile: user.isPublicProfile,
+      showStats: user.showStats,
     };
   }
 }

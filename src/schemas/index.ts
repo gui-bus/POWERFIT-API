@@ -235,6 +235,52 @@ export const UserMeResponseSchema = z.object({
   friendCode: z.string().nullable(),
   xp: z.number(),
   level: z.number(),
+  isPublicProfile: z.boolean(),
+  showStats: z.boolean(),
+});
+
+export const UpdatePrivacySchema = z.object({
+  isPublicProfile: z.boolean().optional(),
+  showStats: z.boolean().optional(),
+});
+
+export const SearchUsersQuerySchema = z.object({
+  query: z.string().trim().min(1),
+});
+
+export const SearchUserSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  image: z.string().nullable(),
+  friendCode: z.string().nullable(),
+  level: z.number(),
+  isFriend: z.boolean(),
+  isPending: z.boolean(),
+});
+
+export const SearchUsersResponseSchema = z.array(SearchUserSchema);
+
+export const PublicProfileResponseSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  image: z.string().nullable(),
+  level: z.number(),
+  xp: z.number(),
+  streak: z.number(),
+  isFriend: z.boolean(),
+  isPending: z.boolean(),
+  stats: z.object({
+    weightInGrams: z.number(),
+    heightInCentimeters: z.number(),
+    age: z.number(),
+    bodyFatPercentage: z.number(),
+  }).nullable(),
+  achievements: z.array(z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    iconUrl: z.string().nullable(),
+    unlockedAt: z.string(),
+  })),
 });
 
 export const CommentSchema = z.object({
