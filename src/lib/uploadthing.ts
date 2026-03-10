@@ -17,7 +17,7 @@ export const uploadRouter = {
   })
     .middleware(async ({ req }) => {
       // 1. Tenta pegar a sessão pelo Better Auth
-      let session = await auth.api.getSession({
+      const session = await auth.api.getSession({
         headers: fromNodeHeaders(req.headers),
       });
 
@@ -65,7 +65,7 @@ export const uploadRouter = {
   })
     .middleware(async ({ req }) => {
       // 1. Tenta pegar a sessão pelo Better Auth
-      let session = await auth.api.getSession({
+      const session = await auth.api.getSession({
         headers: fromNodeHeaders(req.headers),
       });
 
@@ -86,7 +86,7 @@ export const uploadRouter = {
       }
 
       if (!userId) {
-        console.error("Uploadthing: Falha total na autenticação. Token:", req.headers.authorization);
+        console.error("Uploadthing (Workout): Falha total na autenticação. Token:", req.headers.authorization);
         throw new UploadThingError({
           code: "FORBIDDEN",
           message: "Sessão inválida ou expirada. Faça login novamente.",
@@ -95,7 +95,7 @@ export const uploadRouter = {
 
       return { userId };
     })
-    .onUploadComplete(async ({ metadata, file }) => {
+    .onUploadComplete(async ({ file }) => {
       return { url: file.url };
     }),
 } satisfies FileRouter;

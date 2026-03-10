@@ -11,8 +11,11 @@ import {
   validatorCompiler,
   ZodTypeProvider,
 } from "fastify-type-provider-zod";
+//#endregion
+import { createRouteHandler } from "uploadthing/fastify";
 
 import { auth } from "./lib/auth.js";
+import { uploadRouter } from "./lib/uploadthing.js";
 import { aiRoutes } from "./routes/ai.js";
 import { feedRoutes } from "./routes/feed.js";
 import { friendshipRoutes } from "./routes/friendship.js";
@@ -22,10 +25,6 @@ import { notificationRoutes } from "./routes/notifications.js";
 import { statsRoutes } from "./routes/stats.js";
 import { userRoutes } from "./routes/user.js";
 import { workoutPlanRoutes } from "./routes/workoutPlan.js";
-//#endregion
-
-import { createRouteHandler } from "uploadthing/fastify";
-import { uploadRouter } from "./lib/uploadthing.js";
 
 //#region Config
 const app = Fastify({
@@ -146,9 +145,15 @@ app.withTypeProvider<ZodTypeProvider>().route({
 });
 //#endregion
 
-try {
-  await app.listen({ port: Number(process.env.PORT) || 8080 });
-} catch (err) {
-  app.log.error(err);
-  process.exit(1);
+//#region Server Execution
+if (process.env.NODE_ENV !== "test") {
+  try {
+    await app.listen({ port: Number(process.env.PORT) || 8080 });
+  } catch (err) {
+    app.log.error(err);
+    process.exit(1);
+  }
 }
+
+export { app };
+//#endregion
