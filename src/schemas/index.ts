@@ -248,6 +248,11 @@ export const FriendSchema = z.object({
 
 export const GetFriendsResponseSchema = z.array(FriendSchema);
 
+export const UpdateProfileSchema = z.object({
+  name: z.string().trim().min(1).optional(),
+  image: z.string().url().optional(),
+});
+
 export const UserMeResponseSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -335,7 +340,15 @@ export const ActivitySchema = z.object({
   })),
 });
 
-export const GetFeedResponseSchema = z.array(ActivitySchema);
+export const PaginationQuerySchema = z.object({
+  cursor: z.string().uuid().optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional(),
+});
+
+export const GetFeedResponseSchema = z.object({
+  activities: z.array(ActivitySchema),
+  nextCursor: z.string().uuid().nullable(),
+});
 
 export const CreateCommentSchema = z.object({
   content: z.string().trim().min(1).max(500),
@@ -365,7 +378,10 @@ export const NotificationSchema = z.object({
     .nullable(),
 });
 
-export const GetNotificationsResponseSchema = z.array(NotificationSchema);
+export const GetNotificationsResponseSchema = z.object({
+  notifications: z.array(NotificationSchema),
+  nextCursor: z.string().uuid().nullable(),
+});
 
 export const AchievementSchema = z.object({
   id: z.string().uuid(),

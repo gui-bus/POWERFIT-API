@@ -28,9 +28,58 @@ import { LogBodyProgress } from "../useCases/LogBodyProgress.js";
 import { SearchUsers } from "../useCases/SearchUsers.js";
 import { UpdatePrivacySettings } from "../useCases/UpdatePrivacySettings.js";
 import { UpsertPersonalRecord } from "../useCases/UpsertPersonalRecord.js";
+import { UpdateProfile } from "../useCases/UpdateProfile.js";
 import { UpsertUserTrainData } from "../useCases/UpsertUserTrainData.js";
+import { UpdateProfileSchema } from "../schemas/index.js";
 
 export const userRoutes = async (app: FastifyInstance) => {
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "PATCH",
+    url: "/me",
+    schema: {
+      operationId: "updateProfile",
+      tags: ["User"],
+      summary: "Update my profile",
+      body: UpdateProfileSchema,
+      response: {
+        200: z.object({
+          id: z.string(),
+          name: z.string(),
+          image: z.string().nullable(),
+        }),
+        401: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+
+        if (!session) {
+          return reply
+            .status(401)
+            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
+        }
+
+        const updateProfile = new UpdateProfile();
+        const result = await updateProfile.execute({
+          userId: session.user.id,
+          ...request.body,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal server error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
     url: "/search",

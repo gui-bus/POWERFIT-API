@@ -24,9 +24,20 @@ import { userRoutes } from "./routes/user.js";
 import { workoutPlanRoutes } from "./routes/workoutPlan.js";
 //#endregion
 
+import { createRouteHandler } from "uploadthing/fastify";
+import { uploadRouter } from "./lib/uploadthing.js";
+
 //#region Config
 const app = Fastify({
   logger: true,
+});
+
+// Registrar Uploadthing
+await app.register(createRouteHandler, {
+  router: uploadRouter,
+  config: {
+    token: process.env.UPLOADTHING_TOKEN,
+  },
 });
 
 app.setValidatorCompiler(validatorCompiler);

@@ -4,7 +4,9 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "dev": "tsx --watch src/index.ts"
+    "dev": "tsx --watch src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [],
   "author": "",
@@ -24,7 +26,8 @@
     "prisma": "7.4.0",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
-    "typescript-eslint": "^8.56.1"
+    "typescript-eslint": "^8.56.1",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.37",
@@ -39,6 +42,7 @@
     "dotenv": "17.3.1",
     "fastify": "5.7.4",
     "fastify-type-provider-zod": "6.1.0",
+    "uploadthing": "^7.7.4",
     "zod": "4.3.6"
   }
 }
