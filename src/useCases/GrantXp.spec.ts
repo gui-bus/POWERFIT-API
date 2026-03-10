@@ -1,0 +1,90 @@
+import { describe, expect, it, vi } from "vitest";
+
+import { GrantXp } from "./GrantXp.js";
+
+describe("GrantXp Use Case", () => {
+  it("should correctly increment user XP", async () => {
+    const mockUser = { id: "user-1", xp: 100, level: 1 };
+
+    const mockTx = {
+      user: {
+        findUnique: vi.fn().mockResolvedValue(mockUser),
+        update: vi.fn().mockResolvedValue({ ...mockUser, xp: 150 }),
+      },
+      xpTransaction: {
+        findFirst: vi.fn().mockResolvedValue(null),
+        create: vi.fn().mockResolvedValue({}),
+      },
+      notification: {
+        create: vi.fn().mockResolvedValue({}),
+      },
+    };
+
+    const grantXp = new GrantXp();
+    await grantXp.execute(
+      { userId: "user-1", amount: 50, reason: "WORKOUT_COMPLETED" },
+      mockTx,
+    );
+
+    expect(mockTx.user.update).toHaveBeenCalledWith({
+      where: { id: "user-1" },
+      data: { xp: 150, level: 1 },
+    });
+  });
+
+  it("should level up when enough XP is gained", async () => {
+    // Para level 2 precisa de 500 XP
+    const mockUser = { id: "user-1", xp: 480, level: 1 };
+
+    const mockTx = {
+      user: {
+        findUnique: vi.fn().mockResolvedValue(mockUser),
+        update: vi.fn().mockResolvedValue({ ...mockUser, xp: 530, level: 2 }),
+      },
+      xpTransaction: {
+        findFirst: vi.fn().mockResolvedValue(null),
+        create: vi.fn().mockResolvedValue({}),
+      },
+      notification: {
+        create: vi.fn().mockResolvedValue({}),
+      },
+    };
+
+    const grantXp = new GrantXp();
+    await grantXp.execute(
+      { userId: "user-1", amount: 50, reason: "WORKOUT_COMPLETED" },
+      mockTx,
+    );
+
+    expect(mockTx.user.update).toHaveBeenCalledWith({
+      where: { id: "user-1" },
+      data: { xp: 530, level: 2 },
+    });
+
+    expect(mockTx.notification.create).toHaveBeenCalled();
+  });
+
+  it("should not grant XP twice if relatedId is provided", async () => {
+    const mockTx = {
+      xpTransaction: {
+        findFirst: vi.fn().mockResolvedValue({ id: "existing-tx" }),
+      },
+      user: {
+        findUnique: vi.fn(),
+      },
+    };
+
+    const grantXp = new GrantXp();
+    await grantXp.execute(
+      {
+        userId: "user-1",
+        amount: 50,
+        reason: "POWERUP_GIVEN",
+        relatedId: "activity-1",
+      },
+      mockTx,
+    );
+
+    expect(mockTx.user.findUnique).not.toHaveBeenCalled();
+  });
+});
