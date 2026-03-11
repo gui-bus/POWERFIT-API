@@ -17,9 +17,39 @@ describe("GetNotifications Use Case Pagination", () => {
     const limit = 2;
 
     const mockNotifications = [
-      { id: "1", type: NotificationType.FRIEND_REQUEST, isRead: false, createdAt: new Date(), activityId: null, achievementId: null, content: null, sender: null, achievement: null },
-      { id: "2", type: NotificationType.FRIEND_REQUEST, isRead: false, createdAt: new Date(), activityId: null, achievementId: null, content: null, sender: null, achievement: null },
-      { id: "3", type: NotificationType.FRIEND_REQUEST, isRead: false, createdAt: new Date(), activityId: null, achievementId: null, content: null, sender: null, achievement: null },
+      {
+        id: "1",
+        type: NotificationType.FRIEND_REQUEST,
+        isRead: false,
+        createdAt: new Date(),
+        activityId: null,
+        achievementId: null,
+        content: null,
+        sender: null,
+        achievement: null,
+      },
+      {
+        id: "2",
+        type: NotificationType.FRIEND_REQUEST,
+        isRead: false,
+        createdAt: new Date(),
+        activityId: null,
+        achievementId: null,
+        content: null,
+        sender: null,
+        achievement: null,
+      },
+      {
+        id: "3",
+        type: NotificationType.FRIEND_REQUEST,
+        isRead: false,
+        createdAt: new Date(),
+        activityId: null,
+        achievementId: null,
+        content: null,
+        sender: null,
+        achievement: null,
+      },
     ];
 
     (prisma.notification.findMany as any).mockResolvedValue(mockNotifications);
@@ -27,9 +57,8 @@ describe("GetNotifications Use Case Pagination", () => {
     const getNotifications = new GetNotifications();
     const result = await getNotifications.execute({ userId, limit });
 
-    // Verificações
-    expect(result.notifications).toHaveLength(2); // Deve retornar apenas o limite
-    expect(result.nextCursor).toBe("3"); // O 3º item deve ser o cursor
+    expect(result.notifications).toHaveLength(2);
+    expect(result.nextCursor).toBe("3");
   });
 
   it("should return null nextCursor when results are within limit", async () => {
@@ -37,7 +66,17 @@ describe("GetNotifications Use Case Pagination", () => {
     const limit = 10;
 
     const mockNotifications = [
-      { id: "1", type: NotificationType.FRIEND_REQUEST, isRead: false, createdAt: new Date(), activityId: null, achievementId: null, content: null, sender: null, achievement: null },
+      {
+        id: "1",
+        type: NotificationType.FRIEND_REQUEST,
+        isRead: false,
+        createdAt: new Date(),
+        activityId: null,
+        achievementId: null,
+        content: null,
+        sender: null,
+        achievement: null,
+      },
     ];
 
     (prisma.notification.findMany as any).mockResolvedValue(mockNotifications);
@@ -56,9 +95,11 @@ describe("GetNotifications Use Case Pagination", () => {
     const getNotifications = new GetNotifications();
     await getNotifications.execute({ userId, cursor });
 
-    expect(prisma.notification.findMany).toHaveBeenCalledWith(expect.objectContaining({
-      cursor: { id: cursor },
-      skip: 0, // Garantindo que não pulamos o item do cursor
-    }));
+    expect(prisma.notification.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cursor: { id: cursor },
+        skip: 0,
+      }),
+    );
   });
 });

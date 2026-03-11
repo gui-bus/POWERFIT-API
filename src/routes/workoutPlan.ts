@@ -345,11 +345,13 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
         workoutDayId: z.uuid(),
         sessionId: z.uuid(),
       }),
-      body: z.object({
-        statusMessage: z.string().trim().optional(),
-        imageUrl: z.string().url().optional(),
-        taggedUserIds: z.array(z.string()).optional(),
-      }).optional(),
+      body: z
+        .object({
+          statusMessage: z.string().trim().optional(),
+          imageUrl: z.string().url().optional(),
+          taggedUserIds: z.array(z.string()).optional(),
+        })
+        .optional(),
       response: {
         200: WorkoutSessionSchema,
         400: ErrorSchema,
@@ -420,7 +422,6 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
     },
   });
 
-  // NOVAS ROTAS DE LOG DE SÉRIES
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "PATCH",
     url: "/sessions/:sessionId/exercises/:exerciseId/sets/:setIndex",

@@ -43,7 +43,7 @@ interface OutputDto {
 export class GetFeed {
   async execute(dto: InputDto): Promise<OutputDto> {
     const limit = dto.limit || 10;
-    let userIdsInFeed: string[] = [];
+    let userIdsInFeed: string[];
 
     if (dto.targetUserId && dto.targetUserId !== dto.userId) {
       const friendship = await prisma.friendship.findFirst({
@@ -65,10 +65,7 @@ export class GetFeed {
     } else {
       const friendships = await prisma.friendship.findMany({
         where: {
-          OR: [
-            { userId: dto.userId },
-            { friendId: dto.userId },
-          ],
+          OR: [{ userId: dto.userId }, { friendId: dto.userId }],
           status: "ACCEPTED",
         },
       });
@@ -84,8 +81,8 @@ export class GetFeed {
       where: {
         OR: [
           { userId: { in: userIdsInFeed } },
-          { taggedUsers: { some: { id: { in: userIdsInFeed } } } }
-        ]
+          { taggedUsers: { some: { id: { in: userIdsInFeed } } } },
+        ],
       },
       include: {
         user: true,
@@ -98,24 +95,20 @@ export class GetFeed {
         powerups: true,
         comments: {
           include: { user: true },
-          orderBy: { createdAt: "asc" }
+          orderBy: { createdAt: "asc" },
         },
         taggedUsers: true,
       },
-      orderBy: [
-        { createdAt: "desc" },
-        { id: "desc" },
-      ],
-      take: limit + 1, // Pegamos um a mais para saber se tem próxima página
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: limit + 1,
       cursor: dto.cursor ? { id: dto.cursor } : undefined,
-      skip: 0,
     });
 
-    let nextCursor: string | null = null;
-    if (activities.length > limit) {
-      const nextItem = activities.pop();
-      nextCursor = nextItem!.id;
+    const hasNextPage = activities.length > limit;
+    if (hasNextPage) {
+      activities.pop();
     }
+    const nextCursor = hasNextPage ? activities[activities.length - 1].id : null;
 
     const result = activities.map((activity) => ({
       id: activity.id,

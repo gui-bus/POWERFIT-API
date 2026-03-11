@@ -178,12 +178,10 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
             .status(404)
             .send({ error: error.message, code: "NOT_FOUND_ERROR" });
         }
-        return reply
-          .status(500)
-          .send({
-            error: "Internal server error",
-            code: "INTERNAL_SERVER_ERROR",
-          });
+        return reply.status(500).send({
+          error: "Internal server error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
       }
     },
   });

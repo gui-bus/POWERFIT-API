@@ -25,7 +25,11 @@ export class AddFriend {
       where: {
         OR: [
           { id: dto.codeOrEmail },
-          { friendCode: dto.codeOrEmail.toUpperCase().startsWith("#") ? dto.codeOrEmail.toUpperCase() : `#${dto.codeOrEmail.toUpperCase()}` },
+          {
+            friendCode: dto.codeOrEmail.toUpperCase().startsWith("#")
+              ? dto.codeOrEmail.toUpperCase()
+              : `#${dto.codeOrEmail.toUpperCase()}`,
+          },
           { email: dto.codeOrEmail.toLowerCase() },
         ],
       },
@@ -70,13 +74,12 @@ export class AddFriend {
           senderId: dto.userId,
           type: "FRIEND_REQUEST",
         },
-        include: { sender: true }
+        include: { sender: true },
       });
 
       return notification;
     });
 
-    // Disparar evento em tempo real
     notificationEvents.emit("new-notification", result);
 
     return {

@@ -12,7 +12,6 @@ interface InputDto {
 
 export class UpsertWorkoutSet {
   async execute(dto: InputDto): Promise<void> {
-    // Verificar se a sessão existe e pertence ao usuário
     const session = await prisma.workoutSession.findUnique({
       where: { id: dto.sessionId },
       include: { workoutDay: { include: { workoutPlan: true } } },
@@ -26,7 +25,6 @@ export class UpsertWorkoutSet {
       throw new Error("Cannot modify sets of a completed session");
     }
 
-    // Upsert da série
     const existingSet = await prisma.workoutSet.findFirst({
       where: {
         sessionId: dto.sessionId,

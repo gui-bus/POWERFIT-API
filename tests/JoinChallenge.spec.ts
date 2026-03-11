@@ -19,7 +19,10 @@ describe("JoinChallenge Use Case", () => {
     const userId = "user-1";
     const challengeId = "chal-1";
 
-    (prisma.challenge.findUnique as any).mockResolvedValue({ id: challengeId, status: "ACTIVE" });
+    (prisma.challenge.findUnique as any).mockResolvedValue({
+      id: challengeId,
+      status: "ACTIVE",
+    });
     (prisma.challengeParticipant.findUnique as any).mockResolvedValue(null);
 
     const joinChallenge = new JoinChallenge();
@@ -32,20 +35,32 @@ describe("JoinChallenge Use Case", () => {
     const userId = "user-1";
     const challengeId = "chal-1";
 
-    (prisma.challenge.findUnique as any).mockResolvedValue({ id: challengeId, status: "COMPLETED" });
+    (prisma.challenge.findUnique as any).mockResolvedValue({
+      id: challengeId,
+      status: "COMPLETED",
+    });
 
     const joinChallenge = new JoinChallenge();
-    await expect(joinChallenge.execute({ userId, challengeId })).rejects.toThrow("Challenge is not open for joining");
+    await expect(
+      joinChallenge.execute({ userId, challengeId }),
+    ).rejects.toThrow("Challenge is not open for joining");
   });
 
   it("should throw Error if user is already a participant", async () => {
     const userId = "user-1";
     const challengeId = "chal-1";
 
-    (prisma.challenge.findUnique as any).mockResolvedValue({ id: challengeId, status: "ACTIVE" });
-    (prisma.challengeParticipant.findUnique as any).mockResolvedValue({ id: "part-1" });
+    (prisma.challenge.findUnique as any).mockResolvedValue({
+      id: challengeId,
+      status: "ACTIVE",
+    });
+    (prisma.challengeParticipant.findUnique as any).mockResolvedValue({
+      id: "part-1",
+    });
 
     const joinChallenge = new JoinChallenge();
-    await expect(joinChallenge.execute({ userId, challengeId })).rejects.toThrow("You are already participating in this challenge");
+    await expect(
+      joinChallenge.execute({ userId, challengeId }),
+    ).rejects.toThrow("You are already participating in this challenge");
   });
 });

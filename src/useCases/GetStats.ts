@@ -7,8 +7,8 @@ dayjs.extend(utc);
 
 interface InputDto {
   userId: string;
-  from: string; // YYYY-MM-DD
-  to: string; // YYYY-MM-DD
+  from: string;
+  to: string;
 }
 
 interface OutputDto {
@@ -23,7 +23,7 @@ interface OutputDto {
   completedRestDays: number;
   conclusionRate: number;
   totalTimeInSeconds: number;
-  totalVolumeInGrams: number; // NOVA MÉTRICA
+  totalVolumeInGrams: number;
 }
 
 export class GetStats {
@@ -45,7 +45,7 @@ export class GetStats {
       },
       include: {
         workoutDay: true,
-        sets: true, // Incluir as séries para cálculo de volume
+        sets: true,
       },
       orderBy: {
         startedAt: "asc",
@@ -90,9 +90,8 @@ export class GetStats {
         );
         totalTimeInSeconds += duration;
 
-        // Calcular volume: peso * reps de cada série concluída
-        session.sets.forEach(set => {
-          totalVolumeInGrams += (set.weightInGrams * set.reps);
+        session.sets.forEach((set) => {
+          totalVolumeInGrams += set.weightInGrams * set.reps;
         });
       }
     });

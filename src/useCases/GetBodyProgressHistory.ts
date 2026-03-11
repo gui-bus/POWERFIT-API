@@ -17,7 +17,7 @@ export class GetBodyProgressHistory {
   async execute(dto: InputDto): Promise<OutputDto[]> {
     const logs = await prisma.bodyProgressLog.findMany({
       where: { userId: dto.userId },
-      orderBy: { loggedAt: "asc" }, // Ascendente para o gráfico (do mais antigo para o mais novo)
+      orderBy: { loggedAt: "asc" },
     });
 
     return logs.map((log) => ({

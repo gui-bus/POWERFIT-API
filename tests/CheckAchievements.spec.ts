@@ -16,7 +16,6 @@ vi.mock("../src/lib/db.js", () => ({
   },
 }));
 
-// Mock da função helper
 vi.mock("../src/lib/gamification.js", () => ({
   ensureInitialAchievements: vi.fn(),
 }));
@@ -31,17 +30,21 @@ describe("CheckAchievements Use Case", () => {
 
     (prisma.userAchievement.findMany as any).mockResolvedValue([]);
     (prisma.achievement.findMany as any).mockResolvedValue([
-      { id: "ach-1", name: "Primeiro Passo", xpReward: 100 }
+      { id: "ach-1", name: "Primeiro Passo", xpReward: 100 },
     ]);
     (prisma.workoutSession.count as any).mockResolvedValue(1);
-    (prisma.user.findUnique as any).mockResolvedValue({ id: userId, xp: 0, level: 1 });
+    (prisma.user.findUnique as any).mockResolvedValue({
+      id: userId,
+      xp: 0,
+      level: 1,
+    });
     (prisma.xpTransaction.findFirst as any).mockResolvedValue(null);
 
     const checkAchievements = new CheckAchievements();
     await checkAchievements.execute({ userId });
 
     expect(prisma.userAchievement.create).toHaveBeenCalledWith({
-      data: { userId, achievementId: "ach-1" }
+      data: { userId, achievementId: "ach-1" },
     });
     expect(prisma.notification.create).toHaveBeenCalled();
   });
@@ -51,7 +54,7 @@ describe("CheckAchievements Use Case", () => {
 
     (prisma.userAchievement.findMany as any).mockResolvedValue([]);
     (prisma.achievement.findMany as any).mockResolvedValue([
-      { id: "ach-1", name: "Primeiro Passo", xpReward: 100 }
+      { id: "ach-1", name: "Primeiro Passo", xpReward: 100 },
     ]);
     (prisma.workoutSession.count as any).mockResolvedValue(0);
 

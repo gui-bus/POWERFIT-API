@@ -1,7 +1,6 @@
 import { describe, expect, it, vi, beforeAll } from "vitest";
 import { app } from "../src/index.js";
 
-// Mock do Better Auth para não precisar de cookies reais nos testes de API
 vi.mock("../src/lib/auth.js", () => ({
   auth: {
     api: {
@@ -39,7 +38,7 @@ describe("API Endpoints: Workout Plans", () => {
       method: "POST",
       url: "/workout-plans/",
       payload: {
-        name: "", // Nome vazio (deve falhar no Zod)
+        name: "",
         workoutDays: [],
       },
     });

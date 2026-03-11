@@ -295,18 +295,22 @@ export const PublicProfileResponseSchema = z.object({
   streak: z.number(),
   isFriend: z.boolean(),
   isPending: z.boolean(),
-  stats: z.object({
-    weightInGrams: z.number(),
-    heightInCentimeters: z.number(),
-    age: z.number(),
-    bodyFatPercentage: z.number(),
-  }).nullable(),
-  achievements: z.array(z.object({
-    id: z.string().uuid(),
-    name: z.string(),
-    iconUrl: z.string().nullable(),
-    unlockedAt: z.string(),
-  })),
+  stats: z
+    .object({
+      weightInGrams: z.number(),
+      heightInCentimeters: z.number(),
+      age: z.number(),
+      bodyFatPercentage: z.number(),
+    })
+    .nullable(),
+  achievements: z.array(
+    z.object({
+      id: z.string().uuid(),
+      name: z.string(),
+      iconUrl: z.string().nullable(),
+      unlockedAt: z.string(),
+    }),
+  ),
 });
 
 export const CommentSchema = z.object({
@@ -333,11 +337,13 @@ export const ActivitySchema = z.object({
   hasPowerupByMe: z.boolean(),
   createdAt: z.string(),
   comments: z.array(CommentSchema),
-  taggedUsers: z.array(z.object({
-    id: z.string(),
-    name: z.string(),
-    image: z.string().nullable(),
-  })),
+  taggedUsers: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      image: z.string().nullable(),
+    }),
+  ),
 });
 
 export const PaginationQuerySchema = z.object({

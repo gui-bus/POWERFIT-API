@@ -26,7 +26,7 @@ describe("GetAchievements Use Case", () => {
         description: "Desc",
         iconUrl: null,
         xpReward: 100,
-        users: [{ unlockedAt: new Date() }]
+        users: [{ unlockedAt: new Date() }],
       },
       {
         id: "ach-2",
@@ -34,8 +34,8 @@ describe("GetAchievements Use Case", () => {
         description: "Desc",
         iconUrl: null,
         xpReward: 200,
-        users: []
-      }
+        users: [],
+      },
     ]);
 
     const getAchievements = new GetAchievements();

@@ -11,10 +11,7 @@ export class DeclineFriendRequest {
     const request = await prisma.friendship.findFirst({
       where: {
         id: dto.requestId,
-        OR: [
-          { userId: dto.userId },   // Sou o autor (cancelando enviado)
-          { friendId: dto.userId }, // Sou o destinatário (recusando recebido)
-        ],
+        OR: [{ userId: dto.userId }, { friendId: dto.userId }],
         status: "PENDING",
       },
     });
@@ -24,8 +21,6 @@ export class DeclineFriendRequest {
     }
 
     await prisma.$transaction(async (tx) => {
-      // Remover notificações pendentes vinculadas a este pedido de amizade
-      // Para o FRIEND_REQUEST original
       await tx.notification.deleteMany({
         where: {
           recipientId: request.friendId,
@@ -34,7 +29,6 @@ export class DeclineFriendRequest {
         },
       });
 
-      // Deletar a relação
       await tx.friendship.delete({
         where: { id: dto.requestId },
       });

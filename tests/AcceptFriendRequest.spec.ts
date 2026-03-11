@@ -27,7 +27,7 @@ vi.mock("../src/lib/db.js", () => ({
     },
     userAchievement: {
       findMany: vi.fn().mockResolvedValue([]),
-    }
+    },
   },
 }));
 
@@ -43,8 +43,16 @@ describe("AcceptFriendRequest Use Case", () => {
     const requestId = "request-1";
     const requesterId = "user-2";
 
-    (prisma.friendship.findFirst as any).mockResolvedValue({ id: requestId, userId: requesterId, friendId: userId });
-    (prisma.user.findUnique as any).mockResolvedValue({ id: requesterId, xp: 0, level: 1 });
+    (prisma.friendship.findFirst as any).mockResolvedValue({
+      id: requestId,
+      userId: requesterId,
+      friendId: userId,
+    });
+    (prisma.user.findUnique as any).mockResolvedValue({
+      id: requesterId,
+      xp: 0,
+      level: 1,
+    });
     (prisma.xpTransaction.findFirst as any).mockResolvedValue(null);
     (prisma.notification.create as any).mockResolvedValue({ id: "notif-1" });
 
@@ -53,8 +61,11 @@ describe("AcceptFriendRequest Use Case", () => {
 
     expect(prisma.friendship.update).toHaveBeenCalledWith({
       where: { id: requestId },
-      data: { status: "ACCEPTED" }
+      data: { status: "ACCEPTED" },
     });
-    expect(notificationEvents.emit).toHaveBeenCalledWith("new-notification", expect.anything());
+    expect(notificationEvents.emit).toHaveBeenCalledWith(
+      "new-notification",
+      expect.anything(),
+    );
   });
 });

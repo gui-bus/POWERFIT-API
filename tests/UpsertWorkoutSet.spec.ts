@@ -24,7 +24,7 @@ describe("UpsertWorkoutSet Use Case", () => {
     (prisma.workoutSession.findUnique as any).mockResolvedValue({
       id: "session-1",
       completedAt: null,
-      workoutDay: { workoutPlan: { userId: "user-1" } }
+      workoutDay: { workoutPlan: { userId: "user-1" } },
     });
     (prisma.workoutSet.findFirst as any).mockResolvedValue(null);
 
@@ -38,7 +38,7 @@ describe("UpsertWorkoutSet Use Case", () => {
     (prisma.workoutSession.findUnique as any).mockResolvedValue({
       id: "session-1",
       completedAt: null,
-      workoutDay: { workoutPlan: { userId: "user-1" } }
+      workoutDay: { workoutPlan: { userId: "user-1" } },
     });
     (prisma.workoutSet.findFirst as any).mockResolvedValue({ id: "set-1" });
 
@@ -47,7 +47,7 @@ describe("UpsertWorkoutSet Use Case", () => {
 
     expect(prisma.workoutSet.update).toHaveBeenCalledWith({
       where: { id: "set-1" },
-      data: expect.anything()
+      data: expect.anything(),
     });
   });
 
@@ -55,10 +55,12 @@ describe("UpsertWorkoutSet Use Case", () => {
     (prisma.workoutSession.findUnique as any).mockResolvedValue({
       id: "session-1",
       completedAt: new Date(),
-      workoutDay: { workoutPlan: { userId: "user-1" } }
+      workoutDay: { workoutPlan: { userId: "user-1" } },
     });
 
     const upsertWorkoutSet = new UpsertWorkoutSet();
-    await expect(upsertWorkoutSet.execute(dto)).rejects.toThrow("Cannot modify sets of a completed session");
+    await expect(upsertWorkoutSet.execute(dto)).rejects.toThrow(
+      "Cannot modify sets of a completed session",
+    );
   });
 });

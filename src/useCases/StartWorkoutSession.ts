@@ -37,7 +37,9 @@ export class StartWorkoutSession {
     }
 
     if (workoutPlan.userId !== dto.userId) {
-      throw new ForbiddenError("You do not have permission to access this workout plan");
+      throw new ForbiddenError(
+        "You do not have permission to access this workout plan",
+      );
     }
 
     if (!workoutPlan.isActive) {
@@ -58,7 +60,9 @@ export class StartWorkoutSession {
     });
 
     if (activeSession) {
-      throw new SessionAlreadyStartedError("There is already an active session for this workout day");
+      throw new SessionAlreadyStartedError(
+        "There is already an active session for this workout day",
+      );
     }
 
     const workoutSession = await prisma.workoutSession.create({
@@ -73,7 +77,9 @@ export class StartWorkoutSession {
       id: workoutSession.id,
       workoutDayId: workoutSession.workoutDayId,
       startedAt: workoutSession.startedAt.toISOString(),
-      completedAt: workoutSession.completedAt ? workoutSession.completedAt.toISOString() : null,
+      completedAt: workoutSession.completedAt
+        ? workoutSession.completedAt.toISOString()
+        : null,
     };
   }
 }

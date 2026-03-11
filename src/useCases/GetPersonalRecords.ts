@@ -14,16 +14,15 @@ interface OutputDto {
 
 export class GetPersonalRecords {
   async execute(dto: InputDto): Promise<OutputDto[]> {
-    // Busca o registro com maior peso para cada nome de exercício
     const records = await prisma.personalRecord.findMany({
       where: { userId: dto.userId },
-      distinct: ['exerciseName'],
+      distinct: ["exerciseName"],
       orderBy: {
-        weightInGrams: 'desc',
+        weightInGrams: "desc",
       },
     });
 
-    return records.map(r => ({
+    return records.map((r) => ({
       id: r.id,
       exerciseName: r.exerciseName,
       weightInGrams: r.weightInGrams,

@@ -9,16 +9,14 @@ interface InputDto {
 export class CheckAchievements {
   async execute(dto: InputDto): Promise<void> {
     await prisma.$transaction(async (tx) => {
-      // 1. Garantir que as medalhas existam no banco
       await ensureInitialAchievements(tx);
 
-      // 2. Buscar medalhas pendentes
       const unlockedAchievements = await tx.userAchievement.findMany({
         where: { userId: dto.userId },
         select: { achievementId: true },
       });
-      
-      const unlockedIds = unlockedAchievements.map(ua => ua.achievementId);
+
+      const unlockedIds = unlockedAchievements.map((ua) => ua.achievementId);
 
       const pendingAchievements = await tx.achievement.findMany({
         where: { id: { notIn: unlockedIds } },

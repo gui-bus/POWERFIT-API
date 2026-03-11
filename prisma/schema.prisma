@@ -1,4 +1,4 @@
-//#region Configs
+
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -8,9 +8,9 @@ datasource db {
   provider = "postgresql"
 }
 
-//#endregion
 
-//#region Enums
+
+
 enum WeekDay {
   MONDAY
   TUESDAY
@@ -62,9 +62,9 @@ enum ChallengeStatus {
   COMPLETED
 }
 
-//#endregion
 
-//#region User
+
+
 model User {
   id                    String         @id
   workoutPlans          WorkoutPlan[]
@@ -290,9 +290,9 @@ model UserTrainData {
   @@map("user_train_data")
 }
 
-//#endregion
 
-//#region Workout
+
+
 model WorkoutPlan {
   id          String       @id @default(uuid())
   name        String
@@ -372,9 +372,9 @@ model WorkoutSet {
   @@map("workout_set")
 }
 
-//#endregion
 
-//#region Better Auth
+
+
 model Session {
   id        String   @id
   expiresAt DateTime
@@ -423,4 +423,4 @@ model Verification {
   @@map("verification")
 }
 
-//#endregion
+

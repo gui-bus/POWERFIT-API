@@ -80,7 +80,7 @@ export class TogglePowerup {
               type: "POWERUP_RECEIVED",
               activityId: activity.id,
             },
-            include: { sender: true }
+            include: { sender: true },
           });
 
           await grantXp.execute(
@@ -103,7 +103,9 @@ export class TogglePowerup {
       const checkAchievements = new CheckAchievements();
       checkAchievements.execute({ userId: dto.userId }).catch(console.error);
       if (activity.userId !== dto.userId) {
-        checkAchievements.execute({ userId: activity.userId }).catch(console.error);
+        checkAchievements
+          .execute({ userId: activity.userId })
+          .catch(console.error);
       }
     }
   }

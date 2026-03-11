@@ -18,18 +18,18 @@ describe("SearchUsers Use Case", () => {
   it("should return users matching query and identify relationship status", async () => {
     const userId = "me";
     (prisma.user.findMany as any).mockResolvedValue([
-      { 
-        id: "user-1", 
-        name: "John Doe", 
+      {
+        id: "user-1",
+        name: "John Doe",
         friends: [{ userId: "me", status: "ACCEPTED" }],
-        friendOf: []
+        friendOf: [],
       },
-      { 
-        id: "user-2", 
-        name: "Jane Smith", 
+      {
+        id: "user-2",
+        name: "Jane Smith",
         friends: [],
-        friendOf: [{ userId: "me", status: "PENDING" }]
-      }
+        friendOf: [{ userId: "me", status: "PENDING" }],
+      },
     ]);
 
     const searchUsers = new SearchUsers();

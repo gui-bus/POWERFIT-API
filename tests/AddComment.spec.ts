@@ -29,24 +29,44 @@ describe("AddComment Use Case", () => {
     const activityId = "act-1";
     const ownerId = "user-2";
 
-    (prisma.activity.findUnique as any).mockResolvedValue({ id: activityId, userId: ownerId });
-    (prisma.user.findUnique as any).mockResolvedValue({ id: userId, xp: 0, level: 1 });
-    (prisma.notification.create as any).mockResolvedValue({ id: "notif-1", recipientId: ownerId });
+    (prisma.activity.findUnique as any).mockResolvedValue({
+      id: activityId,
+      userId: ownerId,
+    });
+    (prisma.user.findUnique as any).mockResolvedValue({
+      id: userId,
+      xp: 0,
+      level: 1,
+    });
+    (prisma.notification.create as any).mockResolvedValue({
+      id: "notif-1",
+      recipientId: ownerId,
+    });
 
     const addComment = new AddComment();
     await addComment.execute({ userId, activityId, content: "Boa!" });
 
     expect(prisma.comment.create).toHaveBeenCalled();
     expect(prisma.notification.create).toHaveBeenCalled();
-    expect(notificationEvents.emit).toHaveBeenCalledWith("new-notification", expect.anything());
+    expect(notificationEvents.emit).toHaveBeenCalledWith(
+      "new-notification",
+      expect.anything(),
+    );
   });
 
   it("should not notify if user comments on their own activity", async () => {
     const userId = "user-1";
     const activityId = "act-1";
 
-    (prisma.activity.findUnique as any).mockResolvedValue({ id: activityId, userId });
-    (prisma.user.findUnique as any).mockResolvedValue({ id: userId, xp: 0, level: 1 });
+    (prisma.activity.findUnique as any).mockResolvedValue({
+      id: activityId,
+      userId,
+    });
+    (prisma.user.findUnique as any).mockResolvedValue({
+      id: userId,
+      xp: 0,
+      level: 1,
+    });
 
     const addComment = new AddComment();
     await addComment.execute({ userId, activityId, content: "Auto elogio" });

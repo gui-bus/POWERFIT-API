@@ -33,7 +33,8 @@ export class GetAchievements {
       description: a.description,
       iconUrl: a.iconUrl,
       xpReward: a.xpReward,
-      unlockedAt: a.users.length > 0 ? a.users[0].unlockedAt.toISOString() : null,
+      unlockedAt:
+        a.users.length > 0 ? a.users[0].unlockedAt.toISOString() : null,
     }));
   }
 }

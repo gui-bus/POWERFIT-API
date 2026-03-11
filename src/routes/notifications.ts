@@ -4,7 +4,9 @@ import { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
 import { NotFoundError } from "../errors/index.js";
+import { Notification } from "../generated/prisma/client.js";
 import { auth } from "../lib/auth.js";
+import { notificationEvents } from "../lib/events.js";
 import {
   ErrorSchema,
   GetNotificationsResponseSchema,
@@ -13,8 +15,6 @@ import {
 import { GetNotifications } from "../useCases/GetNotifications.js";
 import { MarkAllNotificationsAsRead } from "../useCases/MarkAllNotificationsAsRead.js";
 import { MarkNotificationAsRead } from "../useCases/MarkNotificationAsRead.js";
-
-import { notificationEvents } from "../lib/events.js";
 
 export const notificationRoutes = async (app: FastifyInstance) => {
   app.get("/stream", async (request, reply) => {
@@ -28,18 +28,15 @@ export const notificationRoutes = async (app: FastifyInstance) => {
 
     const userId = session.user.id;
 
-    // Configurar headers para SSE
     reply.raw.setHeader("Content-Type", "text/event-stream");
     reply.raw.setHeader("Cache-Control", "no-cache");
     reply.raw.setHeader("Connection", "keep-alive");
 
-    // Evento de "keep-alive" para evitar timeout do navegador
     const keepAliveInterval = setInterval(() => {
       reply.raw.write(`: keep-alive\n\n`);
     }, 30000);
 
-    // Listener para novas notificações do usuário
-    const onNotification = (notification: any) => {
+    const onNotification = (notification: Notification) => {
       if (notification.recipientId === userId) {
         reply.raw.write(`data: ${JSON.stringify(notification)}\n\n`);
       }
@@ -47,7 +44,6 @@ export const notificationRoutes = async (app: FastifyInstance) => {
 
     notificationEvents.on("new-notification", onNotification);
 
-    // Quando o usuário fecha a aba ou desconecta
     request.raw.on("close", () => {
       clearInterval(keepAliveInterval);
       notificationEvents.removeListener("new-notification", onNotification);
@@ -80,7 +76,10 @@ export const notificationRoutes = async (app: FastifyInstance) => {
             .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
         }
 
-        const { cursor, limit } = request.query as { cursor?: string; limit?: number };
+        const { cursor, limit } = request.query as {
+          cursor?: string;
+          limit?: number;
+        };
 
         const getNotifications = new GetNotifications();
         const result = await getNotifications.execute({

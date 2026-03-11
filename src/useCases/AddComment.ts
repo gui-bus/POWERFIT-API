@@ -29,7 +29,7 @@ export class AddComment {
       });
 
       const grantXp = new GrantXp();
-      
+
       await grantXp.execute(
         {
           userId: dto.userId,
@@ -48,9 +48,12 @@ export class AddComment {
             senderId: dto.userId,
             type: "COMMENT_RECEIVED",
             activityId: activity.id,
-            content: dto.content.length > 50 ? `${dto.content.substring(0, 47)}...` : dto.content,
+            content:
+              dto.content.length > 50
+                ? `${dto.content.substring(0, 47)}...`
+                : dto.content,
           },
-          include: { sender: true }
+          include: { sender: true },
         });
       }
       return notif;

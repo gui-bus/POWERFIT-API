@@ -20,8 +20,8 @@ describe("GetXpHistory Use Case", () => {
         id: "tx-1",
         amount: 100,
         reason: "WORKOUT_COMPLETED",
-        createdAt: new Date()
-      }
+        createdAt: new Date(),
+      },
     ]);
 
     const getXpHistory = new GetXpHistory();

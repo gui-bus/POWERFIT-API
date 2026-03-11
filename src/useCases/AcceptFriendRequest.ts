@@ -14,7 +14,7 @@ export class AcceptFriendRequest {
     const request = await prisma.friendship.findFirst({
       where: {
         id: dto.requestId,
-        friendId: dto.userId, // Apenas quem recebeu pode aceitar
+        friendId: dto.userId,
         status: "PENDING",
       },
     });
@@ -31,16 +31,15 @@ export class AcceptFriendRequest {
 
       const notif = await tx.notification.create({
         data: {
-          recipientId: request.userId, // O remetente da solicitação recebe o aviso
+          recipientId: request.userId,
           senderId: dto.userId,
           type: "FRIEND_ACCEPTED",
         },
-        include: { sender: true }
+        include: { sender: true },
       });
 
       const grantXp = new GrantXp();
 
-      // XP para quem aceitou
       await grantXp.execute(
         {
           userId: dto.userId,
@@ -51,7 +50,6 @@ export class AcceptFriendRequest {
         tx,
       );
 
-      // XP para quem enviou a solicitação
       await grantXp.execute(
         {
           userId: request.userId,
@@ -65,7 +63,6 @@ export class AcceptFriendRequest {
       return notif;
     });
 
-    // Disparar evento em tempo real
     notificationEvents.emit("new-notification", notification);
 
     const checkAchievements = new CheckAchievements();

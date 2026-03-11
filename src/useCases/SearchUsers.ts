@@ -17,17 +17,15 @@ interface OutputDto {
 
 export class SearchUsers {
   async execute(dto: InputDto): Promise<OutputDto[]> {
-    // Buscar usuários que batem com o nome, email ou código
-    // E que tenham perfil público OU que já tenham relação com o usuário logado
     const users = await prisma.user.findMany({
       where: {
         AND: [
-          { id: { not: dto.userId } }, // Não buscar a si mesmo
+          { id: { not: dto.userId } },
           {
             OR: [
-              { name: { contains: dto.query, mode: 'insensitive' } },
-              { email: { contains: dto.query, mode: 'insensitive' } },
-              { friendCode: { contains: dto.query, mode: 'insensitive' } },
+              { name: { contains: dto.query, mode: "insensitive" } },
+              { email: { contains: dto.query, mode: "insensitive" } },
+              { friendCode: { contains: dto.query, mode: "insensitive" } },
             ],
           },
           {
@@ -52,15 +50,15 @@ export class SearchUsers {
 
     return users.map((user) => {
       const friendship = user.friends[0] || user.friendOf[0];
-      
+
       return {
         id: user.id,
         name: user.name,
         image: user.image,
         friendCode: user.friendCode,
         level: user.level,
-        isFriend: friendship?.status === 'ACCEPTED',
-        isPending: friendship?.status === 'PENDING',
+        isFriend: friendship?.status === "ACCEPTED",
+        isPending: friendship?.status === "PENDING",
       };
     });
   }

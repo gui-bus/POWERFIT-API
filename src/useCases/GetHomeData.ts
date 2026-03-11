@@ -8,7 +8,7 @@ dayjs.extend(utc);
 
 interface InputDto {
   userId: string;
-  date: string; // YYYY-MM-DD
+  date: string;
 }
 
 interface OutputDto {

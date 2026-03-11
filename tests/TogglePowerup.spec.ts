@@ -13,8 +13,11 @@ vi.mock("../src/lib/db.js", () => ({
     notification: { create: vi.fn() },
     user: { findUnique: vi.fn(), update: vi.fn() },
     xpTransaction: { findFirst: vi.fn(), create: vi.fn() },
-    achievement: { count: vi.fn().mockResolvedValue(10), findMany: vi.fn().mockResolvedValue([]) },
-    userAchievement: { findMany: vi.fn().mockResolvedValue([]) }
+    achievement: {
+      count: vi.fn().mockResolvedValue(10),
+      findMany: vi.fn().mockResolvedValue([]),
+    },
+    userAchievement: { findMany: vi.fn().mockResolvedValue([]) },
   },
 }));
 
@@ -32,25 +35,43 @@ describe("TogglePowerup Use Case", () => {
     const friendId = "user-2";
     const activityId = "act-1";
 
-    (prisma.activity.findUnique as any).mockResolvedValue({ id: activityId, userId: friendId });
-    (prisma.friendship.findFirst as any).mockResolvedValue({ status: "ACCEPTED" });
+    (prisma.activity.findUnique as any).mockResolvedValue({
+      id: activityId,
+      userId: friendId,
+    });
+    (prisma.friendship.findFirst as any).mockResolvedValue({
+      status: "ACCEPTED",
+    });
     (prisma.powerup.findUnique as any).mockResolvedValue(null);
-    (prisma.user.findUnique as any).mockResolvedValue({ id: userId, xp: 0, level: 1 });
-    (prisma.notification.create as any).mockResolvedValue({ id: "notif-1", recipientId: friendId });
+    (prisma.user.findUnique as any).mockResolvedValue({
+      id: userId,
+      xp: 0,
+      level: 1,
+    });
+    (prisma.notification.create as any).mockResolvedValue({
+      id: "notif-1",
+      recipientId: friendId,
+    });
 
     const togglePowerup = new TogglePowerup();
     await togglePowerup.execute({ userId, activityId });
 
     expect(prisma.powerup.create).toHaveBeenCalled();
     expect(prisma.notification.create).toHaveBeenCalled();
-    expect(notificationEvents.emit).toHaveBeenCalledWith("new-notification", expect.anything());
+    expect(notificationEvents.emit).toHaveBeenCalledWith(
+      "new-notification",
+      expect.anything(),
+    );
   });
 
   it("should remove powerup if it already exists", async () => {
     const userId = "user-1";
     const activityId = "act-1";
 
-    (prisma.activity.findUnique as any).mockResolvedValue({ id: activityId, userId });
+    (prisma.activity.findUnique as any).mockResolvedValue({
+      id: activityId,
+      userId,
+    });
     (prisma.powerup.findUnique as any).mockResolvedValue({ id: "pow-1" });
 
     const togglePowerup = new TogglePowerup();
@@ -65,10 +86,15 @@ describe("TogglePowerup Use Case", () => {
     const strangerId = "stranger-1";
     const activityId = "act-1";
 
-    (prisma.activity.findUnique as any).mockResolvedValue({ id: activityId, userId: strangerId });
+    (prisma.activity.findUnique as any).mockResolvedValue({
+      id: activityId,
+      userId: strangerId,
+    });
     (prisma.friendship.findFirst as any).mockResolvedValue(null);
 
     const togglePowerup = new TogglePowerup();
-    await expect(togglePowerup.execute({ userId, activityId })).rejects.toThrow(ForbiddenError);
+    await expect(togglePowerup.execute({ userId, activityId })).rejects.toThrow(
+      ForbiddenError,
+    );
   });
 });

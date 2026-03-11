@@ -21,11 +21,14 @@ describe("API Uploadthing Endpoints", () => {
       url: "/api/uploadthing",
     });
 
-    // O uploadthing retorna um JSON com os slugs disponíveis quando chamado via GET
     expect(response.statusCode).toBe(200);
     const body = JSON.parse(response.body);
-    expect(body).toContainEqual(expect.objectContaining({ slug: "profileImage" }));
-    expect(body).toContainEqual(expect.objectContaining({ slug: "workoutImage" }));
+    expect(body).toContainEqual(
+      expect.objectContaining({ slug: "profileImage" }),
+    );
+    expect(body).toContainEqual(
+      expect.objectContaining({ slug: "workoutImage" }),
+    );
   });
 
   it("POST /api/uploadthing should return 403 if no token is provided", async () => {
@@ -41,7 +44,6 @@ describe("API Uploadthing Endpoints", () => {
       },
     });
 
-    // Deve falhar no middleware porque não enviamos Authorization nem Cookie
     expect(response.statusCode).toBe(403);
   });
 });

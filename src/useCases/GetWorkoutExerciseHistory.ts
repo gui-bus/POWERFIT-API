@@ -20,34 +20,33 @@ interface OutputDto {
 
 export class GetWorkoutExerciseHistory {
   async execute(dto: InputDto): Promise<OutputDto | null> {
-    // Buscar a última sessão (concluída ou não) que contenha séries desse exercício
     const lastSessionWithSets = await prisma.workoutSession.findFirst({
       where: {
         workoutDay: { workoutPlan: { userId: dto.userId } },
-        sets: { some: { workoutExerciseId: dto.workoutExerciseId } }
+        sets: { some: { workoutExerciseId: dto.workoutExerciseId } },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       include: {
         sets: {
           where: { workoutExerciseId: dto.workoutExerciseId },
-          orderBy: { setIndex: 'asc' }
-        }
-      }
+          orderBy: { setIndex: "asc" },
+        },
+      },
     });
 
     if (!lastSessionWithSets) return null;
 
     return {
       exerciseId: dto.workoutExerciseId,
-      lastSets: lastSessionWithSets.sets.map(s => ({
+      lastSets: lastSessionWithSets.sets.map((s) => ({
         id: s.id,
         sessionId: s.sessionId,
         workoutExerciseId: s.workoutExerciseId,
         setIndex: s.setIndex,
         weightInGrams: s.weightInGrams,
         reps: s.reps,
-        createdAt: s.createdAt.toISOString()
-      }))
+        createdAt: s.createdAt.toISOString(),
+      })),
     };
   }
 }

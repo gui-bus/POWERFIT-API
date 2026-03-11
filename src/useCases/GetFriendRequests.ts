@@ -29,8 +29,8 @@ export class GetFriendRequests {
         status: "PENDING",
       },
       include: {
-        user: true, // O autor do pedido
-        friend: true, // O destinatário do pedido
+        user: true,
+        friend: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -38,8 +38,6 @@ export class GetFriendRequests {
     });
 
     return requests.map((req) => {
-      // Se eu enviei, quero os dados do meu amigo (friend). 
-      // Se eu recebi, quero os dados de quem enviou (user).
       const targetUser = isSent ? req.friend : req.user;
 
       return {

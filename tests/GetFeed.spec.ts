@@ -20,7 +20,7 @@ describe("GetFeed Use Case", () => {
     const friendId = "user-2";
 
     (prisma.friendship.findMany as any).mockResolvedValue([
-      { userId: userId, friendId: friendId, status: "ACCEPTED" }
+      { userId: userId, friendId: friendId, status: "ACCEPTED" },
     ]);
 
     (prisma.activity.findMany as any).mockResolvedValue([]);
@@ -28,14 +28,16 @@ describe("GetFeed Use Case", () => {
     const getFeed = new GetFeed();
     await getFeed.execute({ userId });
 
-    expect(prisma.activity.findMany).toHaveBeenCalledWith(expect.objectContaining({
-      where: {
-        OR: [
-          { userId: { in: [friendId, userId] } },
-          { taggedUsers: { some: { id: { in: [friendId, userId] } } } }
-        ]
-      }
-    }));
+    expect(prisma.activity.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          OR: [
+            { userId: { in: [friendId, userId] } },
+            { taggedUsers: { some: { id: { in: [friendId, userId] } } } },
+          ],
+        },
+      }),
+    );
   });
 
   it("should throw error when trying to view feed of non-friend user", async () => {
@@ -45,6 +47,8 @@ describe("GetFeed Use Case", () => {
     (prisma.friendship.findFirst as any).mockResolvedValue(null);
 
     const getFeed = new GetFeed();
-    await expect(getFeed.execute({ userId, targetUserId })).rejects.toThrow("You can only view feeds of your friends");
+    await expect(getFeed.execute({ userId, targetUserId })).rejects.toThrow(
+      "You can only view feeds of your friends",
+    );
   });
 });

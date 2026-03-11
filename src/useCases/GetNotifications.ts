@@ -42,10 +42,7 @@ export class GetNotifications {
         sender: true,
         achievement: true,
       },
-      orderBy: [
-        { createdAt: "desc" },
-        { id: "desc" },
-      ],
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: limit + 1,
       cursor: dto.cursor ? { id: dto.cursor } : undefined,
       skip: 0,

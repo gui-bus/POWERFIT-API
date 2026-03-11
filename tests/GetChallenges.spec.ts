@@ -30,8 +30,8 @@ describe("GetChallenges Use Case", () => {
         endDate: null,
         xpReward: 500,
         participants: [{ userId: "user-1" }],
-        _count: { participants: 10 }
-      }
+        _count: { participants: 10 },
+      },
     ]);
 
     const getChallenges = new GetChallenges();

@@ -35,10 +35,12 @@ describe("GetUserProfile Use Case", () => {
       _count: { activities: 10 },
       achievements: [],
       friends: [{ status: "ACCEPTED" }],
-      friendOf: []
+      friendOf: [],
     });
 
-    (prisma.friendship.findFirst as any).mockResolvedValue({ status: "ACCEPTED" });
+    (prisma.friendship.findFirst as any).mockResolvedValue({
+      status: "ACCEPTED",
+    });
 
     const getUserProfile = new GetUserProfile();
     const result = await getUserProfile.execute({ userId, targetUserId });
@@ -50,6 +52,8 @@ describe("GetUserProfile Use Case", () => {
   it("should throw NotFoundError if user doesn't exist", async () => {
     (prisma.user.findUnique as any).mockResolvedValue(null);
     const getUserProfile = new GetUserProfile();
-    await expect(getUserProfile.execute({ userId: "me", targetUserId: "none" })).rejects.toThrow(NotFoundError);
+    await expect(
+      getUserProfile.execute({ userId: "me", targetUserId: "none" }),
+    ).rejects.toThrow(NotFoundError);
   });
 });

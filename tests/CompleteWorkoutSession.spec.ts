@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { CompleteWorkoutSession } from "../src/useCases/CompleteWorkoutSession.js";
 import { prisma } from "../src/lib/db.js";
-import { ForbiddenError, NotFoundError, SessionAlreadyCompletedError } from "../src/errors/index.js";
+import {
+  ForbiddenError,
+  NotFoundError,
+  SessionAlreadyCompletedError,
+} from "../src/errors/index.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -13,8 +17,11 @@ vi.mock("../src/lib/db.js", () => ({
     notification: { createMany: vi.fn() },
     user: { findUnique: vi.fn(), update: vi.fn() },
     xpTransaction: { findFirst: vi.fn(), create: vi.fn() },
-    achievement: { count: vi.fn().mockResolvedValue(10), findMany: vi.fn().mockResolvedValue([]) },
-    userAchievement: { findMany: vi.fn().mockResolvedValue([]) }
+    achievement: {
+      count: vi.fn().mockResolvedValue(10),
+      findMany: vi.fn().mockResolvedValue([]),
+    },
+    userAchievement: { findMany: vi.fn().mockResolvedValue([]) },
   },
 }));
 
@@ -27,16 +34,26 @@ describe("CompleteWorkoutSession Use Case", () => {
   };
 
   it("should complete a workout session and grant XP", async () => {
-    (prisma.workoutPlan.findUnique as any).mockResolvedValue({ id: "plan-1", userId: "user-1" });
-    (prisma.workoutDay.findUnique as any).mockResolvedValue({ id: "day-1" });
-    (prisma.workoutSession.findUnique as any).mockResolvedValue({ id: "session-1", completedAt: null });
-    (prisma.workoutSession.update as any).mockResolvedValue({ 
-      id: "session-1", 
-      workoutDayId: "day-1", 
-      startedAt: new Date(), 
-      completedAt: new Date() 
+    (prisma.workoutPlan.findUnique as any).mockResolvedValue({
+      id: "plan-1",
+      userId: "user-1",
     });
-    (prisma.user.findUnique as any).mockResolvedValue({ id: "user-1", xp: 0, level: 1 });
+    (prisma.workoutDay.findUnique as any).mockResolvedValue({ id: "day-1" });
+    (prisma.workoutSession.findUnique as any).mockResolvedValue({
+      id: "session-1",
+      completedAt: null,
+    });
+    (prisma.workoutSession.update as any).mockResolvedValue({
+      id: "session-1",
+      workoutDayId: "day-1",
+      startedAt: new Date(),
+      completedAt: new Date(),
+    });
+    (prisma.user.findUnique as any).mockResolvedValue({
+      id: "user-1",
+      xp: 0,
+      level: 1,
+    });
     (prisma.xpTransaction.findFirst as any).mockResolvedValue(null);
 
     const completeWorkoutSession = new CompleteWorkoutSession();
@@ -48,18 +65,31 @@ describe("CompleteWorkoutSession Use Case", () => {
   });
 
   it("should throw ForbiddenError if user does not own the plan", async () => {
-    (prisma.workoutPlan.findUnique as any).mockResolvedValue({ id: "plan-1", userId: "other-user" });
+    (prisma.workoutPlan.findUnique as any).mockResolvedValue({
+      id: "plan-1",
+      userId: "other-user",
+    });
 
     const completeWorkoutSession = new CompleteWorkoutSession();
-    await expect(completeWorkoutSession.execute(dto)).rejects.toThrow(ForbiddenError);
+    await expect(completeWorkoutSession.execute(dto)).rejects.toThrow(
+      ForbiddenError,
+    );
   });
 
   it("should throw SessionAlreadyCompletedError if session is already done", async () => {
-    (prisma.workoutPlan.findUnique as any).mockResolvedValue({ id: "plan-1", userId: "user-1" });
+    (prisma.workoutPlan.findUnique as any).mockResolvedValue({
+      id: "plan-1",
+      userId: "user-1",
+    });
     (prisma.workoutDay.findUnique as any).mockResolvedValue({ id: "day-1" });
-    (prisma.workoutSession.findUnique as any).mockResolvedValue({ id: "session-1", completedAt: new Date() });
+    (prisma.workoutSession.findUnique as any).mockResolvedValue({
+      id: "session-1",
+      completedAt: new Date(),
+    });
 
     const completeWorkoutSession = new CompleteWorkoutSession();
-    await expect(completeWorkoutSession.execute(dto)).rejects.toThrow(SessionAlreadyCompletedError);
+    await expect(completeWorkoutSession.execute(dto)).rejects.toThrow(
+      SessionAlreadyCompletedError,
+    );
   });
 });

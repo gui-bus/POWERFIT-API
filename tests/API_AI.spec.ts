@@ -2,7 +2,6 @@ import { describe, expect, it, vi, beforeAll } from "vitest";
 import { app } from "../src/index.js";
 import { auth } from "../src/lib/auth.js";
 
-// Mock do Better Auth
 vi.mock("../src/lib/auth.js", () => ({
   auth: {
     api: {
@@ -11,7 +10,6 @@ vi.mock("../src/lib/auth.js", () => ({
   },
 }));
 
-// Mock do SDK de IA para evitar o erro de convertToModelMessages
 vi.mock("ai", async () => {
   return {
     convertToModelMessages: vi.fn().mockResolvedValue([]),
@@ -20,7 +18,7 @@ vi.mock("ai", async () => {
       toUIMessageStreamResponse: () => ({
         status: 200,
         headers: new Map([["Content-Type", "text/plain"]]),
-        body: null, // Evita timeout da stream
+        body: null,
       }),
     }),
     tool: vi.fn(),
@@ -37,7 +35,7 @@ describe("API AI Endpoints", () => {
     const response = await app.inject({
       method: "POST",
       url: "/ai/",
-      payload: { messages: [] }
+      payload: { messages: [] },
     });
     expect(response.statusCode).toBe(401);
   });
@@ -47,11 +45,9 @@ describe("API AI Endpoints", () => {
     const response = await app.inject({
       method: "POST",
       url: "/ai/",
-      payload: { 
-        messages: [
-          { id: "1", role: "user", content: "Olá" }
-        ] 
-      }
+      payload: {
+        messages: [{ id: "1", role: "user", content: "Olá" }],
+      },
     });
     expect(response.statusCode).toBe(200);
   });

@@ -21,7 +21,13 @@ describe("GetRanking Use Case", () => {
   it("should return users ranked by XP", async () => {
     const userId = "me";
     (prisma.user.findMany as any).mockResolvedValue([
-      { id: "user-1", name: "Top 1", xp: 5000, level: 10, activities: [{ workoutSession: { startedAt: new Date() } }] },
+      {
+        id: "user-1",
+        name: "Top 1",
+        xp: 5000,
+        level: 10,
+        activities: [{ workoutSession: { startedAt: new Date() } }],
+      },
       { id: "me", name: "Me", xp: 1000, level: 5, activities: [] },
     ]);
 

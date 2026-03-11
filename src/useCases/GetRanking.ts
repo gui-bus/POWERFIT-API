@@ -28,7 +28,6 @@ export class GetRanking {
   async execute(dto: InputDto): Promise<OutputDto> {
     const today = dayjs.utc().startOf("day");
 
-    // Fetch all users with basic info
     const users = await prisma.user.findMany({
       select: {
         id: true,
@@ -39,7 +38,6 @@ export class GetRanking {
       },
     });
 
-    // Fetch all completed sessions for streak calculation
     const sessions = await prisma.workoutSession.findMany({
       where: {
         completedAt: {
@@ -60,7 +58,6 @@ export class GetRanking {
       },
     });
 
-    // Group sessions by userId
     const userSessionsMap = new Map<string, Set<string>>();
     sessions.forEach((session) => {
       const userId = session.workoutDay.workoutPlan.userId;
@@ -72,14 +69,12 @@ export class GetRanking {
       userSessionsMap.get(userId)!.add(date);
     });
 
-    // Map users to ranking data with calculated streak
-    let rankings: UserRanking[] = users.map((user) => {
+    const rankings: UserRanking[] = users.map((user) => {
       const completedDates = userSessionsMap.get(user.id) || new Set();
-      
+
       let streak = 0;
       let checkDate = today;
 
-      // If today is not completed, check if yesterday was. If not, streak is 0.
       if (!completedDates.has(checkDate.format("YYYY-MM-DD"))) {
         checkDate = checkDate.subtract(1, "day");
       }
@@ -99,7 +94,6 @@ export class GetRanking {
       };
     });
 
-    // Sort based on requested criteria
     if (dto.sortBy === "STREAK") {
       rankings.sort((a, b) => {
         if (b.streak !== a.streak) {
@@ -123,7 +117,8 @@ export class GetRanking {
     }
 
     const top10 = rankings.slice(0, 10);
-    const currentUserPosition = rankings.findIndex((r) => r.id === dto.userId) + 1;
+    const currentUserPosition =
+      rankings.findIndex((r) => r.id === dto.userId) + 1;
 
     return {
       ranking: top10,

@@ -8,7 +8,6 @@ import { prisma } from "./db.js";
 const f = createUploadthing();
 
 export const uploadRouter = {
-  // Rota para foto de perfil
   profileImage: f({
     image: {
       maxFileSize: "4MB",
@@ -16,20 +15,18 @@ export const uploadRouter = {
     },
   })
     .middleware(async ({ req }) => {
-      // 1. Tenta pegar a sessão pelo Better Auth
       const session = await auth.api.getSession({
         headers: fromNodeHeaders(req.headers),
       });
 
       let userId: string | undefined = session?.user.id;
 
-      // 2. Fallback direto no banco de dados (mais robusto para cross-origin)
       if (!userId && req.headers.authorization) {
         const token = req.headers.authorization.replace("Bearer ", "");
-        
+
         const dbSession = await prisma.session.findUnique({
           where: { token },
-          select: { userId: true, expiresAt: true }
+          select: { userId: true, expiresAt: true },
         });
 
         if (dbSession && dbSession.expiresAt > new Date()) {
@@ -38,7 +35,10 @@ export const uploadRouter = {
       }
 
       if (!userId) {
-        console.error("Uploadthing: Falha total na autenticação. Token:", req.headers.authorization);
+        console.error(
+          "Uploadthing: Falha total na autenticação. Token:",
+          req.headers.authorization,
+        );
         throw new UploadThingError({
           code: "FORBIDDEN",
           message: "Sessão inválida ou expirada. Faça login novamente.",
@@ -56,7 +56,6 @@ export const uploadRouter = {
       return { uploadedBy: metadata.userId, url: file.url };
     }),
 
-  // Rota para fotos de treino (feed)
   workoutImage: f({
     image: {
       maxFileSize: "8MB",
@@ -64,20 +63,18 @@ export const uploadRouter = {
     },
   })
     .middleware(async ({ req }) => {
-      // 1. Tenta pegar a sessão pelo Better Auth
       const session = await auth.api.getSession({
         headers: fromNodeHeaders(req.headers),
       });
 
       let userId: string | undefined = session?.user.id;
 
-      // 2. Fallback direto no banco de dados (mais robusto para cross-origin)
       if (!userId && req.headers.authorization) {
         const token = req.headers.authorization.replace("Bearer ", "");
-        
+
         const dbSession = await prisma.session.findUnique({
           where: { token },
-          select: { userId: true, expiresAt: true }
+          select: { userId: true, expiresAt: true },
         });
 
         if (dbSession && dbSession.expiresAt > new Date()) {
@@ -86,7 +83,10 @@ export const uploadRouter = {
       }
 
       if (!userId) {
-        console.error("Uploadthing (Workout): Falha total na autenticação. Token:", req.headers.authorization);
+        console.error(
+          "Uploadthing (Workout): Falha total na autenticação. Token:",
+          req.headers.authorization,
+        );
         throw new UploadThingError({
           code: "FORBIDDEN",
           message: "Sessão inválida ou expirada. Faça login novamente.",

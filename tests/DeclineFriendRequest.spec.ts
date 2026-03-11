@@ -25,19 +25,24 @@ describe("DeclineFriendRequest Use Case", () => {
     const userId = "user-recipient";
     const requestId = "request-1";
 
-    (prisma.friendship.findFirst as any).mockResolvedValue({ id: requestId, friendId: userId });
+    (prisma.friendship.findFirst as any).mockResolvedValue({
+      id: requestId,
+      friendId: userId,
+    });
 
     const declineReq = new DeclineFriendRequest();
     await declineReq.execute({ userId, requestId });
 
     expect(prisma.friendship.delete).toHaveBeenCalledWith({
-      where: { id: requestId }
+      where: { id: requestId },
     });
   });
 
   it("should throw NotFoundError if request does not belong to user", async () => {
     (prisma.friendship.findFirst as any).mockResolvedValue(null);
     const declineReq = new DeclineFriendRequest();
-    await expect(declineReq.execute({ userId: "wrong-user", requestId: "any" })).rejects.toThrow(NotFoundError);
+    await expect(
+      declineReq.execute({ userId: "wrong-user", requestId: "any" }),
+    ).rejects.toThrow(NotFoundError);
   });
 });

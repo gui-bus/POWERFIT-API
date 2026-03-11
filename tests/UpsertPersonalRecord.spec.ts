@@ -20,11 +20,24 @@ describe("UpsertPersonalRecord Use Case", () => {
 
   it("should create record and notify friends if weight is higher", async () => {
     const userId = "user-1";
-    const dto = { userId, exerciseName: "Supino", weightInGrams: 100000, reps: 10 };
+    const dto = {
+      userId,
+      exerciseName: "Supino",
+      weightInGrams: 100000,
+      reps: 10,
+    };
 
-    (prisma.personalRecord.findFirst as any).mockResolvedValue({ weightInGrams: 80000 });
-    (prisma.friendship.findMany as any).mockResolvedValue([{ userId, friendId: "friend-1" }]);
-    (prisma.user.findUnique as any).mockResolvedValue({ id: userId, xp: 0, level: 1 });
+    (prisma.personalRecord.findFirst as any).mockResolvedValue({
+      weightInGrams: 80000,
+    });
+    (prisma.friendship.findMany as any).mockResolvedValue([
+      { userId, friendId: "friend-1" },
+    ]);
+    (prisma.user.findUnique as any).mockResolvedValue({
+      id: userId,
+      xp: 0,
+      level: 1,
+    });
 
     const upsertPR = new UpsertPersonalRecord();
     await upsertPR.execute(dto);
@@ -35,9 +48,16 @@ describe("UpsertPersonalRecord Use Case", () => {
 
   it("should do nothing if new weight is lower than existing record", async () => {
     const userId = "user-1";
-    const dto = { userId, exerciseName: "Supino", weightInGrams: 70000, reps: 10 };
+    const dto = {
+      userId,
+      exerciseName: "Supino",
+      weightInGrams: 70000,
+      reps: 10,
+    };
 
-    (prisma.personalRecord.findFirst as any).mockResolvedValue({ weightInGrams: 80000 });
+    (prisma.personalRecord.findFirst as any).mockResolvedValue({
+      weightInGrams: 80000,
+    });
 
     const upsertPR = new UpsertPersonalRecord();
     await upsertPR.execute(dto);

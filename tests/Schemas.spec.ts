@@ -1,13 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { PaginationQuerySchema, AddFriendSchema, UpdateProfileSchema } from "../src/schemas/index.js";
+import {
+  PaginationQuerySchema,
+  AddFriendSchema,
+  UpdateProfileSchema,
+} from "../src/schemas/index.js";
 
 describe("Zod Schemas Validation", () => {
   describe("PaginationQuerySchema", () => {
     it("should validate correct pagination params", () => {
-      const result = PaginationQuerySchema.safeParse({ limit: "10", cursor: "d62ed5b7-2266-497c-9a99-94d78a57798d" });
+      const result = PaginationQuerySchema.safeParse({
+        limit: "10",
+        cursor: "d62ed5b7-2266-497c-9a99-94d78a57798d",
+      });
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data.limit).toBe(10); // coerce transform
+        expect(result.data.limit).toBe(10);
       }
     });
 
@@ -31,7 +38,9 @@ describe("Zod Schemas Validation", () => {
     });
 
     it("should pass with a valid URL", () => {
-      const result = UpdateProfileSchema.safeParse({ image: "https://example.com/photo.jpg" });
+      const result = UpdateProfileSchema.safeParse({
+        image: "https://example.com/photo.jpg",
+      });
       expect(result.success).toBe(true);
     });
   });

@@ -3,7 +3,6 @@ import { CreateWorkoutPlan } from "../src/useCases/CreateWorkoutPlan.js";
 import { prisma } from "../src/lib/db.js";
 import { WeekDay } from "../src/generated/prisma/enums.js";
 
-// Mock do prisma global
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
     $transaction: vi.fn((callback) => callback(prisma)),
@@ -50,7 +49,6 @@ describe("CreateWorkoutPlan Use Case", () => {
     const createWorkoutPlan = new CreateWorkoutPlan();
     const result = await createWorkoutPlan.execute(dto);
 
-    // Verificações
     expect(prisma.workoutPlan.updateMany).toHaveBeenCalledWith({
       where: { userId, isActive: true },
       data: { isActive: false },

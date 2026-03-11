@@ -28,13 +28,11 @@ interface OutputDto {
 export class CreateWorkoutPlan {
   async execute(dto: InputDto): Promise<OutputDto> {
     return prisma.$transaction(async (tx) => {
-      // 1. Marcar planos antigos como inativos
       await tx.workoutPlan.updateMany({
         where: { userId: dto.userId, isActive: true },
         data: { isActive: false },
       });
 
-      // 2. Criar novo plano ativo
       const workoutPlan = await tx.workoutPlan.create({
         data: {
           name: dto.name,

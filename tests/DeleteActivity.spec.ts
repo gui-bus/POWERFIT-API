@@ -21,13 +21,16 @@ describe("DeleteActivity Use Case", () => {
     const userId = "user-1";
     const activityId = "activity-1";
 
-    (prisma.activity.findUnique as any).mockResolvedValue({ id: activityId, userId });
+    (prisma.activity.findUnique as any).mockResolvedValue({
+      id: activityId,
+      userId,
+    });
 
     const deleteActivity = new DeleteActivity();
     await deleteActivity.execute({ userId, activityId });
 
     expect(prisma.activity.delete).toHaveBeenCalledWith({
-      where: { id: activityId }
+      where: { id: activityId },
     });
   });
 
@@ -35,16 +38,23 @@ describe("DeleteActivity Use Case", () => {
     const userId = "user-1";
     const activityId = "activity-1";
 
-    (prisma.activity.findUnique as any).mockResolvedValue({ id: activityId, userId: "other-user" });
+    (prisma.activity.findUnique as any).mockResolvedValue({
+      id: activityId,
+      userId: "other-user",
+    });
 
     const deleteActivity = new DeleteActivity();
-    await expect(deleteActivity.execute({ userId, activityId })).rejects.toThrow(ForbiddenError);
+    await expect(
+      deleteActivity.execute({ userId, activityId }),
+    ).rejects.toThrow(ForbiddenError);
   });
 
   it("should throw NotFoundError if activity does not exist", async () => {
     (prisma.activity.findUnique as any).mockResolvedValue(null);
 
     const deleteActivity = new DeleteActivity();
-    await expect(deleteActivity.execute({ userId: "any", activityId: "any" })).rejects.toThrow(NotFoundError);
+    await expect(
+      deleteActivity.execute({ userId: "any", activityId: "any" }),
+    ).rejects.toThrow(NotFoundError);
   });
 });

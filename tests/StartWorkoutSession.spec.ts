@@ -1,7 +1,12 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { StartWorkoutSession } from "../src/useCases/StartWorkoutSession.js";
 import { prisma } from "../src/lib/db.js";
-import { ForbiddenError, NotFoundError, WorkoutPlanNotActiveError, SessionAlreadyStartedError } from "../src/errors/index.js";
+import {
+  ForbiddenError,
+  NotFoundError,
+  WorkoutPlanNotActiveError,
+  SessionAlreadyStartedError,
+} from "../src/errors/index.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -26,14 +31,14 @@ describe("StartWorkoutSession Use Case", () => {
       id: "plan-1",
       userId: "user-1",
       isActive: true,
-      workoutDays: [{ id: "day-1" }]
+      workoutDays: [{ id: "day-1" }],
     });
     (prisma.workoutSession.findFirst as any).mockResolvedValue(null);
     (prisma.workoutSession.create as any).mockResolvedValue({
       id: "sess-1",
       workoutDayId: "day-1",
       startedAt: new Date(),
-      completedAt: null
+      completedAt: null,
     });
 
     const startSession = new StartWorkoutSession();
@@ -48,11 +53,13 @@ describe("StartWorkoutSession Use Case", () => {
       id: "plan-1",
       userId: "user-1",
       isActive: false,
-      workoutDays: [{ id: "day-1" }]
+      workoutDays: [{ id: "day-1" }],
     });
 
     const startSession = new StartWorkoutSession();
-    await expect(startSession.execute(dto)).rejects.toThrow(WorkoutPlanNotActiveError);
+    await expect(startSession.execute(dto)).rejects.toThrow(
+      WorkoutPlanNotActiveError,
+    );
   });
 
   it("should throw SessionAlreadyStartedError if there is an open session", async () => {
@@ -60,11 +67,15 @@ describe("StartWorkoutSession Use Case", () => {
       id: "plan-1",
       userId: "user-1",
       isActive: true,
-      workoutDays: [{ id: "day-1" }]
+      workoutDays: [{ id: "day-1" }],
     });
-    (prisma.workoutSession.findFirst as any).mockResolvedValue({ id: "active-sess" });
+    (prisma.workoutSession.findFirst as any).mockResolvedValue({
+      id: "active-sess",
+    });
 
     const startSession = new StartWorkoutSession();
-    await expect(startSession.execute(dto)).rejects.toThrow(SessionAlreadyStartedError);
+    await expect(startSession.execute(dto)).rejects.toThrow(
+      SessionAlreadyStartedError,
+    );
   });
 });

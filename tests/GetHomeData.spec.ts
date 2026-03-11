@@ -17,20 +17,20 @@ describe("GetHomeData Use Case (Streak Logic)", () => {
 
   it("should calculate correct streak for a 3-day sequence", async () => {
     const userId = "user-1";
-    const today = "2026-03-10"; // Terça
+    const today = "2026-03-10";
 
     (prisma.workoutPlan.findFirst as any).mockResolvedValue(null);
-    (prisma.workoutSession.findMany as any).mockImplementation(({ where }: any) => {
-      // Se for a busca de sessões da semana (tem startedAt no where)
-      if (where.startedAt) return Promise.resolve([]);
-      
-      // Se for a busca de todas as concluídas (tem completedAt no where)
-      return Promise.resolve([
-        { startedAt: dayjs.utc("2026-03-10").toDate() },
-        { startedAt: dayjs.utc("2026-03-09").toDate() },
-        { startedAt: dayjs.utc("2026-03-08").toDate() },
-      ]);
-    });
+    (prisma.workoutSession.findMany as any).mockImplementation(
+      ({ where }: any) => {
+        if (where.startedAt) return Promise.resolve([]);
+
+        return Promise.resolve([
+          { startedAt: dayjs.utc("2026-03-10").toDate() },
+          { startedAt: dayjs.utc("2026-03-09").toDate() },
+          { startedAt: dayjs.utc("2026-03-08").toDate() },
+        ]);
+      },
+    );
 
     const getHomeData = new GetHomeData();
     const result = await getHomeData.execute({ userId, date: today });

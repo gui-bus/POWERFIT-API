@@ -18,7 +18,6 @@ export class UpsertPersonalRecord {
       orderBy: { weightInGrams: "desc" },
     });
 
-    // Só atualiza se o peso for maior
     if (!existingPr || dto.weightInGrams > existingPr.weightInGrams) {
       await prisma.$transaction(async (tx) => {
         await tx.personalRecord.create({
@@ -31,7 +30,7 @@ export class UpsertPersonalRecord {
         });
 
         const grantXp = new GrantXp();
-        // Bônus alto por quebrar recorde
+
         await grantXp.execute(
           {
             userId: dto.userId,
@@ -41,7 +40,6 @@ export class UpsertPersonalRecord {
           tx,
         );
 
-        // Notificar amigos sobre o novo recorde
         const friendships = await tx.friendship.findMany({
           where: {
             OR: [{ userId: dto.userId }, { friendId: dto.userId }],

@@ -1,4 +1,3 @@
-//#region Imports
 import "dotenv/config";
 
 import fastifyCors from "@fastify/cors";
@@ -11,7 +10,6 @@ import {
   validatorCompiler,
   ZodTypeProvider,
 } from "fastify-type-provider-zod";
-//#endregion
 import { createRouteHandler } from "uploadthing/fastify";
 
 import { auth } from "./lib/auth.js";
@@ -26,12 +24,10 @@ import { statsRoutes } from "./routes/stats.js";
 import { userRoutes } from "./routes/user.js";
 import { workoutPlanRoutes } from "./routes/workoutPlan.js";
 
-//#region Config
 const app = Fastify({
   logger: true,
 });
 
-// Registrar Uploadthing
 await app.register(createRouteHandler, {
   router: uploadRouter,
   config: {
@@ -41,9 +37,7 @@ await app.register(createRouteHandler, {
 
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
-//#endregion
 
-//#region Docs
 await app.register(fastifySwagger, {
   openapi: {
     info: {
@@ -84,9 +78,7 @@ await app.register(fastifyApiReference, {
     ],
   },
 });
-//#endregion
 
-//#region Routes
 await app.register(workoutPlanRoutes, { prefix: "/workout-plans" });
 await app.register(homeRoutes, { prefix: "/home" });
 await app.register(statsRoutes, { prefix: "/stats" });
@@ -143,9 +135,7 @@ app.withTypeProvider<ZodTypeProvider>().route({
     }
   },
 });
-//#endregion
 
-//#region Server Execution
 if (process.env.NODE_ENV !== "test") {
   try {
     await app.listen({ port: Number(process.env.PORT) || 8080 });
@@ -156,4 +146,3 @@ if (process.env.NODE_ENV !== "test") {
 }
 
 export { app };
-//#endregion

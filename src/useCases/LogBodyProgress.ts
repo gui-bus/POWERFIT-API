@@ -11,7 +11,6 @@ interface InputDto {
 export class LogBodyProgress {
   async execute(dto: InputDto): Promise<void> {
     await prisma.$transaction(async (tx) => {
-      // 1. Criar log histórico
       await tx.bodyProgressLog.create({
         data: {
           userId: dto.userId,
@@ -22,7 +21,6 @@ export class LogBodyProgress {
         },
       });
 
-      // 2. Atualizar estado atual (UserTrainData)
       await tx.userTrainData.upsert({
         where: { userId: dto.userId },
         create: {

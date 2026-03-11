@@ -33,7 +33,6 @@ describe("GrantXp Use Case", () => {
   });
 
   it("should level up when enough XP is gained", async () => {
-    // Para level 2 precisa de 500 XP
     const mockUser = { id: "user-1", xp: 480, level: 1 };
 
     const mockTx = {

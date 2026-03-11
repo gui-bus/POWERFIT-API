@@ -1,8 +1,14 @@
+import { PrismaClient } from "../generated/prisma/client.js";
 import { prisma } from "./db.js";
 
-export const ensureInitialAchievements = async (tx?: any) => {
+type PrismaTransaction = Omit<
+  PrismaClient,
+  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
+
+export const ensureInitialAchievements = async (tx?: PrismaTransaction) => {
   const client = tx || prisma;
-  
+
   const count = await client.achievement.count();
   if (count === 0) {
     await client.achievement.createMany({
@@ -14,7 +20,8 @@ export const ensureInitialAchievements = async (tx?: any) => {
         },
         {
           name: "Socializador",
-          description: "Adicionou seu primeiro amigo ou enviou uma solicitação.",
+          description:
+            "Adicionou seu primeiro amigo ou enviou uma solicitação.",
           xpReward: 50,
         },
         {
@@ -32,9 +39,9 @@ export const ensureInitialAchievements = async (tx?: any) => {
   }
 };
 
-export const ensureInitialChallenges = async (tx?: any) => {
+export const ensureInitialChallenges = async (tx?: PrismaTransaction) => {
   const client = tx || prisma;
-  
+
   const globalChallengesCount = await client.challenge.count({
     where: { type: "GLOBAL" },
   });

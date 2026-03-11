@@ -43,7 +43,10 @@ export const feedRoutes = async (app: FastifyInstance) => {
             .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
         }
 
-        const { cursor, limit } = request.query as { cursor?: string; limit?: number };
+        const { cursor, limit } = request.query as {
+          cursor?: string;
+          limit?: number;
+        };
 
         const getFeed = new GetFeed();
         const result = await getFeed.execute({
@@ -93,7 +96,10 @@ export const feedRoutes = async (app: FastifyInstance) => {
             .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
         }
 
-        const { cursor, limit } = request.query as { cursor?: string; limit?: number };
+        const { cursor, limit } = request.query as {
+          cursor?: string;
+          limit?: number;
+        };
 
         const getFeed = new GetFeed();
         const result = await getFeed.execute({

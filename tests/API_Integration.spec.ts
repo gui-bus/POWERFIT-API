@@ -26,18 +26,23 @@ describe("API Integration Tests", () => {
   describe("GET /notifications", () => {
     it("should return 401 if not authenticated", async () => {
       (auth.api.getSession as any).mockResolvedValue(null);
-      const response = await app.inject({ method: "GET", url: "/notifications/" });
+      const response = await app.inject({
+        method: "GET",
+        url: "/notifications/",
+      });
       expect(response.statusCode).toBe(401);
     });
   });
 
   describe("PATCH /me", () => {
     it("should return 400 for invalid email/url in update profile", async () => {
-      (auth.api.getSession as any).mockResolvedValue({ user: { id: "user-1" } });
+      (auth.api.getSession as any).mockResolvedValue({
+        user: { id: "user-1" },
+      });
       const response = await app.inject({
         method: "PATCH",
         url: "/me",
-        payload: { image: "invalid-url" }
+        payload: { image: "invalid-url" },
       });
       expect(response.statusCode).toBe(400);
     });
@@ -45,9 +50,14 @@ describe("API Integration Tests", () => {
 
   describe("GET /home", () => {
     it("should return 400 if date is missing in query", async () => {
-      (auth.api.getSession as any).mockResolvedValue({ user: { id: "user-1" } });
-      const response = await app.inject({ method: "GET", url: "/home/2026-03-10" });
-      expect(response.statusCode).not.toBe(400); // O date agora é parâmetro de URL e não query
+      (auth.api.getSession as any).mockResolvedValue({
+        user: { id: "user-1" },
+      });
+      const response = await app.inject({
+        method: "GET",
+        url: "/home/2026-03-10",
+      });
+      expect(response.statusCode).not.toBe(400);
     });
   });
 });

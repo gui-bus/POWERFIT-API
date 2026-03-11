@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
+
 import { ForbiddenError, NotFoundError } from "../errors/index.js";
 import { prisma } from "../lib/db.js";
 
@@ -41,7 +42,7 @@ export class GetUserProfile {
         trainData: true,
         achievements: {
           include: { achievement: true },
-          orderBy: { unlockedAt: 'desc' },
+          orderBy: { unlockedAt: "desc" },
         },
         friends: {
           where: { friendId: dto.userId },
@@ -57,15 +58,17 @@ export class GetUserProfile {
     }
 
     const friendship = targetUser.friends[0] || targetUser.friendOf[0];
-    const isFriend = friendship?.status === 'ACCEPTED';
-    const isPending = friendship?.status === 'PENDING';
+    const isFriend = friendship?.status === "ACCEPTED";
+    const isPending = friendship?.status === "PENDING";
 
-    // Se o perfil for privado e não forem amigos, bloqueia (exceto se for eu mesmo)
-    if (!targetUser.isPublicProfile && !isFriend && dto.userId !== dto.targetUserId) {
+    if (
+      !targetUser.isPublicProfile &&
+      !isFriend &&
+      dto.userId !== dto.targetUserId
+    ) {
       throw new ForbiddenError("This profile is private");
     }
 
-    // Calcular Streak do usuário alvo
     const sessions = await prisma.workoutSession.findMany({
       where: {
         workoutDay: { workoutPlan: { userId: dto.targetUserId } },
@@ -91,9 +94,6 @@ export class GetUserProfile {
       checkDate = checkDate.subtract(1, "day");
     }
 
-    // Lógica corrigida para biometria:
-    // 1. Sou eu mesmo? Mostra sempre.
-    // 2. É outra pessoa? Mostra apenas se showStats estiver TRUE.
     const canSeeStats = dto.userId === dto.targetUserId || targetUser.showStats;
 
     return {
@@ -105,13 +105,16 @@ export class GetUserProfile {
       streak,
       isFriend,
       isPending,
-      stats: canSeeStats && targetUser.trainData ? {
-        weightInGrams: targetUser.trainData.weightInGrams,
-        heightInCentimeters: targetUser.trainData.heightInCentimeters,
-        age: targetUser.trainData.age,
-        bodyFatPercentage: targetUser.trainData.bodyFatPercentage,
-      } : null,
-      achievements: targetUser.achievements.map(ua => ({
+      stats:
+        canSeeStats && targetUser.trainData
+          ? {
+              weightInGrams: targetUser.trainData.weightInGrams,
+              heightInCentimeters: targetUser.trainData.heightInCentimeters,
+              age: targetUser.trainData.age,
+              bodyFatPercentage: targetUser.trainData.bodyFatPercentage,
+            }
+          : null,
+      achievements: targetUser.achievements.map((ua) => ({
         id: ua.achievement.id,
         name: ua.achievement.name,
         iconUrl: ua.achievement.iconUrl,

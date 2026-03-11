@@ -31,16 +31,25 @@ describe("AddFriend Use Case", () => {
     const friendId = "user-2";
     const friendCode = "ABC-123";
 
-    (prisma.user.findFirst as any).mockResolvedValue({ id: friendId, name: "Friend" });
+    (prisma.user.findFirst as any).mockResolvedValue({
+      id: friendId,
+      name: "Friend",
+    });
     (prisma.friendship.findFirst as any).mockResolvedValue(null);
-    (prisma.notification.create as any).mockResolvedValue({ id: "notif-1", recipientId: friendId });
+    (prisma.notification.create as any).mockResolvedValue({
+      id: "notif-1",
+      recipientId: friendId,
+    });
 
     const addFriend = new AddFriend();
     const result = await addFriend.execute({ userId, codeOrEmail: friendCode });
 
     expect(prisma.friendship.create).toHaveBeenCalled();
     expect(prisma.notification.create).toHaveBeenCalled();
-    expect(notificationEvents.emit).toHaveBeenCalledWith("new-notification", expect.anything());
+    expect(notificationEvents.emit).toHaveBeenCalledWith(
+      "new-notification",
+      expect.anything(),
+    );
     expect(result.id).toBe(friendId);
   });
 
@@ -49,6 +58,8 @@ describe("AddFriend Use Case", () => {
     (prisma.user.findFirst as any).mockResolvedValue({ id: userId });
 
     const addFriend = new AddFriend();
-    await expect(addFriend.execute({ userId, codeOrEmail: "any" })).rejects.toThrow("You cannot add yourself as a friend");
+    await expect(
+      addFriend.execute({ userId, codeOrEmail: "any" }),
+    ).rejects.toThrow("You cannot add yourself as a friend");
   });
 });

@@ -5,7 +5,7 @@ import { openAPI } from "better-auth/plugins";
 import { prisma } from "./db.js";
 
 export const auth = betterAuth({
-  baseURL: process.env.BETTER_AUTH_URL, 
+  baseURL: process.env.BETTER_AUTH_URL,
   trustedOrigins: ["http://localhost:3000"],
   socialProviders: {
     google: {

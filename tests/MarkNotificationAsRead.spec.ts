@@ -21,14 +21,17 @@ describe("MarkNotificationAsRead Use Case", () => {
     const userId = "user-1";
     const notificationId = "notif-1";
 
-    (prisma.notification.findUnique as any).mockResolvedValue({ id: notificationId, recipientId: userId });
+    (prisma.notification.findUnique as any).mockResolvedValue({
+      id: notificationId,
+      recipientId: userId,
+    });
 
     const markAsRead = new MarkNotificationAsRead();
     await markAsRead.execute({ userId, notificationId });
 
     expect(prisma.notification.update).toHaveBeenCalledWith({
       where: { id: notificationId },
-      data: { isRead: true }
+      data: { isRead: true },
     });
   });
 
@@ -36,9 +39,14 @@ describe("MarkNotificationAsRead Use Case", () => {
     const userId = "user-1";
     const notificationId = "notif-1";
 
-    (prisma.notification.findUnique as any).mockResolvedValue({ id: notificationId, recipientId: "other-user" });
+    (prisma.notification.findUnique as any).mockResolvedValue({
+      id: notificationId,
+      recipientId: "other-user",
+    });
 
     const markAsRead = new MarkNotificationAsRead();
-    await expect(markAsRead.execute({ userId, notificationId })).rejects.toThrow(NotFoundError);
+    await expect(
+      markAsRead.execute({ userId, notificationId }),
+    ).rejects.toThrow(NotFoundError);
   });
 });

@@ -17,10 +17,7 @@ export class GetFriends {
   async execute(dto: InputDto): Promise<OutputDto[]> {
     const friendships = await prisma.friendship.findMany({
       where: {
-        OR: [
-          { userId: dto.userId },
-          { friendId: dto.userId },
-        ],
+        OR: [{ userId: dto.userId }, { friendId: dto.userId }],
         status: "ACCEPTED",
       },
       include: {
