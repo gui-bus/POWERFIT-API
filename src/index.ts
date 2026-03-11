@@ -15,6 +15,7 @@ import { createRouteHandler } from "uploadthing/fastify";
 import { AppError } from "./errors/index.js";
 import { auth } from "./lib/auth.js";
 import { authenticate } from "./lib/auth-middleware.js";
+import { env } from "./lib/env.js";
 import { uploadRouter } from "./lib/uploadthing.js";
 import { aiRoutes } from "./routes/ai.js";
 import { feedRoutes } from "./routes/feed.js";
@@ -49,11 +50,11 @@ app.setErrorHandler((error, request, reply) => {
     });
   }
 
-  if (error.validation) {
+  if ((error as any).validation) {
     return reply.status(400).send({
       error: "Validation error",
       code: "VALIDATION_ERROR",
-      details: error.validation,
+      details: (error as any).validation,
     });
   }
 
@@ -66,7 +67,7 @@ app.setErrorHandler((error, request, reply) => {
 await app.register(createRouteHandler, {
   router: uploadRouter,
   config: {
-    token: process.env.UPLOADTHING_TOKEN,
+    token: env.UPLOADTHING_TOKEN,
   },
 });
 
@@ -79,8 +80,8 @@ await app.register(fastifySwagger, {
     },
     servers: [
       {
-        description: "Localhost",
-        url: "http://localhost:8080",
+        description: "API Base URL",
+        url: env.API_BASE_URL,
       },
     ],
   },
@@ -88,7 +89,7 @@ await app.register(fastifySwagger, {
 });
 
 await app.register(fastifyCors, {
-  origin: ["http://localhost:3000"],
+  origin: [env.WEB_APP_BASE_URL || "http://localhost:3000"],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   credentials: true,
 });
@@ -168,9 +169,9 @@ app.withTypeProvider<ZodTypeProvider>().route({
   },
 });
 
-if (process.env.NODE_ENV !== "test") {
+if (env.NODE_ENV !== "test") {
   try {
-    await app.listen({ port: Number(process.env.PORT) || 8080 });
+    await app.listen({ port: env.PORT });
   } catch (err) {
     app.log.error(err);
     process.exit(1);
