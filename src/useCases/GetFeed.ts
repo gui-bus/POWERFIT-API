@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+
 import { ForbiddenError } from "../errors/index.js";
 import { prisma } from "../lib/db.js";
 
@@ -119,18 +121,18 @@ export class GetFeed {
       workoutPlanName: activity.workoutDay.workoutPlan.name,
       statusMessage: activity.statusMessage,
       imageUrl: activity.imageUrl,
-      startedAt: activity.workoutSession.startedAt.toISOString(),
-      completedAt: activity.workoutSession.completedAt!.toISOString(),
+      startedAt: dayjs(activity.workoutSession.startedAt).toISOString(),
+      completedAt: dayjs(activity.workoutSession.completedAt!).toISOString(),
       powerupsCount: activity.powerups.length,
       hasPowerupByMe: activity.powerups.some((p) => p.userId === dto.userId),
-      createdAt: activity.createdAt.toISOString(),
+      createdAt: dayjs(activity.createdAt).toISOString(),
       comments: activity.comments.map((c) => ({
         id: c.id,
         userId: c.user.id,
         userName: c.user.name,
         userImage: c.user.image,
         content: c.content,
-        createdAt: c.createdAt.toISOString(),
+        createdAt: dayjs(c.createdAt).toISOString(),
       })),
       taggedUsers: activity.taggedUsers.map((u) => ({
         id: u.id,

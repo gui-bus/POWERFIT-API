@@ -8,7 +8,7 @@ vi.mock("../src/lib/db.js", () => ({
     $transaction: vi.fn((callback) => callback(prisma)),
     userAchievement: { findMany: vi.fn(), create: vi.fn() },
     achievement: { findMany: vi.fn(), count: vi.fn().mockResolvedValue(3) },
-    workoutSession: { count: vi.fn() },
+    workoutSession: { count: vi.fn(), findMany: vi.fn() },
     friendship: { count: vi.fn() },
     powerup: { count: vi.fn() },
     notification: { create: vi.fn() },
@@ -17,8 +17,17 @@ vi.mock("../src/lib/db.js", () => ({
   },
 }));
 
-vi.mock("../src/lib/gamification.js", () => ({
-  ensureInitialAchievements: vi.fn(),
+vi.mock("../src/lib/gamification.js", async (importOriginal) => {
+  const actual = await importOriginal<any>();
+  return {
+    ...actual,
+    ensureInitialAchievements: vi.fn(),
+    calculateLevel: vi.fn().mockReturnValue(1),
+  };
+});
+
+vi.mock("../src/lib/events.js", () => ({
+  notificationEvents: { emit: vi.fn() },
 }));
 
 describe("CheckAchievements Use Case", () => {

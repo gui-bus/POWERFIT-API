@@ -1,6 +1,6 @@
 import { NotFoundError } from "../errors/index.js";
 import { prisma } from "../lib/db.js";
-import { notificationEvents } from "../lib/events.js";
+import { CheckAchievements } from "./CheckAchievements.js";
 import { GrantXp } from "./GrantXp.js";
 
 interface InputDto {
@@ -53,14 +53,22 @@ export class AddComment {
                 ? `${dto.content.substring(0, 47)}...`
                 : dto.content,
           },
-          include: { sender: true },
         });
       }
       return notif;
     });
 
     if (notification) {
+      const { notificationEvents } = await import("../lib/events.js");
       notificationEvents.emit("new-notification", notification);
     }
+
+    const checkAchievements = new CheckAchievements();
+    await Promise.all([
+      checkAchievements.execute({ userId: dto.userId }),
+      activity.userId !== dto.userId
+        ? checkAchievements.execute({ userId: activity.userId })
+        : Promise.resolve(),
+    ]);
   }
 }

@@ -1,6 +1,11 @@
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+
 import { prisma } from "../lib/db.js";
-import { ensureInitialAchievements } from "../lib/gamification.js";
+import { calculateStreak, ensureInitialAchievements } from "../lib/gamification.js";
 import { GrantXp } from "./GrantXp.js";
+
+dayjs.extend(utc);
 
 interface InputDto {
   userId: string;
@@ -29,30 +34,51 @@ export class CheckAchievements {
       for (const achievement of pendingAchievements) {
         let shouldUnlock = false;
 
-        if (achievement.name === "Primeiro Passo") {
-          const workoutCount = await tx.workoutSession.count({
-            where: {
-              workoutDay: { workoutPlan: { userId: dto.userId } },
-              completedAt: { not: null },
-            },
-          });
-          if (workoutCount >= 1) shouldUnlock = true;
-        }
+        switch (achievement.name) {
+          case "Primeiro Passo": {
+            const workoutCount = await tx.workoutSession.count({
+              where: {
+                workoutDay: { workoutPlan: { userId: dto.userId } },
+                completedAt: { not: null },
+              },
+            });
+            if (workoutCount >= 1) shouldUnlock = true;
+            break;
+          }
+          case "Socializador": {
+            const friendCount = await tx.friendship.count({
+              where: {
+                OR: [{ userId: dto.userId }, { friendId: dto.userId }],
+              },
+            });
+            if (friendCount >= 1) shouldUnlock = true;
+            break;
+          }
+          case "Mestre do Incentivo": {
+            const powerupCount = await tx.powerup.count({
+              where: { userId: dto.userId },
+            });
+            if (powerupCount >= 1) shouldUnlock = true;
+            break;
+          }
+          case "Constância de Ferro": {
+            const sessions = await tx.workoutSession.findMany({
+              where: {
+                workoutDay: { workoutPlan: { userId: dto.userId } },
+                completedAt: { not: null },
+              },
+              select: { startedAt: true },
+              orderBy: { startedAt: "desc" },
+            });
 
-        if (achievement.name === "Socializador") {
-          const friendCount = await tx.friendship.count({
-            where: {
-              OR: [{ userId: dto.userId }, { friendId: dto.userId }],
-            },
-          });
-          if (friendCount >= 1) shouldUnlock = true;
-        }
+            const completedDates = new Set(
+              sessions.map((s) => dayjs.utc(s.startedAt).format("YYYY-MM-DD")),
+            );
 
-        if (achievement.name === "Mestre do Incentivo") {
-          const powerupCount = await tx.powerup.count({
-            where: { userId: dto.userId },
-          });
-          if (powerupCount >= 1) shouldUnlock = true;
+            const streak = calculateStreak(completedDates);
+            if (streak >= 7) shouldUnlock = true;
+            break;
+          }
         }
 
         if (shouldUnlock) {
@@ -63,13 +89,16 @@ export class CheckAchievements {
             },
           });
 
-          await tx.notification.create({
+          const notification = await tx.notification.create({
             data: {
               recipientId: dto.userId,
               type: "ACHIEVEMENT_UNLOCKED",
               achievementId: achievement.id,
             },
           });
+
+          const { notificationEvents } = await import("../lib/events.js");
+          notificationEvents.emit("new-notification", notification);
 
           if (achievement.xpReward > 0) {
             await grantXp.execute(

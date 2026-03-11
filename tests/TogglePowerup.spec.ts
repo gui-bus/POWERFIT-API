@@ -10,7 +10,7 @@ vi.mock("../src/lib/db.js", () => ({
     $transaction: vi.fn((callback) => callback(prisma)),
     activity: { findUnique: vi.fn() },
     friendship: { findFirst: vi.fn() },
-    powerup: { findUnique: vi.fn(), delete: vi.fn(), create: vi.fn() },
+    powerup: { findUnique: vi.fn(), delete: vi.fn(), create: vi.fn(), count: vi.fn() },
     notification: { create: vi.fn() },
     user: { findUnique: vi.fn(), update: vi.fn() },
     xpTransaction: { findFirst: vi.fn(), create: vi.fn() },
@@ -18,13 +18,21 @@ vi.mock("../src/lib/db.js", () => ({
       count: vi.fn().mockResolvedValue(10),
       findMany: vi.fn().mockResolvedValue([]),
     },
-    userAchievement: { findMany: vi.fn().mockResolvedValue([]) },
+    userAchievement: { findMany: vi.fn().mockResolvedValue([]), create: vi.fn() },
   },
 }));
 
 vi.mock("../src/lib/events.js", () => ({
   notificationEvents: { emit: vi.fn() },
 }));
+
+vi.mock("../src/lib/gamification.js", async (importOriginal) => {
+  const actual = await importOriginal<any>();
+  return {
+    ...actual,
+    ensureInitialAchievements: vi.fn(),
+  };
+});
 
 describe("TogglePowerup Use Case", () => {
   beforeEach(() => {

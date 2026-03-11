@@ -8,15 +8,31 @@ vi.mock("../src/lib/db.js", () => ({
     $transaction: vi.fn((callback) => callback(prisma)),
     personalRecord: { findFirst: vi.fn(), create: vi.fn() },
     friendship: { findMany: vi.fn() },
-    notification: { createMany: vi.fn() },
+    notification: { create: vi.fn(), createMany: vi.fn() },
     user: { findUnique: vi.fn(), update: vi.fn() },
     xpTransaction: { findFirst: vi.fn(), create: vi.fn() },
+    achievement: { count: vi.fn(), findMany: vi.fn() },
+    userAchievement: { findMany: vi.fn(), create: vi.fn() },
   },
+}));
+
+vi.mock("../src/lib/gamification.js", async (importOriginal) => {
+  const actual = await importOriginal<any>();
+  return {
+    ...actual,
+    ensureInitialAchievements: vi.fn(),
+  };
+});
+
+vi.mock("../src/lib/events.js", () => ({
+  notificationEvents: { emit: vi.fn() },
 }));
 
 describe("UpsertPersonalRecord Use Case", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    (prisma.achievement.findMany as any).mockResolvedValue([]);
+    (prisma.userAchievement.findMany as any).mockResolvedValue([]);
   });
 
   it("should create record and notify friends if weight is higher", async () => {

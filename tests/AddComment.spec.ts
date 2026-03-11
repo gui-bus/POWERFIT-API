@@ -12,6 +12,8 @@ vi.mock("../src/lib/db.js", () => ({
     notification: { create: vi.fn() },
     user: { findUnique: vi.fn(), update: vi.fn() },
     xpTransaction: { findFirst: vi.fn(), create: vi.fn() },
+    achievement: { count: vi.fn(), findMany: vi.fn() },
+    userAchievement: { findMany: vi.fn(), create: vi.fn() },
   },
 }));
 
@@ -19,9 +21,19 @@ vi.mock("../src/lib/events.js", () => ({
   notificationEvents: { emit: vi.fn() },
 }));
 
+vi.mock("../src/lib/gamification.js", async (importOriginal) => {
+  const actual = await importOriginal<any>();
+  return {
+    ...actual,
+    ensureInitialAchievements: vi.fn(),
+  };
+});
+
 describe("AddComment Use Case", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    (prisma.achievement.findMany as any).mockResolvedValue([]);
+    (prisma.userAchievement.findMany as any).mockResolvedValue([]);
   });
 
   it("should add a comment and notify the owner", async () => {

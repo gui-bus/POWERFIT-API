@@ -5,14 +5,37 @@ import { JoinChallenge } from "../src/useCases/JoinChallenge.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
+    $transaction: vi.fn((callback) => callback(prisma)),
     challenge: { findUnique: vi.fn() },
     challengeParticipant: { findUnique: vi.fn(), create: vi.fn() },
+    achievement: { count: vi.fn(), findMany: vi.fn() },
+    userAchievement: { findMany: vi.fn(), create: vi.fn() },
+    workoutSession: { count: vi.fn() },
+    friendship: { count: vi.fn() },
+    powerup: { count: vi.fn() },
+    notification: { create: vi.fn() },
+    user: { findUnique: vi.fn(), update: vi.fn() },
+    xpTransaction: { findFirst: vi.fn(), create: vi.fn() },
   },
+}));
+
+vi.mock("../src/lib/gamification.js", async (importOriginal) => {
+  const actual = await importOriginal<any>();
+  return {
+    ...actual,
+    ensureInitialAchievements: vi.fn(),
+  };
+});
+
+vi.mock("../src/lib/events.js", () => ({
+  notificationEvents: { emit: vi.fn() },
 }));
 
 describe("JoinChallenge Use Case", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    (prisma.achievement.findMany as any).mockResolvedValue([]);
+    (prisma.userAchievement.findMany as any).mockResolvedValue([]);
   });
 
   it("should join a challenge if it's active and user is not a participant", async () => {

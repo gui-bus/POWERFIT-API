@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+
 import { XpReason } from "../generated/prisma/enums.js";
 import { prisma } from "../lib/db.js";
 
@@ -24,7 +26,7 @@ export class GetXpHistory {
       id: t.id,
       amount: t.amount,
       reason: t.reason,
-      createdAt: t.createdAt.toISOString(),
+      createdAt: dayjs(t.createdAt).toISOString(),
     }));
   }
 }

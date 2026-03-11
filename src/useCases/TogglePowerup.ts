@@ -1,6 +1,5 @@
 import { ForbiddenError, NotFoundError } from "../errors/index.js";
 import { prisma } from "../lib/db.js";
-import { notificationEvents } from "../lib/events.js";
 import { CheckAchievements } from "./CheckAchievements.js";
 import { GrantXp } from "./GrantXp.js";
 
@@ -80,7 +79,6 @@ export class TogglePowerup {
               type: "POWERUP_RECEIVED",
               activityId: activity.id,
             },
-            include: { sender: true },
           });
 
           await grantXp.execute(
@@ -97,16 +95,17 @@ export class TogglePowerup {
       });
 
       if (notification) {
+        const { notificationEvents } = await import("../lib/events.js");
         notificationEvents.emit("new-notification", notification);
       }
 
       const checkAchievements = new CheckAchievements();
-      checkAchievements.execute({ userId: dto.userId }).catch(console.error);
-      if (activity.userId !== dto.userId) {
-        checkAchievements
-          .execute({ userId: activity.userId })
-          .catch(console.error);
-      }
+      await Promise.all([
+        checkAchievements.execute({ userId: dto.userId }),
+        activity.userId !== dto.userId
+          ? checkAchievements.execute({ userId: activity.userId })
+          : Promise.resolve(),
+      ]);
     }
   }
 }

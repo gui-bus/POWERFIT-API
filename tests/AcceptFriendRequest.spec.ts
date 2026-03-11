@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
 import { notificationEvents } from "../src/lib/events.js";
@@ -10,6 +10,7 @@ vi.mock("../src/lib/db.js", () => ({
     friendship: {
       findFirst: vi.fn(),
       update: vi.fn(),
+      count: vi.fn()
     },
     notification: {
       create: vi.fn(),
@@ -28,7 +29,10 @@ vi.mock("../src/lib/db.js", () => ({
     },
     userAchievement: {
       findMany: vi.fn().mockResolvedValue([]),
+      create: vi.fn()
     },
+    workoutSession: { count: vi.fn() },
+    powerup: { count: vi.fn() }
   },
 }));
 
@@ -38,7 +42,19 @@ vi.mock("../src/lib/events.js", () => ({
   },
 }));
 
+vi.mock("../src/lib/gamification.js", async (importOriginal) => {
+  const actual = await importOriginal<any>();
+  return {
+    ...actual,
+    ensureInitialAchievements: vi.fn(),
+  };
+});
+
 describe("AcceptFriendRequest Use Case", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("should accept request, grant XP and notify", async () => {
     const userId = "user-1";
     const requestId = "request-1";

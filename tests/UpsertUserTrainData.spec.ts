@@ -1,17 +1,44 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
 import { UpsertUserTrainData } from "../src/useCases/UpsertUserTrainData.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
+    $transaction: vi.fn((callback) => callback(prisma)),
     userTrainData: {
       upsert: vi.fn(),
     },
+    achievement: { count: vi.fn(), findMany: vi.fn() },
+    userAchievement: { findMany: vi.fn(), create: vi.fn() },
+    workoutSession: { count: vi.fn() },
+    friendship: { count: vi.fn() },
+    powerup: { count: vi.fn() },
+    notification: { create: vi.fn() },
+    user: { findUnique: vi.fn(), update: vi.fn() },
+    xpTransaction: { findFirst: vi.fn(), create: vi.fn() },
   },
 }));
 
+vi.mock("../src/lib/gamification.js", async (importOriginal) => {
+  const actual = await importOriginal<any>();
+  return {
+    ...actual,
+    ensureInitialAchievements: vi.fn(),
+  };
+});
+
+vi.mock("../src/lib/events.js", () => ({
+  notificationEvents: { emit: vi.fn() },
+}));
+
 describe("UpsertUserTrainData Use Case", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (prisma.achievement.findMany as any).mockResolvedValue([]);
+    (prisma.userAchievement.findMany as any).mockResolvedValue([]);
+  });
+
   it("should create or update user train data", async () => {
     const userId = "user-1";
     const dto = {

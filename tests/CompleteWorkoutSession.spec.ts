@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   ForbiddenError,
@@ -12,20 +12,36 @@ vi.mock("../src/lib/db.js", () => ({
     $transaction: vi.fn((callback) => callback(prisma)),
     workoutPlan: { findUnique: vi.fn() },
     workoutDay: { findUnique: vi.fn() },
-    workoutSession: { findUnique: vi.fn(), update: vi.fn() },
+    workoutSession: { findUnique: vi.fn(), update: vi.fn(), count: vi.fn() },
     activity: { create: vi.fn() },
-    notification: { createMany: vi.fn() },
+    notification: { create: vi.fn(), createMany: vi.fn() },
     user: { findUnique: vi.fn(), update: vi.fn() },
     xpTransaction: { findFirst: vi.fn(), create: vi.fn() },
     achievement: {
       count: vi.fn().mockResolvedValue(10),
       findMany: vi.fn().mockResolvedValue([]),
     },
-    userAchievement: { findMany: vi.fn().mockResolvedValue([]) },
+    userAchievement: { findMany: vi.fn().mockResolvedValue([]), create: vi.fn() },
   },
 }));
 
+vi.mock("../src/lib/gamification.js", async (importOriginal) => {
+  const actual = await importOriginal<any>();
+  return {
+    ...actual,
+    ensureInitialAchievements: vi.fn(),
+  };
+});
+
+vi.mock("../src/lib/events.js", () => ({
+  notificationEvents: { emit: vi.fn() },
+}));
+
 describe("CompleteWorkoutSession Use Case", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   const dto = {
     userId: "user-1",
     workoutPlanId: "plan-1",

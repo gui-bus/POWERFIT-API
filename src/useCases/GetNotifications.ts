@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+
 import { NotificationType } from "../generated/prisma/enums.js";
 import { prisma } from "../lib/db.js";
 
@@ -58,7 +60,7 @@ export class GetNotifications {
       id: notification.id,
       type: notification.type,
       isRead: notification.isRead,
-      createdAt: notification.createdAt.toISOString(),
+      createdAt: dayjs(notification.createdAt).toISOString(),
       activityId: notification.activityId,
       achievementId: notification.achievementId,
       content: notification.content,

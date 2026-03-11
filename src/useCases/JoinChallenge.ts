@@ -1,5 +1,6 @@
 import { NotFoundError } from "../errors/index.js";
 import { prisma } from "../lib/db.js";
+import { CheckAchievements } from "./CheckAchievements.js";
 
 interface InputDto {
   userId: string;
@@ -39,5 +40,8 @@ export class JoinChallenge {
         userId: dto.userId,
       },
     });
+
+    const checkAchievements = new CheckAchievements();
+    await checkAchievements.execute({ userId: dto.userId });
   }
 }

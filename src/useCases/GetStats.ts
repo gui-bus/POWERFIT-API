@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 
 import { prisma } from "../lib/db.js";
+import { calculateStreak } from "../lib/gamification.js";
 
 dayjs.extend(utc);
 
@@ -130,17 +131,7 @@ export class GetStats {
       ),
     );
 
-    let streak = 0;
-    let checkDate = toDate.startOf("day");
-
-    if (!completedDates.has(checkDate.format("YYYY-MM-DD"))) {
-      checkDate = checkDate.subtract(1, "day");
-    }
-
-    while (completedDates.has(checkDate.format("YYYY-MM-DD"))) {
-      streak++;
-      checkDate = checkDate.subtract(1, "day");
-    }
+    const streak = calculateStreak(completedDates, toDate.startOf("day"));
 
     return {
       workoutStreak: streak,

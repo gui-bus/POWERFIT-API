@@ -1,6 +1,7 @@
 import { PrismaClient } from "../generated/prisma/client.js";
 import { XpReason } from "../generated/prisma/enums.js";
 import { prisma } from "../lib/db.js";
+import { calculateLevel } from "../lib/gamification.js";
 
 type PrismaTransaction = Omit<
   PrismaClient,
@@ -37,18 +38,7 @@ export class GrantXp {
     if (!user) return;
 
     const newTotalXp = user.xp + dto.amount;
-
-    let calculatedLevel = 1;
-    let tempXp = newTotalXp;
-    let requiredXp = 500;
-
-    while (tempXp >= requiredXp) {
-      tempXp -= requiredXp;
-      calculatedLevel++;
-      requiredXp = calculatedLevel * 500;
-    }
-
-    const newLevel = calculatedLevel;
+    const newLevel = calculateLevel(newTotalXp);
 
     await client.user.update({
       where: { id: dto.userId },
@@ -75,11 +65,8 @@ export class GrantXp {
         },
       });
 
-      import("../lib/events.js")
-        .then(({ notificationEvents }) => {
-          notificationEvents.emit("new-notification", notification);
-        })
-        .catch(() => {});
+      const { notificationEvents } = await import("../lib/events.js");
+      notificationEvents.emit("new-notification", notification);
     }
   }
 }

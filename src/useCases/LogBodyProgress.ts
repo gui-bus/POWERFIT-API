@@ -1,4 +1,5 @@
 import { prisma } from "../lib/db.js";
+import { CheckAchievements } from "./CheckAchievements.js";
 
 interface InputDto {
   userId: string;
@@ -38,5 +39,8 @@ export class LogBodyProgress {
         },
       });
     });
+
+    const checkAchievements = new CheckAchievements();
+    await checkAchievements.execute({ userId: dto.userId });
   }
 }

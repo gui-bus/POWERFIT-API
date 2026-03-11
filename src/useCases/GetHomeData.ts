@@ -3,6 +3,7 @@ import utc from "dayjs/plugin/utc.js";
 
 import { WeekDay } from "../generated/prisma/enums.js";
 import { prisma } from "../lib/db.js";
+import { calculateStreak } from "../lib/gamification.js";
 
 dayjs.extend(utc);
 
@@ -142,17 +143,7 @@ export class GetHomeData {
       ),
     );
 
-    let streak = 0;
-    let checkDate = targetDate;
-
-    if (!completedDates.has(checkDate.format("YYYY-MM-DD"))) {
-      checkDate = checkDate.subtract(1, "day");
-    }
-
-    while (completedDates.has(checkDate.format("YYYY-MM-DD"))) {
-      streak++;
-      checkDate = checkDate.subtract(1, "day");
-    }
+    const streak = calculateStreak(completedDates, targetDate);
 
     return {
       activeWorkoutPlanId: activeWorkoutPlan?.id ?? null,

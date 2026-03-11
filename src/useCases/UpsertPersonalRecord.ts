@@ -1,4 +1,5 @@
 import { prisma } from "../lib/db.js";
+import { CheckAchievements } from "./CheckAchievements.js";
 import { GrantXp } from "./GrantXp.js";
 
 interface InputDto {
@@ -61,6 +62,9 @@ export class UpsertPersonalRecord {
           });
         }
       });
+
+      const checkAchievements = new CheckAchievements();
+      await checkAchievements.execute({ userId: dto.userId });
     }
   }
 }

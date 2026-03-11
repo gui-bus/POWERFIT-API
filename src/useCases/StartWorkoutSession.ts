@@ -76,9 +76,9 @@ export class StartWorkoutSession {
     return {
       id: workoutSession.id,
       workoutDayId: workoutSession.workoutDayId,
-      startedAt: workoutSession.startedAt.toISOString(),
+      startedAt: dayjs(workoutSession.startedAt).toISOString(),
       completedAt: workoutSession.completedAt
-        ? workoutSession.completedAt.toISOString()
+        ? dayjs(workoutSession.completedAt).toISOString()
         : null,
     };
   }

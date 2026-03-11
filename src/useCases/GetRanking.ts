@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 
 import { prisma } from "../lib/db.js";
+import { calculateStreak } from "../lib/gamification.js";
 
 dayjs.extend(utc);
 
@@ -70,19 +71,8 @@ export class GetRanking {
     });
 
     const rankings: UserRanking[] = users.map((user) => {
-      const completedDates = userSessionsMap.get(user.id) || new Set();
-
-      let streak = 0;
-      let checkDate = today;
-
-      if (!completedDates.has(checkDate.format("YYYY-MM-DD"))) {
-        checkDate = checkDate.subtract(1, "day");
-      }
-
-      while (completedDates.has(checkDate.format("YYYY-MM-DD"))) {
-        streak++;
-        checkDate = checkDate.subtract(1, "day");
-      }
+      const completedDates = userSessionsMap.get(user.id) || new Set<string>();
+      const streak = calculateStreak(completedDates, today);
 
       return {
         id: user.id,

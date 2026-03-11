@@ -3,6 +3,7 @@ import utc from "dayjs/plugin/utc.js";
 
 import { ForbiddenError, NotFoundError } from "../errors/index.js";
 import { prisma } from "../lib/db.js";
+import { calculateStreak } from "../lib/gamification.js";
 
 dayjs.extend(utc);
 
@@ -82,17 +83,7 @@ export class GetUserProfile {
       sessions.map((s) => dayjs.utc(s.startedAt).format("YYYY-MM-DD")),
     );
 
-    let streak = 0;
-    let checkDate = dayjs.utc().startOf("day");
-
-    if (!completedDates.has(checkDate.format("YYYY-MM-DD"))) {
-      checkDate = checkDate.subtract(1, "day");
-    }
-
-    while (completedDates.has(checkDate.format("YYYY-MM-DD"))) {
-      streak++;
-      checkDate = checkDate.subtract(1, "day");
-    }
+    const streak = calculateStreak(completedDates);
 
     const canSeeStats = dto.userId === dto.targetUserId || targetUser.showStats;
 
