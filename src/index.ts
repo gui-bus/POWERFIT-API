@@ -12,7 +12,16 @@ import {
 } from "fastify-type-provider-zod";
 import { createRouteHandler } from "uploadthing/fastify";
 
+import {
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+  SessionAlreadyCompletedError,
+  SessionAlreadyStartedError,
+  WorkoutPlanNotActiveError,
+} from "./errors/index.js";
 import { auth } from "./lib/auth.js";
+import { authenticate } from "./lib/auth-middleware.js";
 import { uploadRouter } from "./lib/uploadthing.js";
 import { aiRoutes } from "./routes/ai.js";
 import { feedRoutes } from "./routes/feed.js";
@@ -28,15 +37,64 @@ const app = Fastify({
   logger: true,
 });
 
+app.setValidatorCompiler(validatorCompiler);
+app.setSerializerCompiler(serializerCompiler);
+
+declare module "fastify" {
+  interface FastifyRequest {
+    session: NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>;
+  }
+}
+
+app.setErrorHandler((error, request, reply) => {
+  app.log.error(error);
+
+  if (error instanceof NotFoundError) {
+    return reply.status(404).send({
+      error: error.message,
+      code: "NOT_FOUND_ERROR",
+    });
+  }
+
+  if (error instanceof ForbiddenError) {
+    return reply.status(403).send({
+      error: error.message,
+      code: "FORBIDDEN",
+    });
+  }
+
+  if (
+    error instanceof BadRequestError ||
+    error instanceof SessionAlreadyStartedError ||
+    error instanceof SessionAlreadyCompletedError ||
+    error instanceof WorkoutPlanNotActiveError
+  ) {
+    return reply.status(400).send({
+      error: error.message,
+      code: "BAD_REQUEST",
+    });
+  }
+
+  if (error.validation) {
+    return reply.status(400).send({
+      error: "Validation error",
+      code: "VALIDATION_ERROR",
+      details: error.validation,
+    });
+  }
+
+  return reply.status(500).send({
+    error: "Internal server error",
+    code: "INTERNAL_SERVER_ERROR",
+  });
+});
+
 await app.register(createRouteHandler, {
   router: uploadRouter,
   config: {
     token: process.env.UPLOADTHING_TOKEN,
   },
 });
-
-app.setValidatorCompiler(validatorCompiler);
-app.setSerializerCompiler(serializerCompiler);
 
 await app.register(fastifySwagger, {
   openapi: {
@@ -145,4 +203,4 @@ if (process.env.NODE_ENV !== "test") {
   }
 }
 
-export { app };
+export { app, authenticate };

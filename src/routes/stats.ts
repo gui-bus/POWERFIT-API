@@ -1,13 +1,14 @@
-import { fromNodeHeaders } from "better-auth/node";
 import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
-import { auth } from "../lib/auth.js";
+import { authenticate } from "../lib/auth-middleware.js";
 import { ErrorSchema, StatsResponseSchema } from "../schemas/index.js";
 import { GetStats } from "../useCases/GetStats.js";
 
 export const statsRoutes = async (app: FastifyInstance) => {
+  app.addHook("onRequest", authenticate);
+
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
     url: "/",
@@ -30,34 +31,16 @@ export const statsRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const { from, to } = request.query as { from: string; to: string };
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
+      const getStats = new GetStats();
+      const result = await getStats.execute({
+        userId: request.session.user.id,
+        from,
+        to,
+      });
 
-        const { from, to } = request.query as { from: string; to: string };
-
-        const getStats = new GetStats();
-        const result = await getStats.execute({
-          userId: session.user.id,
-          from,
-          to,
-        });
-
-        return reply.status(200).send(result);
-      } catch (error) {
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(200).send(result);
     },
   });
 };

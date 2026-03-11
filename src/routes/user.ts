@@ -1,10 +1,8 @@
-import { fromNodeHeaders } from "better-auth/node";
 import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 
-import { ForbiddenError, NotFoundError } from "../errors/index.js";
-import { auth } from "../lib/auth.js";
+import { authenticate } from "../lib/auth-middleware.js";
 import {
   BodyProgressLogSchema,
   ErrorSchema,
@@ -33,6 +31,8 @@ import { UpsertPersonalRecord } from "../useCases/UpsertPersonalRecord.js";
 import { UpsertUserTrainData } from "../useCases/UpsertUserTrainData.js";
 
 export const userRoutes = async (app: FastifyInstance) => {
+  app.addHook("onRequest", authenticate);
+
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "PATCH",
     url: "/me",
@@ -52,31 +52,13 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const updateProfile = new UpdateProfile();
+      const result = await updateProfile.execute({
+        userId: request.session.user.id,
+        ...request.body,
+      });
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
-
-        const updateProfile = new UpdateProfile();
-        const result = await updateProfile.execute({
-          userId: session.user.id,
-          ...request.body,
-        });
-
-        return reply.status(200).send(result);
-      } catch (error) {
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(200).send(result);
     },
   });
 
@@ -95,33 +77,15 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const { query } = request.query as { query: string };
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
+      const searchUsers = new SearchUsers();
+      const result = await searchUsers.execute({
+        userId: request.session.user.id,
+        query,
+      });
 
-        const { query } = request.query as { query: string };
-
-        const searchUsers = new SearchUsers();
-        const result = await searchUsers.execute({
-          userId: session.user.id,
-          query,
-        });
-
-        return reply.status(200).send(result);
-      } catch (error) {
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(200).send(result);
     },
   });
 
@@ -144,41 +108,13 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const getUserProfile = new GetUserProfile();
+      const result = await getUserProfile.execute({
+        userId: request.session.user.id,
+        targetUserId: request.params.userId,
+      });
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
-
-        const getUserProfile = new GetUserProfile();
-        const result = await getUserProfile.execute({
-          userId: session.user.id,
-          targetUserId: request.params.userId,
-        });
-
-        return reply.status(200).send(result);
-      } catch (error) {
-        app.log.error(error);
-        if (error instanceof NotFoundError) {
-          return reply
-            .status(404)
-            .send({ error: error.message, code: "NOT_FOUND_ERROR" });
-        }
-        if (error instanceof ForbiddenError) {
-          return reply
-            .status(403)
-            .send({ error: error.message, code: "FORBIDDEN" });
-        }
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(200).send(result);
     },
   });
 
@@ -197,31 +133,13 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const updatePrivacySettings = new UpdatePrivacySettings();
+      await updatePrivacySettings.execute({
+        userId: request.session.user.id,
+        ...request.body,
+      });
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
-
-        const updatePrivacySettings = new UpdatePrivacySettings();
-        await updatePrivacySettings.execute({
-          userId: session.user.id,
-          ...request.body,
-        });
-
-        return reply.status(204).send();
-      } catch (error) {
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(204).send();
     },
   });
 
@@ -239,30 +157,12 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const getPersonalRecords = new GetPersonalRecords();
+      const result = await getPersonalRecords.execute({
+        userId: request.session.user.id,
+      });
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
-
-        const getPersonalRecords = new GetPersonalRecords();
-        const result = await getPersonalRecords.execute({
-          userId: session.user.id,
-        });
-
-        return reply.status(200).send(result);
-      } catch (error) {
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(200).send(result);
     },
   });
 
@@ -281,31 +181,13 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const upsertPersonalRecord = new UpsertPersonalRecord();
+      await upsertPersonalRecord.execute({
+        userId: request.session.user.id,
+        ...request.body,
+      });
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
-
-        const upsertPersonalRecord = new UpsertPersonalRecord();
-        await upsertPersonalRecord.execute({
-          userId: session.user.id,
-          ...request.body,
-        });
-
-        return reply.status(204).send();
-      } catch (error) {
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(204).send();
     },
   });
 
@@ -323,30 +205,12 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const getBodyProgressHistory = new GetBodyProgressHistory();
+      const result = await getBodyProgressHistory.execute({
+        userId: request.session.user.id,
+      });
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
-
-        const getBodyProgressHistory = new GetBodyProgressHistory();
-        const result = await getBodyProgressHistory.execute({
-          userId: session.user.id,
-        });
-
-        return reply.status(200).send(result);
-      } catch (error) {
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(200).send(result);
     },
   });
 
@@ -365,31 +229,13 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const logBodyProgress = new LogBodyProgress();
+      await logBodyProgress.execute({
+        userId: request.session.user.id,
+        ...request.body,
+      });
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
-
-        const logBodyProgress = new LogBodyProgress();
-        await logBodyProgress.execute({
-          userId: session.user.id,
-          ...request.body,
-        });
-
-        return reply.status(204).send();
-      } catch (error) {
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(204).send();
     },
   });
 
@@ -408,33 +254,15 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const { sortBy } = request.query as { sortBy: "STREAK" | "XP" };
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
+      const getRanking = new GetRanking();
+      const result = await getRanking.execute({
+        userId: request.session.user.id,
+        sortBy,
+      });
 
-        const { sortBy } = request.query as { sortBy: "STREAK" | "XP" };
-
-        const getRanking = new GetRanking();
-        const result = await getRanking.execute({
-          userId: session.user.id,
-          sortBy,
-        });
-
-        return reply.status(200).send(result);
-      } catch (error) {
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(200).send(result);
     },
   });
 
@@ -452,30 +280,12 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const getUserTrainData = new GetUserTrainData();
+      const result = await getUserTrainData.execute({
+        userId: request.session.user.id,
+      });
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
-
-        const getUserTrainData = new GetUserTrainData();
-        const result = await getUserTrainData.execute({
-          userId: session.user.id,
-        });
-
-        return reply.status(200).send(result);
-      } catch (error) {
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(200).send(result);
     },
   });
 
@@ -494,31 +304,13 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const upsertUserTrainData = new UpsertUserTrainData();
+      const result = await upsertUserTrainData.execute({
+        userId: request.session.user.id,
+        ...request.body,
+      });
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
-
-        const upsertUserTrainData = new UpsertUserTrainData();
-        const result = await upsertUserTrainData.execute({
-          userId: session.user.id,
-          ...request.body,
-        });
-
-        return reply.status(200).send(result);
-      } catch (error) {
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(200).send(result);
     },
   });
 };

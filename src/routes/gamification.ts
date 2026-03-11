@@ -1,15 +1,14 @@
-import { fromNodeHeaders } from "better-auth/node";
 import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
-import { NotFoundError } from "../errors/index.js";
-import { auth } from "../lib/auth.js";
+import { authenticate } from "../lib/auth-middleware.js";
 import {
   ErrorSchema,
   GetAchievementsResponseSchema,
   GetChallengesResponseSchema,
   GetXpHistoryResponseSchema,
+  UserRankingResponseSchema,
 } from "../schemas/index.js";
 import { GetAchievements } from "../useCases/GetAchievements.js";
 import { GetChallenges } from "../useCases/GetChallenges.js";
@@ -18,6 +17,8 @@ import { GetXpHistory } from "../useCases/GetXpHistory.js";
 import { JoinChallenge } from "../useCases/JoinChallenge.js";
 
 export const gamificationRoutes = async (app: FastifyInstance) => {
+  app.addHook("onRequest", authenticate);
+
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
     url: "/ranking",
@@ -29,42 +30,21 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
         sortBy: z.enum(["XP", "STREAK"]),
       }),
       response: {
-        200: z.object({
-          ranking: z.array(z.any()),
-          currentUserPosition: z.number().nullable(),
-        }),
+        200: UserRankingResponseSchema,
         401: ErrorSchema,
         500: ErrorSchema,
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const { sortBy } = request.query as { sortBy: "XP" | "STREAK" };
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
+      const getRanking = new GetRanking();
+      const result = await getRanking.execute({
+        userId: request.session.user.id,
+        sortBy,
+      });
 
-        const { sortBy } = request.query as { sortBy: "XP" | "STREAK" };
-
-        const getRanking = new GetRanking();
-        const result = await getRanking.execute({
-          userId: session.user.id,
-          sortBy,
-        });
-
-        return reply.status(200).send(result);
-      } catch (error) {
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(200).send(result);
     },
   });
 
@@ -82,30 +62,12 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const getAchievements = new GetAchievements();
+      const result = await getAchievements.execute({
+        userId: request.session.user.id,
+      });
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
-
-        const getAchievements = new GetAchievements();
-        const result = await getAchievements.execute({
-          userId: session.user.id,
-        });
-
-        return reply.status(200).send(result);
-      } catch (error) {
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(200).send(result);
     },
   });
 
@@ -123,30 +85,12 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const getChallenges = new GetChallenges();
+      const result = await getChallenges.execute({
+        userId: request.session.user.id,
+      });
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
-
-        const getChallenges = new GetChallenges();
-        const result = await getChallenges.execute({
-          userId: session.user.id,
-        });
-
-        return reply.status(200).send(result);
-      } catch (error) {
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(200).send(result);
     },
   });
 
@@ -168,36 +112,13 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const joinChallenge = new JoinChallenge();
+      await joinChallenge.execute({
+        userId: request.session.user.id,
+        challengeId: request.params.id,
+      });
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
-
-        const joinChallenge = new JoinChallenge();
-        await joinChallenge.execute({
-          userId: session.user.id,
-          challengeId: request.params.id,
-        });
-
-        return reply.status(204).send();
-      } catch (error) {
-        app.log.error(error);
-        if (error instanceof NotFoundError) {
-          return reply
-            .status(404)
-            .send({ error: error.message, code: "NOT_FOUND_ERROR" });
-        }
-        return reply.status(400).send({
-          error: error instanceof Error ? error.message : "Bad Request",
-          code: "BAD_REQUEST",
-        });
-      }
+      return reply.status(204).send();
     },
   });
 
@@ -215,30 +136,12 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const getXpHistory = new GetXpHistory();
+      const result = await getXpHistory.execute({
+        userId: request.session.user.id,
+      });
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
-
-        const getXpHistory = new GetXpHistory();
-        const result = await getXpHistory.execute({
-          userId: session.user.id,
-        });
-
-        return reply.status(200).send(result);
-      } catch (error) {
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(200).send(result);
     },
   });
 };

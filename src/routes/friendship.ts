@@ -1,10 +1,8 @@
-import { fromNodeHeaders } from "better-auth/node";
 import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
-import { NotFoundError } from "../errors/index.js";
-import { auth } from "../lib/auth.js";
+import { authenticate } from "../lib/auth-middleware.js";
 import {
   AddFriendSchema,
   ErrorSchema,
@@ -20,6 +18,8 @@ import { GetFriends } from "../useCases/GetFriends.js";
 import { GetMe } from "../useCases/GetMe.js";
 
 export const friendshipRoutes = async (app: FastifyInstance) => {
+  app.addHook("onRequest", authenticate);
+
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
     url: "/me",
@@ -35,35 +35,12 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const getMe = new GetMe();
+      const result = await getMe.execute({
+        userId: request.session.user.id,
+      });
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
-
-        const getMe = new GetMe();
-        const result = await getMe.execute({
-          userId: session.user.id,
-        });
-
-        return reply.status(200).send(result);
-      } catch (error) {
-        app.log.error(error);
-        if (error instanceof NotFoundError) {
-          return reply
-            .status(404)
-            .send({ error: error.message, code: "NOT_FOUND_ERROR" });
-        }
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(200).send(result);
     },
   });
 
@@ -81,30 +58,12 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const getFriends = new GetFriends();
+      const result = await getFriends.execute({
+        userId: request.session.user.id,
+      });
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
-
-        const getFriends = new GetFriends();
-        const result = await getFriends.execute({
-          userId: session.user.id,
-        });
-
-        return reply.status(200).send(result);
-      } catch (error) {
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(200).send(result);
     },
   });
 
@@ -125,33 +84,15 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const { type } = request.query as { type: "RECEIVED" | "SENT" };
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
+      const getFriendRequests = new GetFriendRequests();
+      const result = await getFriendRequests.execute({
+        userId: request.session.user.id,
+        type,
+      });
 
-        const { type } = request.query as { type: "RECEIVED" | "SENT" };
-
-        const getFriendRequests = new GetFriendRequests();
-        const result = await getFriendRequests.execute({
-          userId: session.user.id,
-          type,
-        });
-
-        return reply.status(200).send(result);
-      } catch (error) {
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(200).send(result);
     },
   });
 
@@ -172,36 +113,13 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const addFriend = new AddFriend();
+      const result = await addFriend.execute({
+        userId: request.session.user.id,
+        codeOrEmail: request.body.codeOrEmail,
+      });
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
-
-        const addFriend = new AddFriend();
-        const result = await addFriend.execute({
-          userId: session.user.id,
-          codeOrEmail: request.body.codeOrEmail,
-        });
-
-        return reply.status(200).send(result);
-      } catch (error) {
-        app.log.error(error);
-        if (error instanceof NotFoundError) {
-          return reply
-            .status(404)
-            .send({ error: error.message, code: "NOT_FOUND_ERROR" });
-        }
-        return reply.status(400).send({
-          error: error instanceof Error ? error.message : "Bad Request",
-          code: "BAD_REQUEST",
-        });
-      }
+      return reply.status(200).send(result);
     },
   });
 
@@ -223,36 +141,13 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const acceptFriendRequest = new AcceptFriendRequest();
+      await acceptFriendRequest.execute({
+        userId: request.session.user.id,
+        requestId: request.params.id,
+      });
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
-
-        const acceptFriendRequest = new AcceptFriendRequest();
-        await acceptFriendRequest.execute({
-          userId: session.user.id,
-          requestId: request.params.id,
-        });
-
-        return reply.status(204).send();
-      } catch (error) {
-        app.log.error(error);
-        if (error instanceof NotFoundError) {
-          return reply
-            .status(404)
-            .send({ error: error.message, code: "NOT_FOUND_ERROR" });
-        }
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(204).send();
     },
   });
 
@@ -274,36 +169,13 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const declineFriendRequest = new DeclineFriendRequest();
+      await declineFriendRequest.execute({
+        userId: request.session.user.id,
+        requestId: request.params.id,
+      });
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
-
-        const declineFriendRequest = new DeclineFriendRequest();
-        await declineFriendRequest.execute({
-          userId: session.user.id,
-          requestId: request.params.id,
-        });
-
-        return reply.status(204).send();
-      } catch (error) {
-        app.log.error(error);
-        if (error instanceof NotFoundError) {
-          return reply
-            .status(404)
-            .send({ error: error.message, code: "NOT_FOUND_ERROR" });
-        }
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(204).send();
     },
   });
 };

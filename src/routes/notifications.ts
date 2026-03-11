@@ -1,11 +1,9 @@
-import { fromNodeHeaders } from "better-auth/node";
 import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
-import { NotFoundError } from "../errors/index.js";
 import { Notification } from "../generated/prisma/client.js";
-import { auth } from "../lib/auth.js";
+import { authenticate } from "../lib/auth-middleware.js";
 import { notificationEvents } from "../lib/events.js";
 import {
   ErrorSchema,
@@ -17,16 +15,10 @@ import { MarkAllNotificationsAsRead } from "../useCases/MarkAllNotificationsAsRe
 import { MarkNotificationAsRead } from "../useCases/MarkNotificationAsRead.js";
 
 export const notificationRoutes = async (app: FastifyInstance) => {
+  app.addHook("onRequest", authenticate);
+
   app.get("/stream", async (request, reply) => {
-    const session = await auth.api.getSession({
-      headers: fromNodeHeaders(request.headers),
-    });
-
-    if (!session) {
-      return reply.status(401).send({ error: "Unauthorized" });
-    }
-
-    const userId = session.user.id;
+    const userId = request.session.user.id;
 
     reply.raw.setHeader("Content-Type", "text/event-stream");
     reply.raw.setHeader("Cache-Control", "no-cache");
@@ -65,37 +57,19 @@ export const notificationRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const { cursor, limit } = request.query as {
+        cursor?: string;
+        limit?: number;
+      };
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
+      const getNotifications = new GetNotifications();
+      const result = await getNotifications.execute({
+        userId: request.session.user.id,
+        cursor,
+        limit,
+      });
 
-        const { cursor, limit } = request.query as {
-          cursor?: string;
-          limit?: number;
-        };
-
-        const getNotifications = new GetNotifications();
-        const result = await getNotifications.execute({
-          userId: session.user.id,
-          cursor,
-          limit,
-        });
-
-        return reply.status(200).send(result);
-      } catch (error) {
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(200).send(result);
     },
   });
 
@@ -113,30 +87,12 @@ export const notificationRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const markAllNotificationsAsRead = new MarkAllNotificationsAsRead();
+      await markAllNotificationsAsRead.execute({
+        userId: request.session.user.id,
+      });
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
-
-        const markAllNotificationsAsRead = new MarkAllNotificationsAsRead();
-        await markAllNotificationsAsRead.execute({
-          userId: session.user.id,
-        });
-
-        return reply.status(204).send();
-      } catch (error) {
-        app.log.error(error);
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(204).send();
     },
   });
 
@@ -158,36 +114,13 @@ export const notificationRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
+      const markNotificationAsRead = new MarkNotificationAsRead();
+      await markNotificationAsRead.execute({
+        userId: request.session.user.id,
+        notificationId: request.params.id,
+      });
 
-        if (!session) {
-          return reply
-            .status(401)
-            .send({ error: "Unauthorized", code: "UNAUTHORIZED" });
-        }
-
-        const markNotificationAsRead = new MarkNotificationAsRead();
-        await markNotificationAsRead.execute({
-          userId: session.user.id,
-          notificationId: request.params.id,
-        });
-
-        return reply.status(204).send();
-      } catch (error) {
-        app.log.error(error);
-        if (error instanceof NotFoundError) {
-          return reply
-            .status(404)
-            .send({ error: error.message, code: "NOT_FOUND_ERROR" });
-        }
-        return reply.status(500).send({
-          error: "Internal server error",
-          code: "INTERNAL_SERVER_ERROR",
-        });
-      }
+      return reply.status(204).send();
     },
   });
 };

@@ -6,19 +6,18 @@ import {
   tool,
   UIMessage,
 } from "ai";
-import { fromNodeHeaders } from "better-auth/node";
 import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
 import { WeekDay } from "../generated/prisma/enums.js";
-import { auth } from "../lib/auth.js";
+import { authenticate } from "../lib/auth-middleware.js";
 import { CreateWorkoutPlan } from "../useCases/CreateWorkoutPlan.js";
 import { GetUserTrainData } from "../useCases/GetUserTrainData.js";
 import { GetWorkoutPlans } from "../useCases/GetWorkoutPlans.js";
 import { UpsertUserTrainData } from "../useCases/UpsertUserTrainData.js";
 
-const SYSTEM_PROMPT = `Você é um personal trainer virtual especialista em mo ntagem de planos de treino personalizados.
+const SYSTEM_PROMPT = `Você é um personal trainer virtual especialista em montagem de planos de treino personalizados.
 
 ## Personalidade
 - Tom amigável, motivador e acolhedor.
@@ -75,6 +74,8 @@ SEMPRE forneça um \`coverImageUrl\` para cada dia de treino. Escolha com base n
 Alterne entre as duas opções de cada categoria para variar. Dias de descanso usam imagem de superior.`;
 
 export const aiRoutes = async (app: FastifyInstance) => {
+  app.addHook("onRequest", authenticate);
+
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "POST",
     url: "/",
@@ -84,15 +85,7 @@ export const aiRoutes = async (app: FastifyInstance) => {
       summary: "Chat with AI personal trainer",
     },
     handler: async (request, reply) => {
-      const session = await auth.api.getSession({
-        headers: fromNodeHeaders(request.headers),
-      });
-
-      if (!session) {
-        return reply.status(401).send({ error: "Unauthorized" });
-      }
-
-      const userId = session.user.id;
+      const userId = request.session.user.id;
       const { messages } = request.body as { messages: UIMessage[] };
 
       const result = streamText({
