@@ -27,7 +27,7 @@ import { statsRoutes } from "./routes/stats.js";
 import { userRoutes } from "./routes/user.js";
 import { workoutPlanRoutes } from "./routes/workoutPlan.js";
 
-const envToLogger = {
+const envToLogger: any = {
   development: {
     transport: {
       target: 'pino-pretty',
@@ -42,7 +42,7 @@ const envToLogger = {
 }
 
 const app = Fastify({
-  logger: envToLogger[env.NODE_ENV],
+  logger: envToLogger[env.NODE_ENV] ?? true,
 });
 
 app.setValidatorCompiler(validatorCompiler);
@@ -54,7 +54,7 @@ declare module "fastify" {
   }
 }
 
-app.setErrorHandler((error, request, reply) => {
+app.setErrorHandler((error, _request, reply) => {
   app.log.error(error);
 
   if (error instanceof AppError) {
@@ -95,7 +95,7 @@ await app.register(fastifySwagger, {
     servers: [
       {
         description: "API Base URL",
-        url: env.API_BASE_URL,
+        url: env.API_BASE_URL || "http://localhost:8080",
       },
     ],
   },
@@ -185,7 +185,7 @@ app.withTypeProvider<ZodTypeProvider>().route({
 
 if (env.NODE_ENV !== "test") {
   try {
-    await app.listen({ port: env.PORT });
+    await app.listen({ port: env.PORT, host: "0.0.0.0" });
   } catch (err) {
     app.log.error(err);
     process.exit(1);

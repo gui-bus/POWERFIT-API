@@ -13,7 +13,8 @@ COPY prisma ./prisma/
 # ------- Dependencies -------
 FROM base AS deps
 
-RUN pnpm install --fronzen-lockfile
+RUN pnpm install --frozen-lockfile
+RUN pnpm prisma generate
 
 # ------- Build -------
 FROM deps AS build
@@ -25,8 +26,9 @@ RUN pnpm run build && cp -r src/generated dist/generated
 # ------- Production -------
 FROM base AS production
 
-RUN pnpm install --frozen-lockfile -- prod --ignore-scripts
+RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/prisma ./prisma
 
 CMD ["node", "dist/index.js"]
