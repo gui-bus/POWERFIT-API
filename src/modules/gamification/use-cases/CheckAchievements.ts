@@ -1,0 +1,122 @@
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+
+import { PrismaClient, PrismaTransaction } from "../../../lib/db.js";
+import {
+  calculateStreak,
+  ensureInitialAchievements,
+} from "../../../lib/gamification.js";
+import { createAndEmitNotification } from "../../../lib/notifications.js";
+import { GrantXp } from "./GrantXp.js";
+
+dayjs.extend(utc);
+
+interface InputDto {
+  userId: string;
+}
+
+export class CheckAchievements {
+  constructor(private readonly prisma: PrismaClient) {}
+
+  async execute(dto: InputDto): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      await ensureInitialAchievements(tx);
+
+      const unlockedAchievements = await tx.userAchievement.findMany({
+        where: { userId: dto.userId },
+        select: { achievementId: true },
+      });
+
+      const unlockedIds = unlockedAchievements.map((ua) => ua.achievementId);
+
+      const pendingAchievements = await tx.achievement.findMany({
+        where: { id: { notIn: unlockedIds } },
+      });
+
+      if (pendingAchievements.length === 0) return;
+
+      const grantXp = new GrantXp(this.prisma);
+
+      for (const achievement of pendingAchievements) {
+        let shouldUnlock = false;
+
+        switch (achievement.name) {
+          case "Primeiro Passo": {
+            const workoutCount = await tx.workoutSession.count({
+              where: {
+                workoutDay: { workoutPlan: { userId: dto.userId } },
+                completedAt: { not: null },
+              },
+            });
+            if (workoutCount >= 1) shouldUnlock = true;
+            break;
+          }
+          case "Socializador": {
+            const friendCount = await tx.friendship.count({
+              where: {
+                OR: [{ userId: dto.userId }, { friendId: dto.userId }],
+              },
+            });
+            if (friendCount >= 1) shouldUnlock = true;
+            break;
+          }
+          case "Mestre do Incentivo": {
+            const powerupCount = await tx.powerup.count({
+              where: { userId: dto.userId },
+            });
+            if (powerupCount >= 1) shouldUnlock = true;
+            break;
+          }
+          case "Constância de Ferro": {
+            const sessions = await tx.workoutSession.findMany({
+              where: {
+                workoutDay: { workoutPlan: { userId: dto.userId } },
+                completedAt: { not: null },
+              },
+              select: { startedAt: true },
+              orderBy: { startedAt: "desc" },
+            });
+
+            const completedDates = new Set(
+              sessions.map((s) => dayjs.utc(s.startedAt).format("YYYY-MM-DD")),
+            );
+
+            const streak = calculateStreak(completedDates);
+            if (streak >= 7) shouldUnlock = true;
+            break;
+          }
+        }
+
+        if (shouldUnlock) {
+          await tx.userAchievement.create({
+            data: {
+              userId: dto.userId,
+              achievementId: achievement.id,
+            },
+          });
+
+          await createAndEmitNotification(
+            {
+              recipientId: dto.userId,
+              type: "ACHIEVEMENT_UNLOCKED",
+              achievementId: achievement.id,
+            },
+            tx,
+          );
+
+          if (achievement.xpReward > 0) {
+            await grantXp.execute(
+              {
+                userId: dto.userId,
+                amount: achievement.xpReward,
+                reason: "CHALLENGE_COMPLETED",
+                relatedId: achievement.id,
+              },
+              tx,
+            );
+          }
+        }
+      }
+    });
+  }
+}
