@@ -7,6 +7,40 @@ import { prisma } from "./db.js";
 
 const f = createUploadthing();
 
+const uploadAuthMiddleware = async ({ req }: { req: any }) => {
+  const session = await auth.api.getSession({
+    headers: fromNodeHeaders(req.headers),
+  });
+
+  let userId: string | undefined = session?.user.id;
+
+  if (!userId && req.headers.authorization) {
+    const token = req.headers.authorization.replace("Bearer ", "");
+
+    const dbSession = await prisma.session.findUnique({
+      where: { token },
+      select: { userId: true, expiresAt: true },
+    });
+
+    if (dbSession && dbSession.expiresAt > new Date()) {
+      userId = dbSession.userId;
+    }
+  }
+
+  if (!userId) {
+    console.error(
+      "Uploadthing: Falha total na autenticação. Token:",
+      req.headers.authorization,
+    );
+    throw new UploadThingError({
+      code: "FORBIDDEN",
+      message: "Sessão inválida ou expirada. Faça login novamente.",
+    });
+  }
+
+  return { userId };
+};
+
 export const uploadRouter = {
   profileImage: f({
     image: {
@@ -14,39 +48,7 @@ export const uploadRouter = {
       maxFileCount: 1,
     },
   })
-    .middleware(async ({ req }) => {
-      const session = await auth.api.getSession({
-        headers: fromNodeHeaders(req.headers),
-      });
-
-      let userId: string | undefined = session?.user.id;
-
-      if (!userId && req.headers.authorization) {
-        const token = req.headers.authorization.replace("Bearer ", "");
-
-        const dbSession = await prisma.session.findUnique({
-          where: { token },
-          select: { userId: true, expiresAt: true },
-        });
-
-        if (dbSession && dbSession.expiresAt > new Date()) {
-          userId = dbSession.userId;
-        }
-      }
-
-      if (!userId) {
-        console.error(
-          "Uploadthing: Falha total na autenticação. Token:",
-          req.headers.authorization,
-        );
-        throw new UploadThingError({
-          code: "FORBIDDEN",
-          message: "Sessão inválida ou expirada. Faça login novamente.",
-        });
-      }
-
-      return { userId };
-    })
+    .middleware(uploadAuthMiddleware)
     .onUploadComplete(async ({ metadata, file }) => {
       await prisma.user.update({
         where: { id: metadata.userId },
@@ -62,39 +64,7 @@ export const uploadRouter = {
       maxFileCount: 1,
     },
   })
-    .middleware(async ({ req }) => {
-      const session = await auth.api.getSession({
-        headers: fromNodeHeaders(req.headers),
-      });
-
-      let userId: string | undefined = session?.user.id;
-
-      if (!userId && req.headers.authorization) {
-        const token = req.headers.authorization.replace("Bearer ", "");
-
-        const dbSession = await prisma.session.findUnique({
-          where: { token },
-          select: { userId: true, expiresAt: true },
-        });
-
-        if (dbSession && dbSession.expiresAt > new Date()) {
-          userId = dbSession.userId;
-        }
-      }
-
-      if (!userId) {
-        console.error(
-          "Uploadthing (Workout): Falha total na autenticação. Token:",
-          req.headers.authorization,
-        );
-        throw new UploadThingError({
-          code: "FORBIDDEN",
-          message: "Sessão inválida ou expirada. Faça login novamente.",
-        });
-      }
-
-      return { userId };
-    })
+    .middleware(uploadAuthMiddleware)
     .onUploadComplete(async ({ file }) => {
       return { url: file.url };
     }),

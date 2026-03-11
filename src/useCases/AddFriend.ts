@@ -1,6 +1,7 @@
-import { NotFoundError } from "../errors/index.js";
+import { BadRequestError, NotFoundError } from "../errors/index.js";
 import { prisma } from "../lib/db.js";
 import { createAndEmitNotification } from "../lib/notifications.js";
+import { getFriendship } from "../lib/social.js";
 import { CheckAchievements } from "./CheckAchievements.js";
 
 interface InputDto {
@@ -41,23 +42,16 @@ export class AddFriend {
     }
 
     if (friend.id === dto.userId) {
-      throw new Error("You cannot add yourself as a friend");
+      throw new BadRequestError("You cannot add yourself as a friend");
     }
 
-    const existingFriendship = await prisma.friendship.findFirst({
-      where: {
-        OR: [
-          { userId: dto.userId, friendId: friend.id },
-          { userId: friend.id, friendId: dto.userId },
-        ],
-      },
-    });
+    const existingFriendship = await getFriendship(dto.userId, friend.id);
 
     if (existingFriendship) {
       if (existingFriendship.status === "ACCEPTED") {
-        throw new Error("You are already friends with this user");
+        throw new BadRequestError("You are already friends with this user");
       }
-      throw new Error("A friend request is already pending");
+      throw new BadRequestError("A friend request is already pending");
     }
 
     await prisma.$transaction(async (tx) => {

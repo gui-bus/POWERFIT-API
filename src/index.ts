@@ -12,14 +12,7 @@ import {
 } from "fastify-type-provider-zod";
 import { createRouteHandler } from "uploadthing/fastify";
 
-import {
-  BadRequestError,
-  ForbiddenError,
-  NotFoundError,
-  SessionAlreadyCompletedError,
-  SessionAlreadyStartedError,
-  WorkoutPlanNotActiveError,
-} from "./errors/index.js";
+import { AppError } from "./errors/index.js";
 import { auth } from "./lib/auth.js";
 import { authenticate } from "./lib/auth-middleware.js";
 import { uploadRouter } from "./lib/uploadthing.js";
@@ -49,29 +42,10 @@ declare module "fastify" {
 app.setErrorHandler((error, request, reply) => {
   app.log.error(error);
 
-  if (error instanceof NotFoundError) {
-    return reply.status(404).send({
+  if (error instanceof AppError) {
+    return reply.status(error.statusCode).send({
       error: error.message,
-      code: "NOT_FOUND_ERROR",
-    });
-  }
-
-  if (error instanceof ForbiddenError) {
-    return reply.status(403).send({
-      error: error.message,
-      code: "FORBIDDEN",
-    });
-  }
-
-  if (
-    error instanceof BadRequestError ||
-    error instanceof SessionAlreadyStartedError ||
-    error instanceof SessionAlreadyCompletedError ||
-    error instanceof WorkoutPlanNotActiveError
-  ) {
-    return reply.status(400).send({
-      error: error.message,
-      code: "BAD_REQUEST",
+      code: error.code,
     });
   }
 

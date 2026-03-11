@@ -1,6 +1,7 @@
 import { ForbiddenError, NotFoundError } from "../errors/index.js";
 import { prisma } from "../lib/db.js";
 import { createAndEmitNotification } from "../lib/notifications.js";
+import { areFriends } from "../lib/social.js";
 import { CheckAchievements } from "./CheckAchievements.js";
 import { GrantXp } from "./GrantXp.js";
 
@@ -20,17 +21,9 @@ export class TogglePowerup {
     }
 
     if (activity.userId !== dto.userId) {
-      const friendship = await prisma.friendship.findFirst({
-        where: {
-          OR: [
-            { userId: dto.userId, friendId: activity.userId },
-            { userId: activity.userId, friendId: dto.userId },
-          ],
-          status: "ACCEPTED",
-        },
-      });
+      const friends = await areFriends(dto.userId, activity.userId);
 
-      if (!friendship) {
+      if (!friends) {
         throw new ForbiddenError(
           "You can only powerup activities from your friends",
         );

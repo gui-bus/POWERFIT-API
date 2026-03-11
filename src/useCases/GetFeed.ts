@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 
 import { ForbiddenError } from "../errors/index.js";
 import { prisma } from "../lib/db.js";
+import { areFriends } from "../lib/social.js";
 
 interface InputDto {
   userId: string;
@@ -48,17 +49,9 @@ export class GetFeed {
     let userIdsInFeed: string[];
 
     if (dto.targetUserId && dto.targetUserId !== dto.userId) {
-      const friendship = await prisma.friendship.findFirst({
-        where: {
-          OR: [
-            { userId: dto.userId, friendId: dto.targetUserId },
-            { userId: dto.targetUserId, friendId: dto.userId },
-          ],
-          status: "ACCEPTED",
-        },
-      });
+      const friends = await areFriends(dto.userId, dto.targetUserId);
 
-      if (!friendship) {
+      if (!friends) {
         throw new ForbiddenError("You can only view feeds of your friends");
       }
       userIdsInFeed = [dto.targetUserId];
