@@ -3,8 +3,9 @@ import { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
 import { authenticate } from "../lib/auth-middleware.js";
+import { prisma } from "../lib/db.js";
 import { ErrorSchema, StatsResponseSchema } from "../schemas/index.js";
-import { GetStats } from "../useCases/GetStats.js";
+import { GetStats } from "../modules/workout/use-cases/GetStats.js";
 
 export const statsRoutes = async (app: FastifyInstance) => {
   app.addHook("onRequest", authenticate);
@@ -33,7 +34,7 @@ export const statsRoutes = async (app: FastifyInstance) => {
     handler: async (request, reply) => {
       const { from, to } = request.query as { from: string; to: string };
 
-      const getStats = new GetStats();
+      const getStats = new GetStats(prisma);
       const result = await getStats.execute({
         userId: request.session.user.id,
         from,

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
 import { notificationEvents } from "../src/lib/events.js";
-import { AcceptFriendRequest } from "../src/useCases/AcceptFriendRequest.js";
+import { AcceptFriendRequest } from "../src/modules/social/use-cases/AcceptFriendRequest.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -75,7 +75,7 @@ describe("AcceptFriendRequest Use Case", () => {
       id: "notif-1",
     });
 
-    const acceptFriendRequest = new AcceptFriendRequest();
+    const acceptFriendRequest = new AcceptFriendRequest(prisma as any);
     await acceptFriendRequest.execute({ userId, requestId });
 
     expect(prisma.friendship.update).toHaveBeenCalledWith({

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
-import { UpdatePrivacySettings } from "../src/useCases/UpdatePrivacySettings.js";
+import { UpdatePrivacySettings } from "../src/modules/user/use-cases/UpdatePrivacySettings.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -24,7 +24,7 @@ describe("UpdatePrivacySettings Use Case", () => {
       showStats: false,
     };
 
-    const updatePrivacy = new UpdatePrivacySettings();
+    const updatePrivacy = new UpdatePrivacySettings(prisma as any);
     await updatePrivacy.execute(dto);
 
     expect(prisma.user.update).toHaveBeenCalledWith({

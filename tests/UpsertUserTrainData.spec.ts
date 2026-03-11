@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
-import { UpsertUserTrainData } from "../src/useCases/UpsertUserTrainData.js";
+import { UpsertUserTrainData } from "../src/modules/user/use-cases/UpsertUserTrainData.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -51,7 +51,7 @@ describe("UpsertUserTrainData Use Case", () => {
 
     (prisma.userTrainData.upsert as any).mockResolvedValue(dto);
 
-    const upsertTrainData = new UpsertUserTrainData();
+    const upsertTrainData = new UpsertUserTrainData(prisma as any);
     const result = await upsertTrainData.execute(dto);
 
     expect(result.weightInGrams).toBe(80000);

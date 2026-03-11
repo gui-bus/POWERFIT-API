@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
-import { CheckAchievements } from "../src/useCases/CheckAchievements.js";
+import { CheckAchievements } from "../src/modules/gamification/use-cases/CheckAchievements.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -50,7 +50,7 @@ describe("CheckAchievements Use Case", () => {
     });
     (prisma.xpTransaction.findFirst as any).mockResolvedValue(null);
 
-    const checkAchievements = new CheckAchievements();
+    const checkAchievements = new CheckAchievements(prisma as any);
     await checkAchievements.execute({ userId });
 
     expect(prisma.userAchievement.create).toHaveBeenCalledWith({
@@ -68,7 +68,7 @@ describe("CheckAchievements Use Case", () => {
     ]);
     (prisma.workoutSession.count as any).mockResolvedValue(0);
 
-    const checkAchievements = new CheckAchievements();
+    const checkAchievements = new CheckAchievements(prisma as any);
     await checkAchievements.execute({ userId });
 
     expect(prisma.userAchievement.create).not.toHaveBeenCalled();

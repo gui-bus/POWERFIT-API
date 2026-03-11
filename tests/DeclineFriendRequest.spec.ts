@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { NotFoundError } from "../src/errors/index.js";
 import { prisma } from "../src/lib/db.js";
-import { DeclineFriendRequest } from "../src/useCases/DeclineFriendRequest.js";
+import { DeclineFriendRequest } from "../src/modules/social/use-cases/DeclineFriendRequest.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -31,7 +31,7 @@ describe("DeclineFriendRequest Use Case", () => {
       friendId: userId,
     });
 
-    const declineReq = new DeclineFriendRequest();
+    const declineReq = new DeclineFriendRequest(prisma as any);
     await declineReq.execute({ userId, requestId });
 
     expect(prisma.friendship.delete).toHaveBeenCalledWith({
@@ -41,7 +41,7 @@ describe("DeclineFriendRequest Use Case", () => {
 
   it("should throw NotFoundError if request does not belong to user", async () => {
     (prisma.friendship.findFirst as any).mockResolvedValue(null);
-    const declineReq = new DeclineFriendRequest();
+    const declineReq = new DeclineFriendRequest(prisma as any);
     await expect(
       declineReq.execute({ userId: "wrong-user", requestId: "any" }),
     ).rejects.toThrow(NotFoundError);

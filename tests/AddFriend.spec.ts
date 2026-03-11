@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
 import { notificationEvents } from "../src/lib/events.js";
-import { AddFriend } from "../src/useCases/AddFriend.js";
+import { AddFriend } from "../src/modules/social/use-cases/AddFriend.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -58,7 +58,7 @@ describe("AddFriend Use Case", () => {
       recipientId: friendId,
     });
 
-    const addFriend = new AddFriend();
+    const addFriend = new AddFriend(prisma as any);
     const result = await addFriend.execute({ userId, codeOrEmail: friendCode });
 
     expect(prisma.friendship.create).toHaveBeenCalled();
@@ -74,7 +74,7 @@ describe("AddFriend Use Case", () => {
     const userId = "user-1";
     (prisma.user.findFirst as any).mockResolvedValue({ id: userId });
 
-    const addFriend = new AddFriend();
+    const addFriend = new AddFriend(prisma as any);
     await expect(
       addFriend.execute({ userId, codeOrEmail: "any" }),
     ).rejects.toThrow("You cannot add yourself as a friend");

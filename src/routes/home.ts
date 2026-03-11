@@ -3,8 +3,9 @@ import { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
 import { authenticate } from "../lib/auth-middleware.js";
+import { prisma } from "../lib/db.js";
 import { ErrorSchema, HomeDataSchema } from "../schemas/index.js";
-import { GetHomeData } from "../useCases/GetHomeData.js";
+import { GetHomeData } from "../modules/workout/use-cases/GetHomeData.js";
 
 export const homeRoutes = async (app: FastifyInstance) => {
   app.addHook("onRequest", authenticate);
@@ -28,7 +29,7 @@ export const homeRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const getHomeData = new GetHomeData();
+      const getHomeData = new GetHomeData(prisma);
       const result = await getHomeData.execute({
         userId: request.session.user.id,
         date: request.params.date,

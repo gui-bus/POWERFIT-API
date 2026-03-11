@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
-import { GetRanking } from "../src/useCases/GetRanking.js";
+import { GetRanking } from "../src/modules/gamification/use-cases/GetRanking.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -32,7 +32,7 @@ describe("GetRanking Use Case", () => {
       { id: "me", name: "Me", xp: 1000, level: 5, activities: [] },
     ]);
 
-    const getRanking = new GetRanking();
+    const getRanking = new GetRanking(prisma as any);
     const result = await getRanking.execute({ userId, sortBy: "XP" });
 
     expect(result.ranking).toHaveLength(2);

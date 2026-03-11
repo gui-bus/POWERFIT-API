@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { NotFoundError } from "../src/errors/index.js";
 import { prisma } from "../src/lib/db.js";
-import { MarkNotificationAsRead } from "../src/useCases/MarkNotificationAsRead.js";
+import { MarkNotificationAsRead } from "../src/modules/social/use-cases/MarkNotificationAsRead.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -27,7 +27,7 @@ describe("MarkNotificationAsRead Use Case", () => {
       recipientId: userId,
     });
 
-    const markAsRead = new MarkNotificationAsRead();
+    const markAsRead = new MarkNotificationAsRead(prisma as any);
     await markAsRead.execute({ userId, notificationId });
 
     expect(prisma.notification.update).toHaveBeenCalledWith({
@@ -45,7 +45,7 @@ describe("MarkNotificationAsRead Use Case", () => {
       recipientId: "other-user",
     });
 
-    const markAsRead = new MarkNotificationAsRead();
+    const markAsRead = new MarkNotificationAsRead(prisma as any);
     await expect(
       markAsRead.execute({ userId, notificationId }),
     ).rejects.toThrow(NotFoundError);

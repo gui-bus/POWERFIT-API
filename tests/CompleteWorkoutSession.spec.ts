@@ -5,7 +5,7 @@ import {
   SessionAlreadyCompletedError,
 } from "../src/errors/index.js";
 import { prisma } from "../src/lib/db.js";
-import { CompleteWorkoutSession } from "../src/useCases/CompleteWorkoutSession.js";
+import { CompleteWorkoutSession } from "../src/modules/workout/use-cases/CompleteWorkoutSession.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -74,7 +74,7 @@ describe("CompleteWorkoutSession Use Case", () => {
     });
     (prisma.xpTransaction.findFirst as any).mockResolvedValue(null);
 
-    const completeWorkoutSession = new CompleteWorkoutSession();
+    const completeWorkoutSession = new CompleteWorkoutSession(prisma as any);
     const result = await completeWorkoutSession.execute(dto);
 
     expect(prisma.workoutSession.update).toHaveBeenCalled();
@@ -88,7 +88,7 @@ describe("CompleteWorkoutSession Use Case", () => {
       userId: "other-user",
     });
 
-    const completeWorkoutSession = new CompleteWorkoutSession();
+    const completeWorkoutSession = new CompleteWorkoutSession(prisma as any);
     await expect(completeWorkoutSession.execute(dto)).rejects.toThrow(
       ForbiddenError,
     );
@@ -107,7 +107,7 @@ describe("CompleteWorkoutSession Use Case", () => {
       completedAt: new Date(),
     });
 
-    const completeWorkoutSession = new CompleteWorkoutSession();
+    const completeWorkoutSession = new CompleteWorkoutSession(prisma as any);
     await expect(completeWorkoutSession.execute(dto)).rejects.toThrow(
       SessionAlreadyCompletedError,
     );

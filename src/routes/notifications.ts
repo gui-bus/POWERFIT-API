@@ -4,15 +4,16 @@ import z from "zod";
 
 import { Notification } from "../generated/prisma/client.js";
 import { authenticate } from "../lib/auth-middleware.js";
+import { prisma } from "../lib/db.js";
 import { notificationEvents } from "../lib/events.js";
 import {
   ErrorSchema,
   GetNotificationsResponseSchema,
   PaginationQuerySchema,
 } from "../schemas/index.js";
-import { GetNotifications } from "../useCases/GetNotifications.js";
-import { MarkAllNotificationsAsRead } from "../useCases/MarkAllNotificationsAsRead.js";
-import { MarkNotificationAsRead } from "../useCases/MarkNotificationAsRead.js";
+import { GetNotifications } from "../modules/social/use-cases/GetNotifications.js";
+import { MarkAllNotificationsAsRead } from "../modules/social/use-cases/MarkAllNotificationsAsRead.js";
+import { MarkNotificationAsRead } from "../modules/social/use-cases/MarkNotificationAsRead.js";
 
 export const notificationRoutes = async (app: FastifyInstance) => {
   app.addHook("onRequest", authenticate);
@@ -62,7 +63,7 @@ export const notificationRoutes = async (app: FastifyInstance) => {
         limit?: number;
       };
 
-      const getNotifications = new GetNotifications();
+      const getNotifications = new GetNotifications(prisma);
       const result = await getNotifications.execute({
         userId: request.session.user.id,
         cursor,
@@ -87,7 +88,7 @@ export const notificationRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const markAllNotificationsAsRead = new MarkAllNotificationsAsRead();
+      const markAllNotificationsAsRead = new MarkAllNotificationsAsRead(prisma);
       await markAllNotificationsAsRead.execute({
         userId: request.session.user.id,
       });
@@ -114,7 +115,7 @@ export const notificationRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const markNotificationAsRead = new MarkNotificationAsRead();
+      const markNotificationAsRead = new MarkNotificationAsRead(prisma);
       await markNotificationAsRead.execute({
         userId: request.session.user.id,
         notificationId: request.params.id,

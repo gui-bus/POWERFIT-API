@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
-import { GetAchievements } from "../src/useCases/GetAchievements.js";
+import { GetAchievements } from "../src/modules/gamification/use-cases/GetAchievements.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -39,7 +39,7 @@ describe("GetAchievements Use Case", () => {
       },
     ]);
 
-    const getAchievements = new GetAchievements();
+    const getAchievements = new GetAchievements(prisma as any);
     const result = await getAchievements.execute({ userId });
 
     expect(result).toHaveLength(2);

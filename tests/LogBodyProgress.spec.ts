@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
-import { LogBodyProgress } from "../src/useCases/LogBodyProgress.js";
+import { LogBodyProgress } from "../src/modules/user/use-cases/LogBodyProgress.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -48,7 +48,7 @@ describe("LogBodyProgress Use Case", () => {
       bodyFatPercentage: 0.15,
     };
 
-    const logBodyProgress = new LogBodyProgress();
+    const logBodyProgress = new LogBodyProgress(prisma as any);
     await logBodyProgress.execute(dto);
 
     expect(prisma.bodyProgressLog.create).toHaveBeenCalledWith({

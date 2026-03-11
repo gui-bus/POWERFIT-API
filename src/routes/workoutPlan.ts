@@ -3,6 +3,7 @@ import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 
 import { authenticate } from "../lib/auth-middleware.js";
+import { prisma } from "../lib/db.js";
 import {
   ErrorSchema,
   GetWorkoutDayResponseSchema,
@@ -14,14 +15,14 @@ import {
   WorkoutPlanSchema,
   WorkoutSessionSchema,
 } from "../schemas/index.js";
-import { CompleteWorkoutSession } from "../useCases/CompleteWorkoutSession.js";
-import { CreateWorkoutPlan } from "../useCases/CreateWorkoutPlan.js";
-import { GetWorkoutDay } from "../useCases/GetWorkoutDay.js";
-import { GetWorkoutExerciseHistory } from "../useCases/GetWorkoutExerciseHistory.js";
-import { GetWorkoutPlanById } from "../useCases/GetWorkoutPlanById.js";
-import { GetWorkoutPlans } from "../useCases/GetWorkoutPlans.js";
-import { StartWorkoutSession } from "../useCases/StartWorkoutSession.js";
-import { UpsertWorkoutSet } from "../useCases/UpsertWorkoutSet.js";
+import { CompleteWorkoutSession } from "../modules/workout/use-cases/CompleteWorkoutSession.js";
+import { CreateWorkoutPlan } from "../modules/workout/use-cases/CreateWorkoutPlan.js";
+import { GetWorkoutDay } from "../modules/workout/use-cases/GetWorkoutDay.js";
+import { GetWorkoutExerciseHistory } from "../modules/workout/use-cases/GetWorkoutExerciseHistory.js";
+import { GetWorkoutPlanById } from "../modules/workout/use-cases/GetWorkoutPlanById.js";
+import { GetWorkoutPlans } from "../modules/workout/use-cases/GetWorkoutPlans.js";
+import { StartWorkoutSession } from "../modules/workout/use-cases/StartWorkoutSession.js";
+import { UpsertWorkoutSet } from "../modules/workout/use-cases/UpsertWorkoutSet.js";
 
 export const workoutPlanRoutes = async (app: FastifyInstance) => {
   app.addHook("onRequest", authenticate);
@@ -43,7 +44,7 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
     handler: async (request, reply) => {
       const { active } = request.query as { active?: boolean };
 
-      const getWorkoutPlans = new GetWorkoutPlans();
+      const getWorkoutPlans = new GetWorkoutPlans(prisma);
 
       const result = await getWorkoutPlans.execute({
         userId: request.session.user.id,
@@ -74,7 +75,7 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const getWorkoutDay = new GetWorkoutDay();
+      const getWorkoutDay = new GetWorkoutDay(prisma);
 
       const result = await getWorkoutDay.execute({
         userId: request.session.user.id,
@@ -105,7 +106,7 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const getWorkoutPlanById = new GetWorkoutPlanById();
+      const getWorkoutPlanById = new GetWorkoutPlanById(prisma);
 
       const result = await getWorkoutPlanById.execute({
         userId: request.session.user.id,
@@ -133,7 +134,7 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const createWorkoutPlan = new CreateWorkoutPlan();
+      const createWorkoutPlan = new CreateWorkoutPlan(prisma);
 
       const result = await createWorkoutPlan.execute({
         userId: request.session.user.id,
@@ -152,8 +153,8 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
       tags: ["Workout Session"],
       summary: "Start a workout session",
       params: z.object({
-        workoutPlanId: z.uuid(),
-        workoutDayId: z.uuid(),
+        workoutPlanId: z.string().uuid(),
+        workoutDayId: z.string().uuid(),
       }),
       response: {
         201: WorkoutSessionSchema,
@@ -166,7 +167,7 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const startWorkoutSession = new StartWorkoutSession();
+      const startWorkoutSession = new StartWorkoutSession(prisma);
 
       const result = await startWorkoutSession.execute({
         userId: request.session.user.id,
@@ -186,9 +187,9 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
       tags: ["Workout Session"],
       summary: "Update a workout session",
       params: z.object({
-        workoutPlanId: z.uuid(),
-        workoutDayId: z.uuid(),
-        sessionId: z.uuid(),
+        workoutPlanId: z.string().uuid(),
+        workoutDayId: z.string().uuid(),
+        sessionId: z.string().uuid(),
       }),
       body: z
         .object({
@@ -208,7 +209,7 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const completeWorkoutSession = new CompleteWorkoutSession();
+      const completeWorkoutSession = new CompleteWorkoutSession(prisma);
 
       const result = await completeWorkoutSession.execute({
         userId: request.session.user.id,
@@ -245,7 +246,7 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const upsertWorkoutSet = new UpsertWorkoutSet();
+      const upsertWorkoutSet = new UpsertWorkoutSet(prisma);
       await upsertWorkoutSet.execute({
         userId: request.session.user.id,
         sessionId: request.params.sessionId,
@@ -275,7 +276,7 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const getHistory = new GetWorkoutExerciseHistory();
+      const getHistory = new GetWorkoutExerciseHistory(prisma);
       const result = await getHistory.execute({
         userId: request.session.user.id,
         workoutExerciseId: request.params.exerciseId,

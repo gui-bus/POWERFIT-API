@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
-import { GetBodyProgressHistory } from "../src/useCases/GetBodyProgressHistory.js";
+import { GetBodyProgressHistory } from "../src/modules/user/use-cases/GetBodyProgressHistory.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -35,7 +35,7 @@ describe("GetBodyProgressHistory Use Case", () => {
 
     (prisma.bodyProgressLog.findMany as any).mockResolvedValue(mockLogs);
 
-    const getHistory = new GetBodyProgressHistory();
+    const getHistory = new GetBodyProgressHistory(prisma as any);
     const result = await getHistory.execute({ userId });
 
     expect(result).toHaveLength(2);

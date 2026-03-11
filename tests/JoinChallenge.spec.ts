@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
-import { JoinChallenge } from "../src/useCases/JoinChallenge.js";
+import { JoinChallenge } from "../src/modules/gamification/use-cases/JoinChallenge.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -48,7 +48,7 @@ describe("JoinChallenge Use Case", () => {
     });
     (prisma.challengeParticipant.findUnique as any).mockResolvedValue(null);
 
-    const joinChallenge = new JoinChallenge();
+    const joinChallenge = new JoinChallenge(prisma as any);
     await joinChallenge.execute({ userId, challengeId });
 
     expect(prisma.challengeParticipant.create).toHaveBeenCalled();
@@ -63,7 +63,7 @@ describe("JoinChallenge Use Case", () => {
       status: "COMPLETED",
     });
 
-    const joinChallenge = new JoinChallenge();
+    const joinChallenge = new JoinChallenge(prisma as any);
     await expect(
       joinChallenge.execute({ userId, challengeId }),
     ).rejects.toThrow("Challenge is not open for joining");
@@ -81,7 +81,7 @@ describe("JoinChallenge Use Case", () => {
       id: "part-1",
     });
 
-    const joinChallenge = new JoinChallenge();
+    const joinChallenge = new JoinChallenge(prisma as any);
     await expect(
       joinChallenge.execute({ userId, challengeId }),
     ).rejects.toThrow("You are already participating in this challenge");

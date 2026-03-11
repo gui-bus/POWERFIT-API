@@ -3,6 +3,7 @@ import { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
 import { authenticate } from "../lib/auth-middleware.js";
+import { prisma } from "../lib/db.js";
 import {
   AddFriendSchema,
   ErrorSchema,
@@ -10,12 +11,12 @@ import {
   GetFriendsResponseSchema,
   UserMeResponseSchema,
 } from "../schemas/index.js";
-import { AcceptFriendRequest } from "../useCases/AcceptFriendRequest.js";
-import { AddFriend } from "../useCases/AddFriend.js";
-import { DeclineFriendRequest } from "../useCases/DeclineFriendRequest.js";
-import { GetFriendRequests } from "../useCases/GetFriendRequests.js";
-import { GetFriends } from "../useCases/GetFriends.js";
-import { GetMe } from "../useCases/GetMe.js";
+import { AcceptFriendRequest } from "../modules/social/use-cases/AcceptFriendRequest.js";
+import { AddFriend } from "../modules/social/use-cases/AddFriend.js";
+import { DeclineFriendRequest } from "../modules/social/use-cases/DeclineFriendRequest.js";
+import { GetFriendRequests } from "../modules/social/use-cases/GetFriendRequests.js";
+import { GetFriends } from "../modules/social/use-cases/GetFriends.js";
+import { GetMe } from "../modules/user/use-cases/GetMe.js";
 
 export const friendshipRoutes = async (app: FastifyInstance) => {
   app.addHook("onRequest", authenticate);
@@ -35,7 +36,7 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const getMe = new GetMe();
+      const getMe = new GetMe(prisma);
       const result = await getMe.execute({
         userId: request.session.user.id,
       });
@@ -58,7 +59,7 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const getFriends = new GetFriends();
+      const getFriends = new GetFriends(prisma);
       const result = await getFriends.execute({
         userId: request.session.user.id,
       });
@@ -86,7 +87,7 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
     handler: async (request, reply) => {
       const { type } = request.query as { type: "RECEIVED" | "SENT" };
 
-      const getFriendRequests = new GetFriendRequests();
+      const getFriendRequests = new GetFriendRequests(prisma);
       const result = await getFriendRequests.execute({
         userId: request.session.user.id,
         type,
@@ -113,7 +114,7 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const addFriend = new AddFriend();
+      const addFriend = new AddFriend(prisma);
       const result = await addFriend.execute({
         userId: request.session.user.id,
         codeOrEmail: request.body.codeOrEmail,
@@ -141,7 +142,7 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const acceptFriendRequest = new AcceptFriendRequest();
+      const acceptFriendRequest = new AcceptFriendRequest(prisma);
       await acceptFriendRequest.execute({
         userId: request.session.user.id,
         requestId: request.params.id,
@@ -169,7 +170,7 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const declineFriendRequest = new DeclineFriendRequest();
+      const declineFriendRequest = new DeclineFriendRequest(prisma);
       await declineFriendRequest.execute({
         userId: request.session.user.id,
         requestId: request.params.id,

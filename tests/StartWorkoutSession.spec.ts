@@ -5,7 +5,7 @@ import {
   WorkoutPlanNotActiveError,
 } from "../src/errors/index.js";
 import { prisma } from "../src/lib/db.js";
-import { StartWorkoutSession } from "../src/useCases/StartWorkoutSession.js";
+import { StartWorkoutSession } from "../src/modules/workout/use-cases/StartWorkoutSession.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -40,7 +40,7 @@ describe("StartWorkoutSession Use Case", () => {
       completedAt: null,
     });
 
-    const startSession = new StartWorkoutSession();
+    const startSession = new StartWorkoutSession(prisma as any);
     const result = await startSession.execute(dto);
 
     expect(prisma.workoutSession.create).toHaveBeenCalled();
@@ -55,7 +55,7 @@ describe("StartWorkoutSession Use Case", () => {
       workoutDays: [{ id: "day-1" }],
     });
 
-    const startSession = new StartWorkoutSession();
+    const startSession = new StartWorkoutSession(prisma as any);
     await expect(startSession.execute(dto)).rejects.toThrow(
       WorkoutPlanNotActiveError,
     );
@@ -72,7 +72,7 @@ describe("StartWorkoutSession Use Case", () => {
       id: "active-sess",
     });
 
-    const startSession = new StartWorkoutSession();
+    const startSession = new StartWorkoutSession(prisma as any);
     await expect(startSession.execute(dto)).rejects.toThrow(
       SessionAlreadyStartedError,
     );

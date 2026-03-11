@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
-import { GetUserTrainData } from "../src/useCases/GetUserTrainData.js";
+import { GetUserTrainData } from "../src/modules/user/use-cases/GetUserTrainData.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -25,7 +25,7 @@ describe("GetUserTrainData Use Case", () => {
       },
     });
 
-    const getUserTrainData = new GetUserTrainData();
+    const getUserTrainData = new GetUserTrainData(prisma as any);
     const result = await getUserTrainData.execute({ userId });
 
     expect(result).not.toBeNull();
@@ -36,7 +36,7 @@ describe("GetUserTrainData Use Case", () => {
   it("should return null if user or train data not found", async () => {
     (prisma.user.findUnique as any).mockResolvedValue(null);
 
-    const getUserTrainData = new GetUserTrainData();
+    const getUserTrainData = new GetUserTrainData(prisma as any);
     const result = await getUserTrainData.execute({ userId: "none" });
 
     expect(result).toBeNull();

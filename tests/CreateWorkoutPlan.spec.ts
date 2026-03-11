@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { WeekDay } from "../src/generated/prisma/enums.js";
 import { prisma } from "../src/lib/db.js";
-import { CreateWorkoutPlan } from "../src/useCases/CreateWorkoutPlan.js";
+import { CreateWorkoutPlan } from "../src/modules/workout/use-cases/CreateWorkoutPlan.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -47,7 +47,7 @@ describe("CreateWorkoutPlan Use Case", () => {
     (prisma.workoutPlan.updateMany as any).mockResolvedValue({ count: 1 });
     (prisma.workoutPlan.create as any).mockResolvedValue(mockCreatedPlan);
 
-    const createWorkoutPlan = new CreateWorkoutPlan();
+    const createWorkoutPlan = new CreateWorkoutPlan(prisma as any);
     const result = await createWorkoutPlan.execute(dto);
 
     expect(prisma.workoutPlan.updateMany).toHaveBeenCalledWith({

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { ForbiddenError, NotFoundError } from "../src/errors/index.js";
 import { prisma } from "../src/lib/db.js";
-import { GetWorkoutDay } from "../src/useCases/GetWorkoutDay.js";
+import { GetWorkoutDay } from "../src/modules/workout/use-cases/GetWorkoutDay.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -32,7 +32,7 @@ describe("GetWorkoutDay Use Case", () => {
 
     (prisma.workoutDay.findUnique as any).mockResolvedValue(mockWorkoutDay);
 
-    const getWorkoutDay = new GetWorkoutDay();
+    const getWorkoutDay = new GetWorkoutDay(prisma as any);
     const result = await getWorkoutDay.execute({
       userId,
       workoutPlanId,
@@ -50,7 +50,7 @@ describe("GetWorkoutDay Use Case", () => {
 
   it("should throw NotFoundError if workout day does not exist", async () => {
     (prisma.workoutDay.findUnique as any).mockResolvedValue(null);
-    const getWorkoutDay = new GetWorkoutDay();
+    const getWorkoutDay = new GetWorkoutDay(prisma as any);
 
     await expect(
       getWorkoutDay.execute({
@@ -69,7 +69,7 @@ describe("GetWorkoutDay Use Case", () => {
     };
 
     (prisma.workoutDay.findUnique as any).mockResolvedValue(mockWorkoutDay);
-    const getWorkoutDay = new GetWorkoutDay();
+    const getWorkoutDay = new GetWorkoutDay(prisma as any);
 
     await expect(
       getWorkoutDay.execute({

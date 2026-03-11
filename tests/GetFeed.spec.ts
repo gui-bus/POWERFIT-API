@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
-import { GetFeed } from "../src/useCases/GetFeed.js";
+import { GetFeed } from "../src/modules/social/use-cases/GetFeed.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -26,7 +26,7 @@ describe("GetFeed Use Case", () => {
 
     (prisma.activity.findMany as any).mockResolvedValue([]);
 
-    const getFeed = new GetFeed();
+    const getFeed = new GetFeed(prisma as any);
     await getFeed.execute({ userId });
 
     expect(prisma.activity.findMany).toHaveBeenCalledWith(
@@ -47,7 +47,7 @@ describe("GetFeed Use Case", () => {
 
     (prisma.friendship.findFirst as any).mockResolvedValue(null);
 
-    const getFeed = new GetFeed();
+    const getFeed = new GetFeed(prisma as any);
     await expect(getFeed.execute({ userId, targetUserId })).rejects.toThrow(
       "You can only view feeds of your friends",
     );

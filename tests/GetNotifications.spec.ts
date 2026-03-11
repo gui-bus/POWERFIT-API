@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { NotificationType } from "../src/generated/prisma/enums.js";
 import { prisma } from "../src/lib/db.js";
-import { GetNotifications } from "../src/useCases/GetNotifications.js";
+import { GetNotifications } from "../src/modules/social/use-cases/GetNotifications.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -55,7 +55,7 @@ describe("GetNotifications Use Case Pagination", () => {
 
     (prisma.notification.findMany as any).mockResolvedValue(mockNotifications);
 
-    const getNotifications = new GetNotifications();
+    const getNotifications = new GetNotifications(prisma as any);
     const result = await getNotifications.execute({ userId, limit });
 
     expect(result.notifications).toHaveLength(2);
@@ -82,7 +82,7 @@ describe("GetNotifications Use Case Pagination", () => {
 
     (prisma.notification.findMany as any).mockResolvedValue(mockNotifications);
 
-    const getNotifications = new GetNotifications();
+    const getNotifications = new GetNotifications(prisma as any);
     const result = await getNotifications.execute({ userId, limit });
 
     expect(result.notifications).toHaveLength(1);
@@ -93,7 +93,7 @@ describe("GetNotifications Use Case Pagination", () => {
     const userId = "user-123";
     const cursor = "some-id";
 
-    const getNotifications = new GetNotifications();
+    const getNotifications = new GetNotifications(prisma as any);
     await getNotifications.execute({ userId, cursor });
 
     expect(prisma.notification.findMany).toHaveBeenCalledWith(

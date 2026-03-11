@@ -13,10 +13,11 @@ import z from "zod";
 import { WeekDay } from "../generated/prisma/enums.js";
 import { AI_SYSTEM_PROMPT } from "../lib/ai-prompt.js";
 import { authenticate } from "../lib/auth-middleware.js";
-import { CreateWorkoutPlan } from "../useCases/CreateWorkoutPlan.js";
-import { GetUserTrainData } from "../useCases/GetUserTrainData.js";
-import { GetWorkoutPlans } from "../useCases/GetWorkoutPlans.js";
-import { UpsertUserTrainData } from "../useCases/UpsertUserTrainData.js";
+import { prisma } from "../lib/db.js";
+import { CreateWorkoutPlan } from "../modules/workout/use-cases/CreateWorkoutPlan.js";
+import { GetUserTrainData } from "../modules/user/use-cases/GetUserTrainData.js";
+import { GetWorkoutPlans } from "../modules/workout/use-cases/GetWorkoutPlans.js";
+import { UpsertUserTrainData } from "../modules/user/use-cases/UpsertUserTrainData.js";
 
 export const aiRoutes = async (app: FastifyInstance) => {
   app.addHook("onRequest", authenticate);
@@ -44,7 +45,7 @@ export const aiRoutes = async (app: FastifyInstance) => {
               "Busca os dados de treino do usuário autenticado (peso, altura, idade, % gordura). Retorna null se não houver dados cadastrados.",
             inputSchema: z.object({}),
             execute: async () => {
-              const getUserTrainData = new GetUserTrainData();
+              const getUserTrainData = new GetUserTrainData(prisma);
               return getUserTrainData.execute({ userId });
             },
           }),
@@ -67,7 +68,7 @@ export const aiRoutes = async (app: FastifyInstance) => {
                 .describe("Percentual de gordura corporal (0 a 100)"),
             }),
             execute: async (params) => {
-              const upsertUserTrainData = new UpsertUserTrainData();
+              const upsertUserTrainData = new UpsertUserTrainData(prisma);
               return upsertUserTrainData.execute({ userId, ...params });
             },
           }),
@@ -76,7 +77,7 @@ export const aiRoutes = async (app: FastifyInstance) => {
               "Lista todos os planos de treino do usuário autenticado.",
             inputSchema: z.object({}),
             execute: async () => {
-              const listWorkoutPlans = new GetWorkoutPlans();
+              const listWorkoutPlans = new GetWorkoutPlans(prisma);
               return listWorkoutPlans.execute({ userId });
             },
           }),
@@ -134,7 +135,7 @@ export const aiRoutes = async (app: FastifyInstance) => {
                 ),
             }),
             execute: async (input) => {
-              const createWorkoutPlan = new CreateWorkoutPlan();
+              const createWorkoutPlan = new CreateWorkoutPlan(prisma);
               return createWorkoutPlan.execute({
                 userId,
                 name: input.name,

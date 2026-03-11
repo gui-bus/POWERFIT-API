@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
-import { GetXpHistory } from "../src/useCases/GetXpHistory.js";
+import { GetXpHistory } from "../src/modules/gamification/use-cases/GetXpHistory.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -25,7 +25,7 @@ describe("GetXpHistory Use Case", () => {
       },
     ]);
 
-    const getXpHistory = new GetXpHistory();
+    const getXpHistory = new GetXpHistory(prisma as any);
     const result = await getXpHistory.execute({ userId });
 
     expect(result).toHaveLength(1);

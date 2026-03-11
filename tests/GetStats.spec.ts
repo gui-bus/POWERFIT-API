@@ -3,7 +3,7 @@ import utc from "dayjs/plugin/utc.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
-import { GetStats } from "../src/useCases/GetStats.js";
+import { GetStats } from "../src/modules/workout/use-cases/GetStats.js";
 
 dayjs.extend(utc);
 
@@ -53,7 +53,7 @@ describe("GetStats Use Case", () => {
         { startedAt: dayjs.utc("2026-03-08T10:00:00Z").toDate() },
       ]);
 
-    const getStats = new GetStats();
+    const getStats = new GetStats(prisma as any);
     const result = await getStats.execute({ userId, from, to });
 
     expect(result.completedWorkoutsCount).toBe(1);
@@ -66,7 +66,7 @@ describe("GetStats Use Case", () => {
   it("should return zero stats if no sessions found", async () => {
     (prisma.workoutSession.findMany as any).mockResolvedValue([]);
 
-    const getStats = new GetStats();
+    const getStats = new GetStats(prisma as any);
     const result = await getStats.execute({
       userId: "user-1",
       from: "2026-03-01",

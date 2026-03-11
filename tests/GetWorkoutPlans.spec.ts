@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
-import { GetWorkoutPlans } from "../src/useCases/GetWorkoutPlans.js";
+import { GetWorkoutPlans } from "../src/modules/workout/use-cases/GetWorkoutPlans.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -23,7 +23,7 @@ describe("GetWorkoutPlans Use Case", () => {
       { id: "plan-2", name: "Plan B", isActive: false, workoutDays: [] },
     ]);
 
-    const getPlans = new GetWorkoutPlans();
+    const getPlans = new GetWorkoutPlans(prisma as any);
     const result = await getPlans.execute({ userId });
 
     expect(result).toHaveLength(2);

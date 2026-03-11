@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { NotFoundError } from "../src/errors/index.js";
 import { prisma } from "../src/lib/db.js";
-import { GetUserProfile } from "../src/useCases/GetUserProfile.js";
+import { GetUserProfile } from "../src/modules/user/use-cases/GetUserProfile.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -43,7 +43,7 @@ describe("GetUserProfile Use Case", () => {
       status: "ACCEPTED",
     });
 
-    const getUserProfile = new GetUserProfile();
+    const getUserProfile = new GetUserProfile(prisma as any);
     const result = await getUserProfile.execute({ userId, targetUserId });
 
     expect(result.id).toBe(targetUserId);
@@ -52,7 +52,7 @@ describe("GetUserProfile Use Case", () => {
 
   it("should throw NotFoundError if user doesn't exist", async () => {
     (prisma.user.findUnique as any).mockResolvedValue(null);
-    const getUserProfile = new GetUserProfile();
+    const getUserProfile = new GetUserProfile(prisma as any);
     await expect(
       getUserProfile.execute({ userId: "me", targetUserId: "none" }),
     ).rejects.toThrow(NotFoundError);

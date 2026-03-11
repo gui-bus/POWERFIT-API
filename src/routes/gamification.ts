@@ -3,6 +3,7 @@ import { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
 import { authenticate } from "../lib/auth-middleware.js";
+import { prisma } from "../lib/db.js";
 import {
   ErrorSchema,
   GetAchievementsResponseSchema,
@@ -10,11 +11,11 @@ import {
   GetXpHistoryResponseSchema,
   UserRankingResponseSchema,
 } from "../schemas/index.js";
-import { GetAchievements } from "../useCases/GetAchievements.js";
-import { GetChallenges } from "../useCases/GetChallenges.js";
-import { GetRanking } from "../useCases/GetRanking.js";
-import { GetXpHistory } from "../useCases/GetXpHistory.js";
-import { JoinChallenge } from "../useCases/JoinChallenge.js";
+import { GetAchievements } from "../modules/gamification/use-cases/GetAchievements.js";
+import { GetChallenges } from "../modules/gamification/use-cases/GetChallenges.js";
+import { GetRanking } from "../modules/gamification/use-cases/GetRanking.js";
+import { GetXpHistory } from "../modules/gamification/use-cases/GetXpHistory.js";
+import { JoinChallenge } from "../modules/gamification/use-cases/JoinChallenge.js";
 
 export const gamificationRoutes = async (app: FastifyInstance) => {
   app.addHook("onRequest", authenticate);
@@ -38,7 +39,7 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
     handler: async (request, reply) => {
       const { sortBy } = request.query as { sortBy: "XP" | "STREAK" };
 
-      const getRanking = new GetRanking();
+      const getRanking = new GetRanking(prisma);
       const result = await getRanking.execute({
         userId: request.session.user.id,
         sortBy,
@@ -62,7 +63,7 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const getAchievements = new GetAchievements();
+      const getAchievements = new GetAchievements(prisma);
       const result = await getAchievements.execute({
         userId: request.session.user.id,
       });
@@ -85,7 +86,7 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const getChallenges = new GetChallenges();
+      const getChallenges = new GetChallenges(prisma);
       const result = await getChallenges.execute({
         userId: request.session.user.id,
       });
@@ -112,7 +113,7 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const joinChallenge = new JoinChallenge();
+      const joinChallenge = new JoinChallenge(prisma);
       await joinChallenge.execute({
         userId: request.session.user.id,
         challengeId: request.params.id,
@@ -136,7 +137,7 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const getXpHistory = new GetXpHistory();
+      const getXpHistory = new GetXpHistory(prisma);
       const result = await getXpHistory.execute({
         userId: request.session.user.id,
       });

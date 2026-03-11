@@ -3,16 +3,17 @@ import { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
 import { authenticate } from "../lib/auth-middleware.js";
+import { prisma } from "../lib/db.js";
 import {
   CreateCommentSchema,
   ErrorSchema,
   GetFeedResponseSchema,
   PaginationQuerySchema,
 } from "../schemas/index.js";
-import { AddComment } from "../useCases/AddComment.js";
-import { DeleteActivity } from "../useCases/DeleteActivity.js";
-import { GetFeed } from "../useCases/GetFeed.js";
-import { TogglePowerup } from "../useCases/TogglePowerup.js";
+import { AddComment } from "../modules/social/use-cases/AddComment.js";
+import { DeleteActivity } from "../modules/social/use-cases/DeleteActivity.js";
+import { GetFeed } from "../modules/social/use-cases/GetFeed.js";
+import { TogglePowerup } from "../modules/social/use-cases/TogglePowerup.js";
 
 export const feedRoutes = async (app: FastifyInstance) => {
   app.addHook("onRequest", authenticate);
@@ -37,7 +38,7 @@ export const feedRoutes = async (app: FastifyInstance) => {
         limit?: number;
       };
 
-      const getFeed = new GetFeed();
+      const getFeed = new GetFeed(prisma);
       const result = await getFeed.execute({
         userId: request.session.user.id,
         cursor,
@@ -72,7 +73,7 @@ export const feedRoutes = async (app: FastifyInstance) => {
         limit?: number;
       };
 
-      const getFeed = new GetFeed();
+      const getFeed = new GetFeed(prisma);
       const result = await getFeed.execute({
         userId: request.session.user.id,
         targetUserId: request.params.userId,
@@ -103,7 +104,7 @@ export const feedRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const togglePowerup = new TogglePowerup();
+      const togglePowerup = new TogglePowerup(prisma);
       await togglePowerup.execute({
         userId: request.session.user.id,
         activityId: request.params.id,
@@ -132,7 +133,7 @@ export const feedRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const addComment = new AddComment();
+      const addComment = new AddComment(prisma);
       await addComment.execute({
         userId: request.session.user.id,
         activityId: request.params.id,
@@ -162,7 +163,7 @@ export const feedRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const deleteActivity = new DeleteActivity();
+      const deleteActivity = new DeleteActivity(prisma);
       await deleteActivity.execute({
         userId: request.session.user.id,
         activityId: request.params.id,

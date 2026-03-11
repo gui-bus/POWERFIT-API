@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
 import { notificationEvents } from "../src/lib/events.js";
-import { AddComment } from "../src/useCases/AddComment.js";
+import { AddComment } from "../src/modules/social/use-cases/AddComment.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -55,7 +55,7 @@ describe("AddComment Use Case", () => {
       recipientId: ownerId,
     });
 
-    const addComment = new AddComment();
+    const addComment = new AddComment(prisma as any);
     await addComment.execute({ userId, activityId, content: "Boa!" });
 
     expect(prisma.comment.create).toHaveBeenCalled();
@@ -80,7 +80,7 @@ describe("AddComment Use Case", () => {
       level: 1,
     });
 
-    const addComment = new AddComment();
+    const addComment = new AddComment(prisma as any);
     await addComment.execute({ userId, activityId, content: "Auto elogio" });
 
     expect(prisma.comment.create).toHaveBeenCalled();

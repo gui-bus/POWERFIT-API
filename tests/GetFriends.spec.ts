@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
-import { GetFriends } from "../src/useCases/GetFriends.js";
+import { GetFriends } from "../src/modules/social/use-cases/GetFriends.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -43,7 +43,7 @@ describe("GetFriends Use Case", () => {
 
     (prisma.friendship.findMany as any).mockResolvedValue(mockFriendships);
 
-    const getFriends = new GetFriends();
+    const getFriends = new GetFriends(prisma as any);
     const result = await getFriends.execute({ userId });
 
     expect(result).toHaveLength(2);

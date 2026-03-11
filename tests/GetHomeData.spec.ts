@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
-import { GetHomeData } from "../src/useCases/GetHomeData.js";
+import { GetHomeData } from "../src/modules/workout/use-cases/GetHomeData.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -33,7 +33,7 @@ describe("GetHomeData Use Case (Streak Logic)", () => {
       },
     );
 
-    const getHomeData = new GetHomeData();
+    const getHomeData = new GetHomeData(prisma as any);
     const result = await getHomeData.execute({ userId, date: today });
 
     expect(result.workoutStreak).toBe(3);
@@ -43,7 +43,7 @@ describe("GetHomeData Use Case (Streak Logic)", () => {
     const userId = "user-1";
     (prisma.workoutSession.findMany as any).mockResolvedValue([]);
 
-    const getHomeData = new GetHomeData();
+    const getHomeData = new GetHomeData(prisma as any);
     const result = await getHomeData.execute({ userId, date: "2026-03-10" });
 
     expect(result.workoutStreak).toBe(0);

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
-import { UpsertPersonalRecord } from "../src/useCases/UpsertPersonalRecord.js";
+import { UpsertPersonalRecord } from "../src/modules/user/use-cases/UpsertPersonalRecord.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -56,7 +56,7 @@ describe("UpsertPersonalRecord Use Case", () => {
       level: 1,
     });
 
-    const upsertPR = new UpsertPersonalRecord();
+    const upsertPR = new UpsertPersonalRecord(prisma as any);
     await upsertPR.execute(dto);
 
     expect(prisma.personalRecord.create).toHaveBeenCalled();
@@ -76,7 +76,7 @@ describe("UpsertPersonalRecord Use Case", () => {
       weightInGrams: 80000,
     });
 
-    const upsertPR = new UpsertPersonalRecord();
+    const upsertPR = new UpsertPersonalRecord(prisma as any);
     await upsertPR.execute(dto);
 
     expect(prisma.personalRecord.create).not.toHaveBeenCalled();

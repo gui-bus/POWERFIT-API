@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
-import { SearchUsers } from "../src/useCases/SearchUsers.js";
+import { SearchUsers } from "../src/modules/user/use-cases/SearchUsers.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -33,7 +33,7 @@ describe("SearchUsers Use Case", () => {
       },
     ]);
 
-    const searchUsers = new SearchUsers();
+    const searchUsers = new SearchUsers(prisma as any);
     const result = await searchUsers.execute({ userId, query: "John" });
 
     expect(result).toHaveLength(2);

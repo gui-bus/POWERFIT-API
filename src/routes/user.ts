@@ -3,6 +3,7 @@ import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 
 import { authenticate } from "../lib/auth-middleware.js";
+import { prisma } from "../lib/db.js";
 import {
   BodyProgressLogSchema,
   ErrorSchema,
@@ -18,17 +19,17 @@ import {
   UserTrainDataSchema,
 } from "../schemas/index.js";
 import { UpdateProfileSchema } from "../schemas/index.js";
-import { GetBodyProgressHistory } from "../useCases/GetBodyProgressHistory.js";
-import { GetPersonalRecords } from "../useCases/GetPersonalRecords.js";
-import { GetRanking } from "../useCases/GetRanking.js";
-import { GetUserProfile } from "../useCases/GetUserProfile.js";
-import { GetUserTrainData } from "../useCases/GetUserTrainData.js";
-import { LogBodyProgress } from "../useCases/LogBodyProgress.js";
-import { SearchUsers } from "../useCases/SearchUsers.js";
-import { UpdatePrivacySettings } from "../useCases/UpdatePrivacySettings.js";
-import { UpdateProfile } from "../useCases/UpdateProfile.js";
-import { UpsertPersonalRecord } from "../useCases/UpsertPersonalRecord.js";
-import { UpsertUserTrainData } from "../useCases/UpsertUserTrainData.js";
+import { GetBodyProgressHistory } from "../modules/user/use-cases/GetBodyProgressHistory.js";
+import { GetPersonalRecords } from "../modules/user/use-cases/GetPersonalRecords.js";
+import { GetRanking } from "../modules/gamification/use-cases/GetRanking.js";
+import { GetUserProfile } from "../modules/user/use-cases/GetUserProfile.js";
+import { GetUserTrainData } from "../modules/user/use-cases/GetUserTrainData.js";
+import { LogBodyProgress } from "../modules/user/use-cases/LogBodyProgress.js";
+import { SearchUsers } from "../modules/user/use-cases/SearchUsers.js";
+import { UpdatePrivacySettings } from "../modules/user/use-cases/UpdatePrivacySettings.js";
+import { UpdateProfile } from "../modules/user/use-cases/UpdateProfile.js";
+import { UpsertPersonalRecord } from "../modules/user/use-cases/UpsertPersonalRecord.js";
+import { UpsertUserTrainData } from "../modules/user/use-cases/UpsertUserTrainData.js";
 
 export const userRoutes = async (app: FastifyInstance) => {
   app.addHook("onRequest", authenticate);
@@ -52,7 +53,7 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const updateProfile = new UpdateProfile();
+      const updateProfile = new UpdateProfile(prisma);
       const result = await updateProfile.execute({
         userId: request.session.user.id,
         ...request.body,
@@ -79,7 +80,7 @@ export const userRoutes = async (app: FastifyInstance) => {
     handler: async (request, reply) => {
       const { query } = request.query as { query: string };
 
-      const searchUsers = new SearchUsers();
+      const searchUsers = new SearchUsers(prisma);
       const result = await searchUsers.execute({
         userId: request.session.user.id,
         query,
@@ -108,7 +109,7 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const getUserProfile = new GetUserProfile();
+      const getUserProfile = new GetUserProfile(prisma);
       const result = await getUserProfile.execute({
         userId: request.session.user.id,
         targetUserId: request.params.userId,
@@ -133,7 +134,7 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const updatePrivacySettings = new UpdatePrivacySettings();
+      const updatePrivacySettings = new UpdatePrivacySettings(prisma);
       await updatePrivacySettings.execute({
         userId: request.session.user.id,
         ...request.body,
@@ -157,7 +158,7 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const getPersonalRecords = new GetPersonalRecords();
+      const getPersonalRecords = new GetPersonalRecords(prisma);
       const result = await getPersonalRecords.execute({
         userId: request.session.user.id,
       });
@@ -181,7 +182,7 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const upsertPersonalRecord = new UpsertPersonalRecord();
+      const upsertPersonalRecord = new UpsertPersonalRecord(prisma);
       await upsertPersonalRecord.execute({
         userId: request.session.user.id,
         ...request.body,
@@ -205,7 +206,7 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const getBodyProgressHistory = new GetBodyProgressHistory();
+      const getBodyProgressHistory = new GetBodyProgressHistory(prisma);
       const result = await getBodyProgressHistory.execute({
         userId: request.session.user.id,
       });
@@ -229,7 +230,7 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const logBodyProgress = new LogBodyProgress();
+      const logBodyProgress = new LogBodyProgress(prisma);
       await logBodyProgress.execute({
         userId: request.session.user.id,
         ...request.body,
@@ -256,7 +257,7 @@ export const userRoutes = async (app: FastifyInstance) => {
     handler: async (request, reply) => {
       const { sortBy } = request.query as { sortBy: "STREAK" | "XP" };
 
-      const getRanking = new GetRanking();
+      const getRanking = new GetRanking(prisma);
       const result = await getRanking.execute({
         userId: request.session.user.id,
         sortBy,
@@ -280,7 +281,7 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const getUserTrainData = new GetUserTrainData();
+      const getUserTrainData = new GetUserTrainData(prisma);
       const result = await getUserTrainData.execute({
         userId: request.session.user.id,
       });
@@ -304,7 +305,7 @@ export const userRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const upsertUserTrainData = new UpsertUserTrainData();
+      const upsertUserTrainData = new UpsertUserTrainData(prisma);
       const result = await upsertUserTrainData.execute({
         userId: request.session.user.id,
         ...request.body,

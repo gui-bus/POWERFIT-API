@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ForbiddenError, NotFoundError } from "../src/errors/index.js";
 import { prisma } from "../src/lib/db.js";
-import { DeleteActivity } from "../src/useCases/DeleteActivity.js";
+import { DeleteActivity } from "../src/modules/social/use-cases/DeleteActivity.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -27,7 +27,7 @@ describe("DeleteActivity Use Case", () => {
       userId,
     });
 
-    const deleteActivity = new DeleteActivity();
+    const deleteActivity = new DeleteActivity(prisma as any);
     await deleteActivity.execute({ userId, activityId });
 
     expect(prisma.activity.delete).toHaveBeenCalledWith({
@@ -44,7 +44,7 @@ describe("DeleteActivity Use Case", () => {
       userId: "other-user",
     });
 
-    const deleteActivity = new DeleteActivity();
+    const deleteActivity = new DeleteActivity(prisma as any);
     await expect(
       deleteActivity.execute({ userId, activityId }),
     ).rejects.toThrow(ForbiddenError);
@@ -53,7 +53,7 @@ describe("DeleteActivity Use Case", () => {
   it("should throw NotFoundError if activity does not exist", async () => {
     (prisma.activity.findUnique as any).mockResolvedValue(null);
 
-    const deleteActivity = new DeleteActivity();
+    const deleteActivity = new DeleteActivity(prisma as any);
     await expect(
       deleteActivity.execute({ userId: "any", activityId: "any" }),
     ).rejects.toThrow(NotFoundError);

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ForbiddenError } from "../src/errors/index.js";
 import { prisma } from "../src/lib/db.js";
 import { notificationEvents } from "../src/lib/events.js";
-import { TogglePowerup } from "../src/useCases/TogglePowerup.js";
+import { TogglePowerup } from "../src/modules/social/use-cases/TogglePowerup.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -62,7 +62,7 @@ describe("TogglePowerup Use Case", () => {
       recipientId: friendId,
     });
 
-    const togglePowerup = new TogglePowerup();
+    const togglePowerup = new TogglePowerup(prisma as any);
     await togglePowerup.execute({ userId, activityId });
 
     expect(prisma.powerup.create).toHaveBeenCalled();
@@ -83,7 +83,7 @@ describe("TogglePowerup Use Case", () => {
     });
     (prisma.powerup.findUnique as any).mockResolvedValue({ id: "pow-1" });
 
-    const togglePowerup = new TogglePowerup();
+    const togglePowerup = new TogglePowerup(prisma as any);
     await togglePowerup.execute({ userId, activityId });
 
     expect(prisma.powerup.delete).toHaveBeenCalled();
@@ -101,7 +101,7 @@ describe("TogglePowerup Use Case", () => {
     });
     (prisma.friendship.findFirst as any).mockResolvedValue(null);
 
-    const togglePowerup = new TogglePowerup();
+    const togglePowerup = new TogglePowerup(prisma as any);
     await expect(togglePowerup.execute({ userId, activityId })).rejects.toThrow(
       ForbiddenError,
     );

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
-import { UpdateProfile } from "../src/useCases/UpdateProfile.js";
+import { UpdateProfile } from "../src/modules/user/use-cases/UpdateProfile.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -22,7 +22,7 @@ describe("UpdateProfile Use Case", () => {
       image: dto.image,
     });
 
-    const updateProfile = new UpdateProfile();
+    const updateProfile = new UpdateProfile(prisma as any);
     const result = await updateProfile.execute(dto);
 
     expect(result.name).toBe("Novo Nome");

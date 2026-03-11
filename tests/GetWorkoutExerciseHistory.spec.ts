@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
-import { GetWorkoutExerciseHistory } from "../src/useCases/GetWorkoutExerciseHistory.js";
+import { GetWorkoutExerciseHistory } from "../src/modules/workout/use-cases/GetWorkoutExerciseHistory.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -32,7 +32,7 @@ describe("GetWorkoutExerciseHistory Use Case", () => {
 
     (prisma.workoutSession.findFirst as any).mockResolvedValue(mockSession);
 
-    const getHistory = new GetWorkoutExerciseHistory();
+    const getHistory = new GetWorkoutExerciseHistory(prisma as any);
     const result = await getHistory.execute({ userId, workoutExerciseId: exerciseId });
 
     expect(result).not.toBeNull();
@@ -43,7 +43,7 @@ describe("GetWorkoutExerciseHistory Use Case", () => {
   it("should return null if no history found", async () => {
     (prisma.workoutSession.findFirst as any).mockResolvedValue(null);
 
-    const getHistory = new GetWorkoutExerciseHistory();
+    const getHistory = new GetWorkoutExerciseHistory(prisma as any);
     const result = await getHistory.execute({ userId: "any", workoutExerciseId: "none" });
 
     expect(result).toBeNull();

@@ -1,6 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { GrantXp } from "../src/useCases/GrantXp.js";
+import { prisma } from "../src/lib/db.js";
+import { GrantXp } from "../src/modules/gamification/use-cases/GrantXp.js";
+
+vi.mock("../src/lib/db.js", () => ({
+  prisma: {
+    user: { findUnique: vi.fn(), update: vi.fn() },
+    xpTransaction: { findFirst: vi.fn(), create: vi.fn() },
+    notification: { create: vi.fn() },
+  },
+}));
 
 describe("GrantXp Use Case", () => {
   it("should correctly increment user XP", async () => {
@@ -20,7 +29,7 @@ describe("GrantXp Use Case", () => {
       },
     };
 
-    const grantXp = new GrantXp();
+    const grantXp = new GrantXp(prisma as any);
     await grantXp.execute(
       { userId: "user-1", amount: 50, reason: "WORKOUT_COMPLETED" },
       mockTx,
@@ -49,7 +58,7 @@ describe("GrantXp Use Case", () => {
       },
     };
 
-    const grantXp = new GrantXp();
+    const grantXp = new GrantXp(prisma as any);
     await grantXp.execute(
       { userId: "user-1", amount: 50, reason: "WORKOUT_COMPLETED" },
       mockTx,
@@ -73,7 +82,7 @@ describe("GrantXp Use Case", () => {
       },
     };
 
-    const grantXp = new GrantXp();
+    const grantXp = new GrantXp(prisma as any);
     await grantXp.execute(
       {
         userId: "user-1",

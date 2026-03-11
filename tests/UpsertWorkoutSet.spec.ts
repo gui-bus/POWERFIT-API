@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
-import { UpsertWorkoutSet } from "../src/useCases/UpsertWorkoutSet.js";
+import { UpsertWorkoutSet } from "../src/modules/workout/use-cases/UpsertWorkoutSet.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -28,7 +28,7 @@ describe("UpsertWorkoutSet Use Case", () => {
     });
     (prisma.workoutSet.findFirst as any).mockResolvedValue(null);
 
-    const upsertWorkoutSet = new UpsertWorkoutSet();
+    const upsertWorkoutSet = new UpsertWorkoutSet(prisma as any);
     await upsertWorkoutSet.execute(dto);
 
     expect(prisma.workoutSet.create).toHaveBeenCalled();
@@ -42,7 +42,7 @@ describe("UpsertWorkoutSet Use Case", () => {
     });
     (prisma.workoutSet.findFirst as any).mockResolvedValue({ id: "set-1" });
 
-    const upsertWorkoutSet = new UpsertWorkoutSet();
+    const upsertWorkoutSet = new UpsertWorkoutSet(prisma as any);
     await upsertWorkoutSet.execute(dto);
 
     expect(prisma.workoutSet.update).toHaveBeenCalledWith({
@@ -58,7 +58,7 @@ describe("UpsertWorkoutSet Use Case", () => {
       workoutDay: { workoutPlan: { userId: "user-1" } },
     });
 
-    const upsertWorkoutSet = new UpsertWorkoutSet();
+    const upsertWorkoutSet = new UpsertWorkoutSet(prisma as any);
     await expect(upsertWorkoutSet.execute(dto)).rejects.toThrow(
       "Cannot modify sets of a completed session",
     );

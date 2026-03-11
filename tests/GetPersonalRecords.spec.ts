@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { prisma } from "../src/lib/db.js";
-import { GetPersonalRecords } from "../src/useCases/GetPersonalRecords.js";
+import { GetPersonalRecords } from "../src/modules/user/use-cases/GetPersonalRecords.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -33,7 +33,7 @@ describe("GetPersonalRecords Use Case", () => {
 
     (prisma.personalRecord.findMany as any).mockResolvedValue(mockRecords);
 
-    const getPRs = new GetPersonalRecords();
+    const getPRs = new GetPersonalRecords(prisma as any);
     const result = await getPRs.execute({ userId });
 
     expect(result).toHaveLength(2);
