@@ -1,10 +1,47 @@
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+
 import { PrismaClient } from "../generated/prisma/client.js";
 import { prisma } from "./db.js";
+
+dayjs.extend(utc);
 
 type PrismaTransaction = Omit<
   PrismaClient,
   "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
 >;
+
+export const XP_PER_LEVEL = 500;
+
+export const calculateLevel = (totalXp: number): number => {
+  let level = 1;
+  let remainingXp = totalXp;
+  let xpNeeded = XP_PER_LEVEL;
+
+  while (remainingXp >= xpNeeded) {
+    remainingXp -= xpNeeded;
+    level++;
+    xpNeeded = level * XP_PER_LEVEL;
+  }
+
+  return level;
+};
+
+export const calculateStreak = (completedDates: Set<string>, baseDate = dayjs.utc().startOf("day")): number => {
+  let streak = 0;
+  let checkDate = baseDate;
+
+  if (!completedDates.has(checkDate.format("YYYY-MM-DD"))) {
+    checkDate = checkDate.subtract(1, "day");
+  }
+
+  while (completedDates.has(checkDate.format("YYYY-MM-DD"))) {
+    streak++;
+    checkDate = checkDate.subtract(1, "day");
+  }
+
+  return streak;
+};
 
 export const ensureInitialAchievements = async (tx?: PrismaTransaction) => {
   const client = tx || prisma;
