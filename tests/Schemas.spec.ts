@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
+
 import {
-  PaginationQuerySchema,
   AddFriendSchema,
+  PaginationQuerySchema,
   UpdateProfileSchema,
 } from "../src/schemas/index.js";
 

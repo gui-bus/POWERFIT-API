@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { AcceptFriendRequest } from "../src/useCases/AcceptFriendRequest.js";
+
 import { prisma } from "../src/lib/db.js";
 import { notificationEvents } from "../src/lib/events.js";
+import { AcceptFriendRequest } from "../src/useCases/AcceptFriendRequest.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -54,7 +55,9 @@ describe("AcceptFriendRequest Use Case", () => {
       level: 1,
     });
     (prisma.xpTransaction.findFirst as any).mockResolvedValue(null);
-    (prisma.notification.create as any).mockResolvedValue({ id: "notif-1" });
+    (prisma.notification.create as any).mockResolvedValue({
+      id: "notif-1",
+    });
 
     const acceptFriendRequest = new AcceptFriendRequest();
     await acceptFriendRequest.execute({ userId, requestId });

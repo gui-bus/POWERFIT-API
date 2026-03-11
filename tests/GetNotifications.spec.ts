@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { GetNotifications } from "../src/useCases/GetNotifications.js";
-import { prisma } from "../src/lib/db.js";
+
 import { NotificationType } from "../src/generated/prisma/enums.js";
+import { prisma } from "../src/lib/db.js";
+import { GetNotifications } from "../src/useCases/GetNotifications.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {

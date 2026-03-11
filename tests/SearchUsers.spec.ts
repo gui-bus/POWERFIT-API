@@ -1,6 +1,7 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { SearchUsers } from "../src/useCases/SearchUsers.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { prisma } from "../src/lib/db.js";
+import { SearchUsers } from "../src/useCases/SearchUsers.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {

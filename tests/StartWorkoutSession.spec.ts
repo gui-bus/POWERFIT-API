@@ -1,12 +1,11 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { StartWorkoutSession } from "../src/useCases/StartWorkoutSession.js";
-import { prisma } from "../src/lib/db.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import {
-  ForbiddenError,
-  NotFoundError,
-  WorkoutPlanNotActiveError,
   SessionAlreadyStartedError,
+  WorkoutPlanNotActiveError,
 } from "../src/errors/index.js";
+import { prisma } from "../src/lib/db.js";
+import { StartWorkoutSession } from "../src/useCases/StartWorkoutSession.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {

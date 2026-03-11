@@ -1,6 +1,7 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { UpsertPersonalRecord } from "../src/useCases/UpsertPersonalRecord.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { prisma } from "../src/lib/db.js";
+import { UpsertPersonalRecord } from "../src/useCases/UpsertPersonalRecord.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {

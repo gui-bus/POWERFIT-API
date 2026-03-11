@@ -1,6 +1,7 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { GetXpHistory } from "../src/useCases/GetXpHistory.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { prisma } from "../src/lib/db.js";
+import { GetXpHistory } from "../src/useCases/GetXpHistory.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {

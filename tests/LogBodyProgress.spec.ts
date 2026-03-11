@@ -1,6 +1,7 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { LogBodyProgress } from "../src/useCases/LogBodyProgress.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { prisma } from "../src/lib/db.js";
+import { LogBodyProgress } from "../src/useCases/LogBodyProgress.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {

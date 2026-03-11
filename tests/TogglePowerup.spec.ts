@@ -1,8 +1,9 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { TogglePowerup } from "../src/useCases/TogglePowerup.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { ForbiddenError } from "../src/errors/index.js";
 import { prisma } from "../src/lib/db.js";
 import { notificationEvents } from "../src/lib/events.js";
-import { ForbiddenError, NotFoundError } from "../src/errors/index.js";
+import { TogglePowerup } from "../src/useCases/TogglePowerup.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {

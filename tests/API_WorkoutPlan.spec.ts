@@ -1,4 +1,5 @@
-import { describe, expect, it, vi, beforeAll } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
+
 import { app } from "../src/index.js";
 
 vi.mock("../src/lib/auth.js", () => ({
@@ -32,7 +33,9 @@ describe("API Endpoints: Workout Plans", () => {
   });
 
   it("should return 400 if trying to create a plan with invalid data (Zod test)", async () => {
-    (auth.api.getSession as any).mockResolvedValue({ user: { id: "user-1" } });
+    (auth.api.getSession as any).mockResolvedValue({
+      user: { id: "user-1" },
+    });
 
     const response = await app.inject({
       method: "POST",

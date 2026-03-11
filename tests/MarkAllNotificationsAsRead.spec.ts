@@ -1,6 +1,7 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { MarkAllNotificationsAsRead } from "../src/useCases/MarkAllNotificationsAsRead.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { prisma } from "../src/lib/db.js";
+import { MarkAllNotificationsAsRead } from "../src/useCases/MarkAllNotificationsAsRead.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {

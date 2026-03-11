@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { AddFriend } from "../src/useCases/AddFriend.js";
+
 import { prisma } from "../src/lib/db.js";
 import { notificationEvents } from "../src/lib/events.js";
+import { AddFriend } from "../src/useCases/AddFriend.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {

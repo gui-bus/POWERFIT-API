@@ -1,6 +1,6 @@
-import { describe, expect, it, vi, beforeAll } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
+
 import { app } from "../src/index.js";
-import { prisma } from "../src/lib/db.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { GetFeed } from "../src/useCases/GetFeed.js";
+
 import { prisma } from "../src/lib/db.js";
+import { GetFeed } from "../src/useCases/GetFeed.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {

@@ -19,6 +19,7 @@ import {
   UserRankingResponseSchema,
   UserTrainDataSchema,
 } from "../schemas/index.js";
+import { UpdateProfileSchema } from "../schemas/index.js";
 import { GetBodyProgressHistory } from "../useCases/GetBodyProgressHistory.js";
 import { GetPersonalRecords } from "../useCases/GetPersonalRecords.js";
 import { GetRanking } from "../useCases/GetRanking.js";
@@ -27,10 +28,9 @@ import { GetUserTrainData } from "../useCases/GetUserTrainData.js";
 import { LogBodyProgress } from "../useCases/LogBodyProgress.js";
 import { SearchUsers } from "../useCases/SearchUsers.js";
 import { UpdatePrivacySettings } from "../useCases/UpdatePrivacySettings.js";
-import { UpsertPersonalRecord } from "../useCases/UpsertPersonalRecord.js";
 import { UpdateProfile } from "../useCases/UpdateProfile.js";
+import { UpsertPersonalRecord } from "../useCases/UpsertPersonalRecord.js";
 import { UpsertUserTrainData } from "../useCases/UpsertUserTrainData.js";
-import { UpdateProfileSchema } from "../schemas/index.js";
 
 export const userRoutes = async (app: FastifyInstance) => {
   app.withTypeProvider<ZodTypeProvider>().route({

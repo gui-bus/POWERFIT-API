@@ -1,7 +1,7 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { JoinChallenge } from "../src/useCases/JoinChallenge.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { prisma } from "../src/lib/db.js";
-import { NotFoundError } from "../src/errors/index.js";
+import { JoinChallenge } from "../src/useCases/JoinChallenge.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {

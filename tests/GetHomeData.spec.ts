@@ -1,7 +1,8 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { GetHomeData } from "../src/useCases/GetHomeData.js";
-import { prisma } from "../src/lib/db.js";
 import dayjs from "dayjs";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { prisma } from "../src/lib/db.js";
+import { GetHomeData } from "../src/useCases/GetHomeData.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -21,7 +22,7 @@ describe("GetHomeData Use Case (Streak Logic)", () => {
 
     (prisma.workoutPlan.findFirst as any).mockResolvedValue(null);
     (prisma.workoutSession.findMany as any).mockImplementation(
-      ({ where }: any) => {
+      ({ where }: { where: { startedAt?: unknown } }) => {
         if (where.startedAt) return Promise.resolve([]);
 
         return Promise.resolve([

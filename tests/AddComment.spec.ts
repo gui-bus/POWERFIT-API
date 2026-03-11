@@ -1,8 +1,8 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { AddComment } from "../src/useCases/AddComment.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { prisma } from "../src/lib/db.js";
 import { notificationEvents } from "../src/lib/events.js";
-import { NotFoundError } from "../src/errors/index.js";
+import { AddComment } from "../src/useCases/AddComment.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {

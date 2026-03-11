@@ -1,6 +1,7 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { GetAchievements } from "../src/useCases/GetAchievements.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { prisma } from "../src/lib/db.js";
+import { GetAchievements } from "../src/useCases/GetAchievements.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {

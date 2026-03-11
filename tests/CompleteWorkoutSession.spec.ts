@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import { CompleteWorkoutSession } from "../src/useCases/CompleteWorkoutSession.js";
-import { prisma } from "../src/lib/db.js";
+
 import {
   ForbiddenError,
-  NotFoundError,
   SessionAlreadyCompletedError,
 } from "../src/errors/index.js";
+import { prisma } from "../src/lib/db.js";
+import { CompleteWorkoutSession } from "../src/useCases/CompleteWorkoutSession.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
@@ -38,7 +38,9 @@ describe("CompleteWorkoutSession Use Case", () => {
       id: "plan-1",
       userId: "user-1",
     });
-    (prisma.workoutDay.findUnique as any).mockResolvedValue({ id: "day-1" });
+    (prisma.workoutDay.findUnique as any).mockResolvedValue({
+      id: "day-1",
+    });
     (prisma.workoutSession.findUnique as any).mockResolvedValue({
       id: "session-1",
       completedAt: null,
@@ -81,7 +83,9 @@ describe("CompleteWorkoutSession Use Case", () => {
       id: "plan-1",
       userId: "user-1",
     });
-    (prisma.workoutDay.findUnique as any).mockResolvedValue({ id: "day-1" });
+    (prisma.workoutDay.findUnique as any).mockResolvedValue({
+      id: "day-1",
+    });
     (prisma.workoutSession.findUnique as any).mockResolvedValue({
       id: "session-1",
       completedAt: new Date(),

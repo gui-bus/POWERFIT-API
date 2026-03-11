@@ -1,6 +1,7 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { GetWorkoutPlans } from "../src/useCases/GetWorkoutPlans.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { prisma } from "../src/lib/db.js";
+import { GetWorkoutPlans } from "../src/useCases/GetWorkoutPlans.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {

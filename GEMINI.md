@@ -66,6 +66,7 @@ The project follows a clean, use-case driven architecture:
 
 ### 2. TypeScript Standards
 
+- **Comments:** **NEVER** use single-line comments (`//`). The code must be self-explanatory.
 - **Strict Typing:** **ALWAYS** use TypeScript. **NEVER** use JavaScript.
 - **No `any`:** **NEVER** use the `any` type.
 - **Exports:** Prefer **Named Exports** over default exports.

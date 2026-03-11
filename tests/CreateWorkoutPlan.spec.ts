@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { CreateWorkoutPlan } from "../src/useCases/CreateWorkoutPlan.js";
-import { prisma } from "../src/lib/db.js";
+
 import { WeekDay } from "../src/generated/prisma/enums.js";
+import { prisma } from "../src/lib/db.js";
+import { CreateWorkoutPlan } from "../src/useCases/CreateWorkoutPlan.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {

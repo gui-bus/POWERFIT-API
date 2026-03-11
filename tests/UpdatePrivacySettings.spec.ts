@@ -1,6 +1,7 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { UpdatePrivacySettings } from "../src/useCases/UpdatePrivacySettings.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { prisma } from "../src/lib/db.js";
+import { UpdatePrivacySettings } from "../src/useCases/UpdatePrivacySettings.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {

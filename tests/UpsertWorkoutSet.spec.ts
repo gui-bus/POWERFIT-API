@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { UpsertWorkoutSet } from "../src/useCases/UpsertWorkoutSet.js";
+
 import { prisma } from "../src/lib/db.js";
-import { NotFoundError } from "../src/errors/index.js";
+import { UpsertWorkoutSet } from "../src/useCases/UpsertWorkoutSet.js";
 
 vi.mock("../src/lib/db.js", () => ({
   prisma: {
