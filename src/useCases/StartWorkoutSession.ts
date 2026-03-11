@@ -67,7 +67,6 @@ export class StartWorkoutSession {
 
     const workoutSession = await prisma.workoutSession.create({
       data: {
-        id: crypto.randomUUID(),
         workoutDayId: dto.workoutDayId,
         startedAt: dayjs().toDate(),
       },

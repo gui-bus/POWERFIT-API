@@ -60,7 +60,7 @@ describe("UpsertPersonalRecord Use Case", () => {
     await upsertPR.execute(dto);
 
     expect(prisma.personalRecord.create).toHaveBeenCalled();
-    expect(prisma.notification.createMany).toHaveBeenCalled();
+    expect(prisma.notification.create).toHaveBeenCalled();
   });
 
   it("should do nothing if new weight is lower than existing record", async () => {

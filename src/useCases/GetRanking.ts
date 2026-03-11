@@ -28,8 +28,15 @@ interface OutputDto {
 export class GetRanking {
   async execute(dto: InputDto): Promise<OutputDto> {
     const today = dayjs.utc().startOf("day");
-
+    
+    // Only fetch users who have at least some XP or are the current user
     const users = await prisma.user.findMany({
+      where: {
+        OR: [
+          { xp: { gt: 0 } },
+          { id: dto.userId }
+        ]
+      },
       select: {
         id: true,
         name: true,
@@ -39,11 +46,16 @@ export class GetRanking {
       },
     });
 
+    // Only fetch sessions from the last 40 days to calculate current streaks
+    // Streaks are current, so we only need recent history.
     const sessions = await prisma.workoutSession.findMany({
       where: {
         completedAt: {
           not: null,
         },
+        startedAt: {
+          gte: today.subtract(40, "day").toDate(),
+        }
       },
       select: {
         startedAt: true,
@@ -84,27 +96,18 @@ export class GetRanking {
       };
     });
 
-    if (dto.sortBy === "STREAK") {
-      rankings.sort((a, b) => {
-        if (b.streak !== a.streak) {
-          return b.streak - a.streak;
-        }
-        if (b.xp !== a.xp) {
-          return b.xp - a.xp;
-        }
-        return a.name.localeCompare(b.name);
-      });
-    } else {
-      rankings.sort((a, b) => {
-        if (b.xp !== a.xp) {
-          return b.xp - a.xp;
-        }
-        if (b.streak !== a.streak) {
-          return b.streak - a.streak;
-        }
-        return a.name.localeCompare(b.name);
-      });
-    }
+    const sortFn = (a: UserRanking, b: UserRanking) => {
+      if (dto.sortBy === "STREAK") {
+        if (b.streak !== a.streak) return b.streak - a.streak;
+        if (b.xp !== a.xp) return b.xp - a.xp;
+      } else {
+        if (b.xp !== a.xp) return b.xp - a.xp;
+        if (b.streak !== a.streak) return b.streak - a.streak;
+      }
+      return a.name.localeCompare(b.name);
+    };
+
+    rankings.sort(sortFn);
 
     const top10 = rankings.slice(0, 10);
     const currentUserPosition =

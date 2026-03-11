@@ -1,4 +1,5 @@
 import { prisma } from "../lib/db.js";
+import { createAndEmitNotifications } from "../lib/notifications.js";
 import { CheckAchievements } from "./CheckAchievements.js";
 import { GrantXp } from "./GrantXp.js";
 
@@ -53,13 +54,14 @@ export class UpsertPersonalRecord {
         );
 
         if (friendIds.length > 0) {
-          await tx.notification.createMany({
-            data: friendIds.map((friendId) => ({
+          await createAndEmitNotifications(
+            friendIds.map((friendId) => ({
               recipientId: friendId,
               senderId: dto.userId,
               type: "PERSONAL_RECORD_BROKEN",
             })),
-          });
+            tx,
+          );
         }
       });
 

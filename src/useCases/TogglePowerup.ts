@@ -1,5 +1,6 @@
 import { ForbiddenError, NotFoundError } from "../errors/index.js";
 import { prisma } from "../lib/db.js";
+import { createAndEmitNotification } from "../lib/notifications.js";
 import { CheckAchievements } from "./CheckAchievements.js";
 import { GrantXp } from "./GrantXp.js";
 
@@ -50,7 +51,7 @@ export class TogglePowerup {
         where: { id: existingPowerup.id },
       });
     } else {
-      const notification = await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async (tx) => {
         await tx.powerup.create({
           data: {
             activityId: dto.activityId,
@@ -70,16 +71,16 @@ export class TogglePowerup {
           tx,
         );
 
-        let notif = null;
         if (activity.userId !== dto.userId) {
-          notif = await tx.notification.create({
-            data: {
+          await createAndEmitNotification(
+            {
               recipientId: activity.userId,
               senderId: dto.userId,
               type: "POWERUP_RECEIVED",
               activityId: activity.id,
             },
-          });
+            tx,
+          );
 
           await grantXp.execute(
             {
@@ -91,13 +92,7 @@ export class TogglePowerup {
             tx,
           );
         }
-        return notif;
       });
-
-      if (notification) {
-        const { notificationEvents } = await import("../lib/events.js");
-        notificationEvents.emit("new-notification", notification);
-      }
 
       const checkAchievements = new CheckAchievements();
       await Promise.all([

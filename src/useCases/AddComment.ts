@@ -1,5 +1,6 @@
 import { NotFoundError } from "../errors/index.js";
 import { prisma } from "../lib/db.js";
+import { createAndEmitNotification } from "../lib/notifications.js";
 import { CheckAchievements } from "./CheckAchievements.js";
 import { GrantXp } from "./GrantXp.js";
 
@@ -19,7 +20,7 @@ export class AddComment {
       throw new NotFoundError("Activity not found");
     }
 
-    const notification = await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       await tx.comment.create({
         data: {
           activityId: dto.activityId,
@@ -40,10 +41,9 @@ export class AddComment {
         tx,
       );
 
-      let notif = null;
       if (activity.userId !== dto.userId) {
-        notif = await tx.notification.create({
-          data: {
+        await createAndEmitNotification(
+          {
             recipientId: activity.userId,
             senderId: dto.userId,
             type: "COMMENT_RECEIVED",
@@ -53,15 +53,10 @@ export class AddComment {
                 ? `${dto.content.substring(0, 47)}...`
                 : dto.content,
           },
-        });
+          tx,
+        );
       }
-      return notif;
     });
-
-    if (notification) {
-      const { notificationEvents } = await import("../lib/events.js");
-      notificationEvents.emit("new-notification", notification);
-    }
 
     const checkAchievements = new CheckAchievements();
     await Promise.all([

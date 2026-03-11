@@ -2,7 +2,11 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 
 import { prisma } from "../lib/db.js";
-import { calculateStreak, ensureInitialAchievements } from "../lib/gamification.js";
+import {
+  calculateStreak,
+  ensureInitialAchievements,
+} from "../lib/gamification.js";
+import { createAndEmitNotification } from "../lib/notifications.js";
 import { GrantXp } from "./GrantXp.js";
 
 dayjs.extend(utc);
@@ -89,16 +93,14 @@ export class CheckAchievements {
             },
           });
 
-          const notification = await tx.notification.create({
-            data: {
+          await createAndEmitNotification(
+            {
               recipientId: dto.userId,
               type: "ACHIEVEMENT_UNLOCKED",
               achievementId: achievement.id,
             },
-          });
-
-          const { notificationEvents } = await import("../lib/events.js");
-          notificationEvents.emit("new-notification", notification);
+            tx,
+          );
 
           if (achievement.xpReward > 0) {
             await grantXp.execute(

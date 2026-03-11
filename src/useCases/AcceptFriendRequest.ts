@@ -1,5 +1,6 @@
 import { NotFoundError } from "../errors/index.js";
 import { prisma } from "../lib/db.js";
+import { createAndEmitNotification } from "../lib/notifications.js";
 import { CheckAchievements } from "./CheckAchievements.js";
 import { GrantXp } from "./GrantXp.js";
 
@@ -22,19 +23,20 @@ export class AcceptFriendRequest {
       throw new NotFoundError("Friend request not found or unauthorized");
     }
 
-    const notification = await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       await tx.friendship.update({
         where: { id: dto.requestId },
         data: { status: "ACCEPTED" },
       });
 
-      const notif = await tx.notification.create({
-        data: {
+      await createAndEmitNotification(
+        {
           recipientId: request.userId,
           senderId: dto.userId,
           type: "FRIEND_ACCEPTED",
         },
-      });
+        tx,
+      );
 
       const grantXp = new GrantXp();
 
@@ -57,12 +59,7 @@ export class AcceptFriendRequest {
         },
         tx,
       );
-
-      return notif;
     });
-
-    const { notificationEvents } = await import("../lib/events.js");
-    notificationEvents.emit("new-notification", notification);
 
     const checkAchievements = new CheckAchievements();
     await Promise.all([

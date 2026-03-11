@@ -6,6 +6,7 @@ import {
   SessionAlreadyCompletedError,
 } from "../errors/index.js";
 import { prisma } from "../lib/db.js";
+import { createAndEmitNotifications } from "../lib/notifications.js";
 import { CheckAchievements } from "./CheckAchievements.js";
 import { GrantXp } from "./GrantXp.js";
 
@@ -96,14 +97,15 @@ export class CompleteWorkoutSession {
       });
 
       if (dto.taggedUserIds && dto.taggedUserIds.length > 0) {
-        await tx.notification.createMany({
-          data: dto.taggedUserIds.map((taggedId) => ({
+        await createAndEmitNotifications(
+          dto.taggedUserIds.map((taggedId) => ({
             recipientId: taggedId,
             senderId: dto.userId,
             type: "TAGGED_IN_ACTIVITY",
             activityId: activity.id,
           })),
-        });
+          tx,
+        );
       }
 
       const grantXp = new GrantXp();
@@ -120,8 +122,8 @@ export class CompleteWorkoutSession {
       return {
         id: updatedSession.id,
         workoutDayId: updatedSession.workoutDayId,
-        startedAt: updatedSession.startedAt.toISOString(),
-        completedAt: updatedSession.completedAt!.toISOString(),
+        startedAt: dayjs(updatedSession.startedAt).toISOString(),
+        completedAt: dayjs(updatedSession.completedAt!).toISOString(),
       };
     });
 

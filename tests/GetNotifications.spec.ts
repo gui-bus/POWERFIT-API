@@ -89,7 +89,7 @@ describe("GetNotifications Use Case Pagination", () => {
     expect(result.nextCursor).toBeNull();
   });
 
-  it("should not use skip 1 when cursor is provided (current correct behavior)", async () => {
+  it("should use skip 1 when cursor is provided", async () => {
     const userId = "user-123";
     const cursor = "some-id";
 
@@ -99,7 +99,7 @@ describe("GetNotifications Use Case Pagination", () => {
     expect(prisma.notification.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         cursor: { id: cursor },
-        skip: 0,
+        skip: 1,
       }),
     );
   });

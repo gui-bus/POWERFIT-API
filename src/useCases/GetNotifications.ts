@@ -47,7 +47,7 @@ export class GetNotifications {
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: limit + 1,
       cursor: dto.cursor ? { id: dto.cursor } : undefined,
-      skip: 0,
+      skip: dto.cursor ? 1 : 0,
     });
 
     let nextCursor: string | null = null;

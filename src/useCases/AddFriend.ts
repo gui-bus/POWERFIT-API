@@ -1,5 +1,6 @@
 import { NotFoundError } from "../errors/index.js";
 import { prisma } from "../lib/db.js";
+import { createAndEmitNotification } from "../lib/notifications.js";
 import { CheckAchievements } from "./CheckAchievements.js";
 
 interface InputDto {
@@ -59,7 +60,7 @@ export class AddFriend {
       throw new Error("A friend request is already pending");
     }
 
-    const notification = await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       await tx.friendship.create({
         data: {
           userId: dto.userId,
@@ -68,17 +69,15 @@ export class AddFriend {
         },
       });
 
-      return await tx.notification.create({
-        data: {
+      await createAndEmitNotification(
+        {
           recipientId: friend.id,
           senderId: dto.userId,
           type: "FRIEND_REQUEST",
         },
-      });
+        tx,
+      );
     });
-
-    const { notificationEvents } = await import("../lib/events.js");
-    notificationEvents.emit("new-notification", notification);
 
     const checkAchievements = new CheckAchievements();
     await checkAchievements.execute({ userId: dto.userId });

@@ -104,6 +104,7 @@ export class GetFeed {
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: limit + 1,
       cursor: dto.cursor ? { id: dto.cursor } : undefined,
+      skip: dto.cursor ? 1 : 0,
     });
 
     const hasNextPage = activities.length > limit;
