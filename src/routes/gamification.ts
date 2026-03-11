@@ -119,7 +119,7 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
         challengeId: request.params.id,
       });
 
-      return reply.status(204).send();
+      return reply.status(204).send(null);
     },
   });
 

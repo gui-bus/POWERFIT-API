@@ -74,7 +74,7 @@ export class GetRanking {
     });
 
     const userSessionsMap = new Map<string, Set<string>>();
-    sessions.forEach((session) => {
+    sessions.forEach((session: any) => {
       const userId = session.workoutDay.workoutPlan.userId;
       const date = dayjs.utc(session.startedAt).format("YYYY-MM-DD");
 
@@ -84,7 +84,7 @@ export class GetRanking {
       userSessionsMap.get(userId)!.add(date);
     });
 
-    const rankings: UserRanking[] = users.map((user) => {
+    const rankings: UserRanking[] = users.map((user: any) => {
       const completedDates = userSessionsMap.get(user.id) || new Set<string>();
       const streak = calculateStreak(completedDates, today);
 

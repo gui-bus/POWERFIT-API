@@ -22,7 +22,7 @@ export class AddComment {
       throw new NotFoundError("Activity not found");
     }
 
-    await this.prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx: any) => {
       await tx.comment.create({
         data: {
           activityId: dto.activityId,

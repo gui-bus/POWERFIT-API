@@ -255,7 +255,7 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
         ...request.body,
       });
 
-      return reply.status(204).send();
+      return reply.status(204).send(null);
     },
   });
 

@@ -19,7 +19,7 @@ export class CheckAchievements {
   constructor(private readonly prisma: PrismaClient) {}
 
   async execute(dto: InputDto): Promise<void> {
-    await this.prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx: PrismaTransaction) => {
       await ensureInitialAchievements(tx);
 
       const unlockedAchievements = await tx.userAchievement.findMany({
@@ -27,7 +27,7 @@ export class CheckAchievements {
         select: { achievementId: true },
       });
 
-      const unlockedIds = unlockedAchievements.map((ua) => ua.achievementId);
+      const unlockedIds = unlockedAchievements.map((ua: any) => ua.achievementId);
 
       const pendingAchievements = await tx.achievement.findMany({
         where: { id: { notIn: unlockedIds } },
@@ -77,8 +77,8 @@ export class CheckAchievements {
               orderBy: { startedAt: "desc" },
             });
 
-            const completedDates = new Set(
-              sessions.map((s) => dayjs.utc(s.startedAt).format("YYYY-MM-DD")),
+            const completedDates = new Set<string>(
+              sessions.map((s: any) => dayjs.utc(s.startedAt).format("YYYY-MM-DD")),
             );
 
             const streak = calculateStreak(completedDates);

@@ -53,18 +53,18 @@ export class GetWorkoutPlans {
       },
     });
 
-    return workoutPlans.map((plan) => ({
+    return workoutPlans.map((plan: any) => ({
       id: plan.id,
       name: plan.name,
       isActive: plan.isActive,
-      workoutDays: plan.workoutDays.map((day) => ({
+      workoutDays: plan.workoutDays.map((day: any) => ({
         id: day.id,
         name: day.name,
         weekDay: day.weekDay,
         isRestDay: day.isRestDay,
         coverImageUrl: day.coverImageUrl,
         estimatedDurationInSeconds: day.estimatedDurationInSeconds,
-        exercises: day.exercises.map((ex) => ({
+        exercises: day.exercises.map((ex: any) => ({
           id: ex.id,
           name: ex.name,
           order: ex.order,

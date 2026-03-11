@@ -72,7 +72,7 @@ export class GetHomeData {
 
     const prismaWeekDay = mapDayjsToPrismaWeekDay(targetDate.day());
     const todayWorkoutDay = activeWorkoutPlan?.workoutDays.find(
-      (day) => day.weekDay === prismaWeekDay,
+      (day: any) => day.weekDay === prismaWeekDay,
     );
 
     const sessionsInWeek = await this.prisma.workoutSession.findMany({
@@ -94,7 +94,7 @@ export class GetHomeData {
     });
 
     const sessionsMap = new Map<string, { completed: boolean }>();
-    sessionsInWeek.forEach((s) => {
+    sessionsInWeek.forEach((s: any) => {
       const dateKey = dayjs.utc(s.startedAt).format("YYYY-MM-DD");
       const existing = sessionsMap.get(dateKey);
       sessionsMap.set(dateKey, {
@@ -139,8 +139,8 @@ export class GetHomeData {
       },
     });
 
-    const completedDates = new Set(
-      allCompletedSessions.map((s) =>
+    const completedDates = new Set<string>(
+      allCompletedSessions.map((s: any) =>
         dayjs.utc(s.startedAt).format("YYYY-MM-DD"),
       ),
     );

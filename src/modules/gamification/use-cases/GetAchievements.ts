@@ -29,7 +29,7 @@ export class GetAchievements {
       orderBy: { name: "asc" },
     });
 
-    return achievements.map((a) => ({
+    return achievements.map((a: any) => ({
       id: a.id,
       name: a.name,
       description: a.description,

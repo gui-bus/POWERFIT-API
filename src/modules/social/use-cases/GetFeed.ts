@@ -67,7 +67,7 @@ export class GetFeed {
         },
       });
 
-      const friendIds = friendships.map((f) =>
+      const friendIds = friendships.map((f: any) =>
         f.userId === dto.userId ? f.friendId : f.userId,
       );
 
@@ -108,7 +108,7 @@ export class GetFeed {
     }
     const nextCursor = hasNextPage ? activities[activities.length - 1].id : null;
 
-    const result = activities.map((activity) => ({
+    const result = activities.map((activity: any) => ({
       id: activity.id,
       userId: activity.user.id,
       userName: activity.user.name,
@@ -120,9 +120,9 @@ export class GetFeed {
       startedAt: dayjs(activity.workoutSession.startedAt).toISOString(),
       completedAt: dayjs(activity.workoutSession.completedAt!).toISOString(),
       powerupsCount: activity.powerups.length,
-      hasPowerupByMe: activity.powerups.some((p) => p.userId === dto.userId),
+      hasPowerupByMe: activity.powerups.some((p: any) => p.userId === dto.userId),
       createdAt: dayjs(activity.createdAt).toISOString(),
-      comments: activity.comments.map((c) => ({
+      comments: activity.comments.map((c: any) => ({
         id: c.id,
         userId: c.user.id,
         userName: c.user.name,
@@ -130,7 +130,7 @@ export class GetFeed {
         content: c.content,
         createdAt: dayjs(c.createdAt).toISOString(),
       })),
-      taggedUsers: activity.taggedUsers.map((u) => ({
+      taggedUsers: activity.taggedUsers.map((u: any) => ({
         id: u.id,
         name: u.name,
         image: u.image,

@@ -67,7 +67,7 @@ export class GetStats {
     let totalTimeInSeconds = 0;
     let totalVolumeInGrams = 0;
 
-    sessions.forEach((session) => {
+    sessions.forEach((session: any) => {
       const dateKey = dayjs.utc(session.startedAt).format("YYYY-MM-DD");
       const isCompleted = !!session.completedAt;
 
@@ -93,7 +93,7 @@ export class GetStats {
         );
         totalTimeInSeconds += duration;
 
-        session.sets.forEach((set) => {
+        session.sets.forEach((set: any) => {
           totalVolumeInGrams += set.weightInGrams * set.reps;
         });
       }
@@ -127,8 +127,8 @@ export class GetStats {
       },
     });
 
-    const completedDates = new Set(
-      allCompletedSessions.map((s) =>
+    const completedDates = new Set<string>(
+      allCompletedSessions.map((s: any) =>
         dayjs.utc(s.startedAt).format("YYYY-MM-DD"),
       ),
     );

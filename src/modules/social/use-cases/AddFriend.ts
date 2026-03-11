@@ -56,7 +56,7 @@ export class AddFriend {
       throw new BadRequestError("A friend request is already pending");
     }
 
-    await this.prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx: any) => {
       await tx.friendship.create({
         data: {
           userId: dto.userId,

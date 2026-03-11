@@ -39,7 +39,7 @@ export class GetFriendRequests {
       },
     });
 
-    return requests.map((req) => {
+    return requests.map((req: any) => {
       const targetUser = isSent ? req.friend : req.user;
 
       return {

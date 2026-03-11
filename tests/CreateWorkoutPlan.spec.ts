@@ -42,6 +42,10 @@ describe("CreateWorkoutPlan Use Case", () => {
     const mockCreatedPlan = {
       id: "new-plan-id",
       name: dto.name,
+      workoutDays: dto.workoutDays.map((day) => ({
+        ...day,
+        exercises: day.exercises.map((ex) => ({ ...ex })),
+      })),
     };
 
     (prisma.workoutPlan.updateMany as any).mockResolvedValue({ count: 1 });
@@ -61,11 +65,17 @@ describe("CreateWorkoutPlan Use Case", () => {
         userId,
         isActive: true,
       }),
+      include: {
+        workoutDays: {
+          include: {
+            exercises: true,
+          },
+        },
+      },
     });
 
-    expect(result).toEqual({
-      id: "new-plan-id",
-      name: dto.name,
-    });
+    expect(result.id).toBe("new-plan-id");
+    expect(result.name).toBe(dto.name);
+    expect(result.workoutDays).toHaveLength(1);
   });
 });

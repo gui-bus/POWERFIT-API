@@ -22,7 +22,7 @@ export class GetBodyProgressHistory {
       orderBy: { loggedAt: "asc" },
     });
 
-    return logs.map((log) => ({
+    return logs.map((log: any) => ({
       id: log.id,
       weightInGrams: log.weightInGrams,
       heightInCentimeters: log.heightInCentimeters,

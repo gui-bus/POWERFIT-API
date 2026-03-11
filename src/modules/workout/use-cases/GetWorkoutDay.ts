@@ -66,7 +66,7 @@ export class GetWorkoutDay {
       coverImageUrl: workoutDay.coverImageUrl,
       estimatedDurationInSeconds: workoutDay.estimatedDurationInSeconds,
       weekDay: workoutDay.weekDay,
-      exercises: workoutDay.exercises.map((exercise) => ({
+      exercises: workoutDay.exercises.map((exercise: any) => ({
         id: exercise.id,
         name: exercise.name,
         order: exercise.order,
@@ -75,7 +75,7 @@ export class GetWorkoutDay {
         reps: exercise.reps,
         restTimeInSeconds: exercise.restTimeInSeconds,
       })),
-      sessions: workoutDay.sessions.map((session) => ({
+      sessions: workoutDay.sessions.map((session: any) => ({
         id: session.id,
         workoutDayId: session.workoutDayId,
         startedAt: session.startedAt

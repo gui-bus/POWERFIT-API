@@ -28,7 +28,7 @@ export class GetFriends {
       },
     });
 
-    return friendships.map((f) => {
+    return friendships.map((f: any) => {
       const friendData = f.userId === dto.userId ? f.friend : f.user;
       return {
         id: friendData.id,

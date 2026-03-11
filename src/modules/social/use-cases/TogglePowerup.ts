@@ -46,7 +46,7 @@ export class TogglePowerup {
         where: { id: existingPowerup.id },
       });
     } else {
-      await this.prisma.$transaction(async (tx) => {
+      await this.prisma.$transaction(async (tx: any) => {
         await tx.powerup.create({
           data: {
             activityId: dto.activityId,

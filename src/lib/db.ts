@@ -13,6 +13,8 @@ export const prisma = globalForPrisma.prisma || new PrismaClient({ adapter });
 
 if (env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
+export { PrismaClient };
+
 export type PrismaTransaction = Omit<
   PrismaClient,
   "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"

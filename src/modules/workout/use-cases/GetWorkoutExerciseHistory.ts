@@ -40,7 +40,7 @@ export class GetWorkoutExerciseHistory {
 
     return {
       exerciseId: dto.workoutExerciseId,
-      lastSets: lastSessionWithSets.sets.map((s) => ({
+      lastSets: lastSessionWithSets.sets.map((s: any) => ({
         id: s.id,
         sessionId: s.sessionId,
         workoutExerciseId: s.workoutExerciseId,

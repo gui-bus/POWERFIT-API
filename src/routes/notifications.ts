@@ -93,7 +93,7 @@ export const notificationRoutes = async (app: FastifyInstance) => {
         userId: request.session.user.id,
       });
 
-      return reply.status(204).send();
+      return reply.status(204).send(null);
     },
   });
 
@@ -121,7 +121,7 @@ export const notificationRoutes = async (app: FastifyInstance) => {
         notificationId: request.params.id,
       });
 
-      return reply.status(204).send();
+      return reply.status(204).send(null);
     },
   });
 };

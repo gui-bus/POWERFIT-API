@@ -1,7 +1,7 @@
 import {
   ChallengeStatus,
   ChallengeType,
-} from "../../../../generated/prisma/enums.js";
+} from "../../../generated/prisma/enums.js";
 import { PrismaClient } from "../../../lib/db.js";
 import { ensureInitialChallenges } from "../../../lib/gamification.js";
 
@@ -37,10 +37,10 @@ export class GetChallenges {
           select: { participants: true },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { name: "asc" },
     });
 
-    return challenges.map((c) => ({
+    return challenges.map((c: any) => ({
       id: c.id,
       name: c.name,
       description: c.description,

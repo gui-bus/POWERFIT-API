@@ -82,7 +82,7 @@ export class GetUserProfile {
     });
 
     const completedDates = new Set(
-      sessions.map((s) => dayjs.utc(s.startedAt).format("YYYY-MM-DD")),
+      sessions.map((s: any) => dayjs.utc(s.startedAt).format("YYYY-MM-DD")),
     );
 
     const streak = calculateStreak(completedDates);
@@ -107,7 +107,7 @@ export class GetUserProfile {
               bodyFatPercentage: targetUser.trainData.bodyFatPercentage,
             }
           : null,
-      achievements: targetUser.achievements.map((ua) => ({
+      achievements: targetUser.achievements.map((ua: any) => ({
         id: ua.achievement.id,
         name: ua.achievement.name,
         iconUrl: ua.achievement.iconUrl,

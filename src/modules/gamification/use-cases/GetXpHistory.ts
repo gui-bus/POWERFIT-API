@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 
-import { XpReason } from "../../../../generated/prisma/enums.js";
+import { XpReason } from "../../../generated/prisma/enums.js";
 import { PrismaClient } from "../../../lib/db.js";
 
 interface InputDto {
@@ -24,7 +24,7 @@ export class GetXpHistory {
       take: 50,
     });
 
-    return transactions.map((t) => ({
+    return transactions.map((t: any) => ({
       id: t.id,
       amount: t.amount,
       reason: t.reason,

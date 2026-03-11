@@ -22,7 +22,7 @@ export class DeclineFriendRequest {
       throw new NotFoundError("Friend request not found or unauthorized");
     }
 
-    await this.prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx: any) => {
       await tx.notification.deleteMany({
         where: {
           recipientId: request.friendId,

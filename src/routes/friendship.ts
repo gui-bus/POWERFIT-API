@@ -148,7 +148,7 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
         requestId: request.params.id,
       });
 
-      return reply.status(204).send();
+      return reply.status(204).send(null);
     },
   });
 
@@ -176,7 +176,7 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
         requestId: request.params.id,
       });
 
-      return reply.status(204).send();
+      return reply.status(204).send(null);
     },
   });
 };

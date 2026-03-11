@@ -13,7 +13,7 @@ export class LogBodyProgress {
   constructor(private readonly prisma: PrismaClient) {}
 
   async execute(dto: InputDto): Promise<void> {
-    await this.prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx: any) => {
       await tx.bodyProgressLog.create({
         data: {
           userId: dto.userId,

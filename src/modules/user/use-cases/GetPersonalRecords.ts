@@ -24,7 +24,7 @@ export class GetPersonalRecords {
       },
     });
 
-    return records.map((r) => ({
+    return records.map((r: any) => ({
       id: r.id,
       exerciseName: r.exerciseName,
       weightInGrams: r.weightInGrams,

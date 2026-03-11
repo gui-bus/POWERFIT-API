@@ -140,7 +140,7 @@ export const userRoutes = async (app: FastifyInstance) => {
         ...request.body,
       });
 
-      return reply.status(204).send();
+      return reply.status(204).send(null);
     },
   });
 
@@ -188,7 +188,7 @@ export const userRoutes = async (app: FastifyInstance) => {
         ...request.body,
       });
 
-      return reply.status(204).send();
+      return reply.status(204).send(null);
     },
   });
 
@@ -236,7 +236,7 @@ export const userRoutes = async (app: FastifyInstance) => {
         ...request.body,
       });
 
-      return reply.status(204).send();
+      return reply.status(204).send(null);
     },
   });
 

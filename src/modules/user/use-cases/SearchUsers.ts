@@ -50,7 +50,7 @@ export class SearchUsers {
       take: 20,
     });
 
-    return users.map((user) => {
+    return users.map((user: any) => {
       const friendship = user.friends[0] || user.friendOf[0];
 
       return {

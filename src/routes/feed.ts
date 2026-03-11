@@ -110,7 +110,7 @@ export const feedRoutes = async (app: FastifyInstance) => {
         activityId: request.params.id,
       });
 
-      return reply.status(204).send();
+      return reply.status(204).send(null);
     },
   });
 
@@ -140,7 +140,7 @@ export const feedRoutes = async (app: FastifyInstance) => {
         content: request.body.content,
       });
 
-      return reply.status(204).send();
+      return reply.status(204).send(null);
     },
   });
 
@@ -169,7 +169,7 @@ export const feedRoutes = async (app: FastifyInstance) => {
         activityId: request.params.id,
       });
 
-      return reply.status(204).send();
+      return reply.status(204).send(null);
     },
   });
 };

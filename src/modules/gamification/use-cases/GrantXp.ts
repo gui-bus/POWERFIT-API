@@ -1,4 +1,4 @@
-import { XpReason } from "../../../../generated/prisma/enums.js";
+import { XpReason } from "../../../generated/prisma/enums.js";
 import { PrismaClient, PrismaTransaction } from "../../../lib/db.js";
 import { calculateLevel } from "../../../lib/gamification.js";
 import { createAndEmitNotification } from "../../../lib/notifications.js";
@@ -55,10 +55,6 @@ export class GrantXp {
     });
 
     if (newLevel > user.level) {
-      // In case of GrantXp, we might not have a transaction, so we use prisma or the passed tx.
-      // But createAndEmitNotification requires a PrismaTransaction.
-      // Actually, PrismaClient and PrismaTransaction are almost the same for .notification.create.
-      // Let's cast client as PrismaTransaction since it's used only for operations supported by both.
       await createAndEmitNotification(
         {
           recipientId: dto.userId,

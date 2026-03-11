@@ -23,7 +23,7 @@ export class UpsertPersonalRecord {
     });
 
     if (!existingPr || dto.weightInGrams > existingPr.weightInGrams) {
-      await this.prisma.$transaction(async (tx) => {
+      await this.prisma.$transaction(async (tx: any) => {
         await tx.personalRecord.create({
           data: {
             userId: dto.userId,
@@ -51,13 +51,13 @@ export class UpsertPersonalRecord {
           },
         });
 
-        const friendIds = friendships.map((f) =>
+        const friendIds = friendships.map((f: any) =>
           f.userId === dto.userId ? f.friendId : f.userId,
         );
 
         if (friendIds.length > 0) {
           await createAndEmitNotifications(
-            friendIds.map((friendId) => ({
+            friendIds.map((friendId: any) => ({
               recipientId: friendId,
               senderId: dto.userId,
               type: "PERSONAL_RECORD_BROKEN",

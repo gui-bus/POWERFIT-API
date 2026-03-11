@@ -55,7 +55,7 @@ export class GetWorkoutPlanById {
     return {
       id: workoutPlan.id,
       name: workoutPlan.name,
-      workoutDays: workoutPlan.workoutDays.map((day) => ({
+      workoutDays: workoutPlan.workoutDays.map((day: any) => ({
         id: day.id,
         weekDay: day.weekDay,
         name: day.name,

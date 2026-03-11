@@ -58,7 +58,7 @@ export class GetNotifications {
       nextCursor = nextItem!.id;
     }
 
-    const result = notifications.map((notification) => ({
+    const result = notifications.map((notification: any) => ({
       id: notification.id,
       type: notification.type,
       isRead: notification.isRead,
