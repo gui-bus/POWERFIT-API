@@ -123,7 +123,7 @@ export class CompleteWorkoutSession {
         tx,
       );
 
-      const updateChallengeProgress = new UpdateChallengeProgress(this.prisma);
+      const updateChallengeProgress = new UpdateChallengeProgress(tx as unknown as PrismaClient);
       await updateChallengeProgress.execute(
         {
           userId: dto.userId,

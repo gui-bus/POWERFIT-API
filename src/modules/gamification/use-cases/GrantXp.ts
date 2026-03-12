@@ -55,14 +55,14 @@ export class GrantXp {
       },
     });
 
-    const updateChallengeProgress = new UpdateChallengeProgress(this.prisma);
+    const updateChallengeProgress = new UpdateChallengeProgress(client as PrismaClient);
     await updateChallengeProgress.execute(
       {
         userId: dto.userId,
         goalType: ChallengeGoal.TOTAL_XP,
         increment: dto.amount,
       },
-      client as PrismaTransaction,
+      tx,
     );
 
     if (newLevel > user.level) {
