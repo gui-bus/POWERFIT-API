@@ -30,19 +30,20 @@ import { workoutPlanRoutes } from "./routes/workoutPlan.js";
 const envToLogger: any = {
   development: {
     transport: {
-      target: 'pino-pretty',
+      target: "pino-pretty",
       options: {
-        translateTime: 'HH:MM:ss Z',
-        ignore: 'pid,hostname',
+        translateTime: "HH:MM:ss Z",
+        ignore: "pid,hostname",
       },
     },
   },
   production: true,
   test: false,
-}
+};
 
 const app = Fastify({
   logger: envToLogger[env.NODE_ENV] ?? true,
+  trustProxy: true,
 });
 
 app.setValidatorCompiler(validatorCompiler);
@@ -78,13 +79,6 @@ app.setErrorHandler((error, _request, reply) => {
   });
 });
 
-await app.register(createRouteHandler, {
-  router: uploadRouter,
-  config: {
-    token: env.UPLOADTHING_TOKEN,
-  },
-});
-
 await app.register(fastifySwagger, {
   openapi: {
     info: {
@@ -103,9 +97,16 @@ await app.register(fastifySwagger, {
 });
 
 await app.register(fastifyCors, {
-  origin: [process.env.WEB_APP_BASE_URL || "http://localhost:3000"],
+  origin: [env.WEB_APP_BASE_URL || "http://localhost:3000"],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   credentials: true,
+});
+
+await app.register(createRouteHandler, {
+  router: uploadRouter,
+  config: {
+    token: env.UPLOADTHING_TOKEN,
+  },
 });
 
 await app.register(fastifyApiReference, {
@@ -157,7 +158,9 @@ app.withTypeProvider<ZodTypeProvider>().route({
   },
   async handler(request, reply) {
     try {
-      const url = new URL(request.url, `http://${request.headers.host}`);
+      const protocol = request.headers["x-forwarded-proto"] || "http";
+      const host = request.headers["x-forwarded-host"] || request.headers.host;
+      const url = new URL(request.url, `${protocol}://${host}`);
 
       const headers = new Headers();
       Object.entries(request.headers).forEach(([key, value]) => {
