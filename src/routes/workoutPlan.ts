@@ -7,6 +7,7 @@ import { prisma } from "../lib/db.js";
 import { ActivateWorkoutPlan } from "../modules/workout/use-cases/ActivateWorkoutPlan.js";
 import { CompleteWorkoutSession } from "../modules/workout/use-cases/CompleteWorkoutSession.js";
 import { CreateWorkoutPlan } from "../modules/workout/use-cases/CreateWorkoutPlan.js";
+import { DeleteWorkoutPlan } from "../modules/workout/use-cases/DeleteWorkoutPlan.js";
 import { GetWorkoutDay } from "../modules/workout/use-cases/GetWorkoutDay.js";
 import { GetWorkoutExerciseHistory } from "../modules/workout/use-cases/GetWorkoutExerciseHistory.js";
 import { GetWorkoutPlanById } from "../modules/workout/use-cases/GetWorkoutPlanById.js";
@@ -324,6 +325,36 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
       });
 
       return reply.status(200).send(result);
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "DELETE",
+    url: "/:id",
+    schema: {
+      operationId: "deleteWorkoutPlan",
+      tags: ["Workout Plan"],
+      summary: "Delete a workout plan",
+      description: "Permanently removes a workout plan. Cannot delete the currently active plan.",
+      params: z.object({
+        id: z.string().uuid(),
+      }),
+      response: {
+        204: z.null(),
+        400: ErrorSchema,
+        401: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      const deleteWorkoutPlan = new DeleteWorkoutPlan();
+      await deleteWorkoutPlan.execute({
+        userId: request.session.user.id,
+        workoutPlanId: request.params.id,
+      });
+
+      return reply.status(204).send(null);
     },
   });
 };
