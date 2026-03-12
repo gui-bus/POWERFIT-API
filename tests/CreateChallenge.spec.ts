@@ -63,6 +63,11 @@ describe("CreateChallenge Use Case", () => {
       }),
     });
 
+    expect(createAndEmitNotification).toHaveBeenCalledWith(expect.objectContaining({
+      challengeId: "challenge-123",
+      type: NotificationType.CHALLENGE_INVITE,
+    }));
+
     expect(result.goalType).toBe(ChallengeGoal.WORKOUT_COUNT);
   });
 });

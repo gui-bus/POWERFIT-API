@@ -8,6 +8,7 @@ interface CreateNotificationDto {
   type: NotificationType;
   activityId?: string;
   achievementId?: string;
+  challengeId?: string;
   content?: string;
 }
 
@@ -23,6 +24,7 @@ export const createAndEmitNotification = async (
       type: dto.type,
       activityId: dto.activityId,
       achievementId: dto.achievementId,
+      challengeId: dto.challengeId,
       content: dto.content,
     },
   });
@@ -51,6 +53,7 @@ export const createAndEmitNotifications = async (
           type: dto.type,
           activityId: dto.activityId,
           achievementId: dto.achievementId,
+          challengeId: dto.challengeId,
           content: dto.content,
         },
       }),
