@@ -99,6 +99,7 @@ model User {
   comments              Comment[]
   personalRecords       PersonalRecord[]
   bodyProgressLogs      BodyProgressLog[]
+  waterLogs             WaterLog[]
   notificationsReceived Notification[] @relation("RecipientNotifications")
   notificationsSent     Notification[] @relation("SenderNotifications")
   xpTransactions        XpTransaction[]
@@ -109,6 +110,77 @@ model User {
 
   @@unique([email])
   @@map("user")
+}
+
+model Exercise {
+  id               String   @id @default(uuid())
+  name             String   @unique
+  description      String?
+  muscleGroup      String
+  equipment        String?
+  instructions     String?
+  imageUrl         String?
+  videoUrl         String?
+  difficulty       String?  // Beginner, Intermediate, Advanced
+  createdAt        DateTime @default(now()) @db.Timestamptz()
+  updatedAt        DateTime @updatedAt @db.Timestamptz()
+
+  @@map("exercise")
+}
+
+model WaterLog {
+  id            String   @id @default(uuid())
+  userId        String
+  amountInMl    Int
+  loggedAt      DateTime @default(now()) @db.Timestamptz()
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, loggedAt])
+  @@map("water_log")
+}
+
+model WorkoutTemplate {
+  id          String         @id @default(uuid())
+  name        String
+  description String?
+  category    String?        // e.g., "Muscle Gain", "Weight Loss"
+  difficulty  String?        // e.g., "Beginner", "Advanced"
+  imageUrl    String?
+  days        TemplateDay[]
+  createdAt   DateTime       @default(now()) @db.Timestamptz()
+  updatedAt   DateTime       @updatedAt @db.Timestamptz()
+
+  @@map("workout_template")
+}
+
+model TemplateDay {
+  id                         String             @id @default(uuid())
+  name                       String
+  templateId                 String
+  template                   WorkoutTemplate    @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  isRestDay                  Boolean            @default(false)
+  weekDay                    WeekDay
+  exercises                  TemplateExercise[]
+  estimatedDurationInSeconds Int
+  createdAt                  DateTime           @default(now()) @db.Timestamptz()
+  updatedAt                  DateTime           @updatedAt @db.Timestamptz()
+
+  @@map("template_day")
+}
+
+model TemplateExercise {
+  id                String      @id @default(uuid())
+  name              String
+  order             Int
+  dayId             String
+  day               TemplateDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  sets              Int
+  reps              Int
+  restTimeInSeconds Int
+  createdAt         DateTime    @default(now()) @db.Timestamptz()
+  updatedAt         DateTime    @updatedAt @db.Timestamptz()
+
+  @@map("template_exercise")
 }
 
 model Friendship {

@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { authenticate } from "../lib/auth-middleware.js";
 import { prisma } from "../lib/db.js";
+import { ActivateWorkoutPlan } from "../modules/workout/use-cases/ActivateWorkoutPlan.js";
 import { CompleteWorkoutSession } from "../modules/workout/use-cases/CompleteWorkoutSession.js";
 import { CreateWorkoutPlan } from "../modules/workout/use-cases/CreateWorkoutPlan.js";
 import { GetWorkoutDay } from "../modules/workout/use-cases/GetWorkoutDay.js";
@@ -288,6 +289,38 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
       const result = await getHistory.execute({
         userId: request.session.user.id,
         workoutExerciseId: request.params.exerciseId,
+      });
+
+      return reply.status(200).send(result);
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "PATCH",
+    url: "/:id/activate",
+    schema: {
+      operationId: "activateWorkoutPlan",
+      tags: ["Workout Plan"],
+      summary: "Activate a workout plan",
+      description: "Sets a specific workout plan as active and deactivates all others for the user.",
+      params: z.object({
+        id: z.string().uuid(),
+      }),
+      response: {
+        200: z.object({
+          id: z.string().uuid(),
+          name: z.string(),
+        }),
+        401: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      const activateWorkoutPlan = new ActivateWorkoutPlan();
+      const result = await activateWorkoutPlan.execute({
+        userId: request.session.user.id,
+        workoutPlanId: request.params.id,
       });
 
       return reply.status(200).send(result);

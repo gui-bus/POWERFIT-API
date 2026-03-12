@@ -78,9 +78,7 @@ export class GetHomeData {
     const sessionsInWeek = await this.prisma.workoutSession.findMany({
       where: {
         workoutDay: {
-          workoutPlan: {
-            userId: dto.userId,
-          },
+          workoutPlanId: activeWorkoutPlan?.id ?? "none",
         },
         startedAt: {
           gte: weekStart.toDate(),

@@ -18,6 +18,7 @@ import { authenticate } from "./lib/auth-middleware.js";
 import { env } from "./lib/env.js";
 import { uploadRouter } from "./lib/uploadthing.js";
 import { aiRoutes } from "./routes/ai.js";
+import { exerciseRoutes } from "./routes/exercise.js";
 import { feedRoutes } from "./routes/feed.js";
 import { friendshipRoutes } from "./routes/friendship.js";
 import { gamificationRoutes } from "./routes/gamification.js";
@@ -25,7 +26,9 @@ import { homeRoutes } from "./routes/home.js";
 import { notificationRoutes } from "./routes/notifications.js";
 import { statsRoutes } from "./routes/stats.js";
 import { userRoutes } from "./routes/user.js";
+import { waterRoutes } from "./routes/water.js";
 import { workoutPlanRoutes } from "./routes/workoutPlan.js";
+import { workoutTemplateRoutes } from "./routes/workoutTemplate.js";
 
 const envToLogger: any = {
   development: {
@@ -83,7 +86,8 @@ await app.register(fastifySwagger, {
   openapi: {
     info: {
       title: "PowerFIT API",
-      description: "Complete PowerFIT API documentation - Workout management, gamification, and fitness social network.",
+      description:
+        "Complete PowerFIT API documentation - Workout management, gamification, and fitness social network.",
       version: "1.0.0",
     },
     servers: [
@@ -123,6 +127,10 @@ await app.register(createRouteHandler, {
 await app.register(fastifyApiReference, {
   routePrefix: "/",
   configuration: {
+    isEditable: false,
+    hideTestRequestButton: env.NODE_ENV === "production",
+    hideModels: false,
+    theme: "purple",
     sources: [
       {
         title: "PowerFIT API",
@@ -145,6 +153,9 @@ await app.register(friendshipRoutes, { prefix: "/friendships" });
 await app.register(feedRoutes, { prefix: "/feed" });
 await app.register(notificationRoutes, { prefix: "/notifications" });
 await app.register(gamificationRoutes, { prefix: "/gamification" });
+await app.register(exerciseRoutes, { prefix: "/exercises" });
+await app.register(waterRoutes, { prefix: "/water" });
+await app.register(workoutTemplateRoutes, { prefix: "/workout-templates" });
 await app.register(userRoutes);
 await app.register(aiRoutes, { prefix: "/ai" });
 
@@ -166,7 +177,8 @@ app.withTypeProvider<ZodTypeProvider>().route({
     hide: true,
     tags: ["Auth"],
     summary: "Better Auth API",
-    description: "External authentication API handling login, registration, and session management.",
+    description:
+      "External authentication API handling login, registration, and session management.",
   },
   async handler(request, reply) {
     try {

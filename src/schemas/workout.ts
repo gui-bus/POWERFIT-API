@@ -170,3 +170,29 @@ export const StatsResponseSchema = z.object({
   totalTimeInSeconds: z.number(),
   totalVolumeInGrams: z.number(),
 });
+
+export const WorkoutTemplateSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  description: z.string().nullable(),
+  category: z.string().nullable(),
+  difficulty: z.string().nullable(),
+  imageUrl: z.string().url().nullable(),
+  days: z.array(
+    z.object({
+      name: z.string(),
+      weekDay: z.enum(WeekDay),
+      isRestDay: z.boolean(),
+      estimatedDurationInSeconds: z.number(),
+      exercises: z.array(
+        z.object({
+          name: z.string(),
+          order: z.number(),
+          sets: z.number(),
+          reps: z.number(),
+          restTimeInSeconds: z.number(),
+        }),
+      ),
+    }),
+  ),
+});
