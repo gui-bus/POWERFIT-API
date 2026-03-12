@@ -40,6 +40,31 @@ describe("API Social & Gamification Endpoints", () => {
   });
 
   describe("Gamification (/gamification)", () => {
+    it("POST /challenges should return 401 if no session", async () => {
+      (auth.api.getSession as any).mockResolvedValue(null);
+      const response = await app.inject({
+        method: "POST",
+        url: "/gamification/challenges",
+        payload: {
+          name: "Challenge",
+          description: "Desc",
+          opponentId: "user-opponent",
+          goalType: "TOTAL_XP",
+          goalTarget: 100,
+        },
+      });
+      expect(response.statusCode).toBe(401);
+    });
+
+    it("GET /challenges/:id should return 401 if no session", async () => {
+      (auth.api.getSession as any).mockResolvedValue(null);
+      const response = await app.inject({
+        method: "GET",
+        url: "/gamification/challenges/123e4567-e89b-12d3-a456-426614174000",
+      });
+      expect(response.statusCode).toBe(401);
+    });
+
     it("GET /ranking should require authentication", async () => {
       (auth.api.getSession as any).mockResolvedValue(null);
       const response = await app.inject({

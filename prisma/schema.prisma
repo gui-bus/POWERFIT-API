@@ -62,6 +62,15 @@ enum ChallengeStatus {
   COMPLETED
 }
 
+enum ChallengeGoal {
+  WORKOUT_COUNT
+  TOTAL_VOLUME
+  TOTAL_XP
+  PR_COUNT
+  TOTAL_DURATION
+  STREAK_DAYS
+}
+
 
 
 
@@ -96,6 +105,7 @@ model User {
   achievements          UserAchievement[]
   challengesParticipated ChallengeParticipant[]
   challengesCreated     Challenge[]    @relation("ChallengeCreator")
+  challengesTargeted    Challenge[]    @relation("ChallengeTarget")
 
   @@unique([email])
   @@map("user")
@@ -194,6 +204,7 @@ model Notification {
   type          NotificationType
   activityId    String?
   achievementId String?
+  challengeId   String?
   content       String?
   isRead        Boolean          @default(false)
   createdAt     DateTime         @default(now()) @db.Timestamptz()
@@ -203,6 +214,7 @@ model Notification {
   sender      User?        @relation("SenderNotifications", fields: [senderId], references: [id], onDelete: SetNull)
   activity    Activity?    @relation(fields: [activityId], references: [id], onDelete: Cascade)
   achievement Achievement? @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  challenge   Challenge?   @relation(fields: [challengeId], references: [id], onDelete: Cascade)
 
   @@map("notification")
 }
@@ -253,10 +265,15 @@ model Challenge {
   startDate   DateTime?       @db.Timestamptz()
   endDate     DateTime?       @db.Timestamptz()
   creatorId   String?
+  targetUserId String?
   xpReward    Int             @default(0)
+  goalType    ChallengeGoal?
+  goalTarget  Int?
   
   creator      User?          @relation("ChallengeCreator", fields: [creatorId], references: [id], onDelete: SetNull)
+  targetUser   User?          @relation("ChallengeTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
   participants ChallengeParticipant[]
+  notifications Notification[]
 
   @@map("challenge")
 }

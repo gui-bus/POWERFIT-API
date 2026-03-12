@@ -38,6 +38,15 @@ describe("GetChallenges Use Case", () => {
     const getChallenges = new GetChallenges(prisma as any);
     const result = await getChallenges.execute({ userId });
 
+    expect(prisma.challenge.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
+        OR: expect.arrayContaining([
+          expect.objectContaining({ creatorId: userId }),
+          expect.objectContaining({ targetUserId: userId }),
+        ]),
+      }),
+    }));
+
     expect(result).toHaveLength(1);
     expect(result[0].isJoined).toBe(true);
     expect(result[0].participantsCount).toBe(10);

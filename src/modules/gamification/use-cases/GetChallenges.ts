@@ -1,4 +1,5 @@
 import {
+  ChallengeGoal,
   ChallengeStatus,
   ChallengeType,
 } from "../../../generated/prisma/enums.js";
@@ -20,6 +21,8 @@ interface OutputDto {
   xpReward: number;
   participantsCount: number;
   isJoined: boolean;
+  goalType: ChallengeGoal | null;
+  goalTarget: number | null;
 }
 
 export class GetChallenges {
@@ -29,6 +32,14 @@ export class GetChallenges {
     await ensureInitialChallenges(this.prisma);
 
     const challenges = await this.prisma.challenge.findMany({
+      where: {
+        OR: [
+          { type: ChallengeType.GLOBAL },
+          { creatorId: dto.userId },
+          { targetUserId: dto.userId },
+          { participants: { some: { userId: dto.userId } } },
+        ],
+      },
       include: {
         participants: {
           where: { userId: dto.userId },
@@ -51,6 +62,8 @@ export class GetChallenges {
       xpReward: c.xpReward,
       participantsCount: c._count.participants,
       isJoined: c.participants.length > 0,
+      goalType: c.goalType,
+      goalTarget: c.goalTarget,
     }));
   }
 }

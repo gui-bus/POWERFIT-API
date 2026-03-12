@@ -4,6 +4,14 @@ import z from "zod";
 
 import { authenticate } from "../lib/auth-middleware.js";
 import { prisma } from "../lib/db.js";
+import { CreateChallenge } from "../modules/gamification/use-cases/CreateChallenge.js";
+import { GetAchievements } from "../modules/gamification/use-cases/GetAchievements.js";
+import { GetChallengeById } from "../modules/gamification/use-cases/GetChallengeById.js";
+import { GetChallenges } from "../modules/gamification/use-cases/GetChallenges.js";
+import { GetRanking } from "../modules/gamification/use-cases/GetRanking.js";
+import { GetXpHistory } from "../modules/gamification/use-cases/GetXpHistory.js";
+import { JoinChallenge } from "../modules/gamification/use-cases/JoinChallenge.js";
+import { ChallengeProgressSchema,ChallengeSchema, CreateChallengeSchema } from "../schemas/gamification.js";
 import {
   ErrorSchema,
   GetAchievementsResponseSchema,
@@ -11,14 +19,67 @@ import {
   GetXpHistoryResponseSchema,
   UserRankingResponseSchema,
 } from "../schemas/index.js";
-import { GetAchievements } from "../modules/gamification/use-cases/GetAchievements.js";
-import { GetChallenges } from "../modules/gamification/use-cases/GetChallenges.js";
-import { GetRanking } from "../modules/gamification/use-cases/GetRanking.js";
-import { GetXpHistory } from "../modules/gamification/use-cases/GetXpHistory.js";
-import { JoinChallenge } from "../modules/gamification/use-cases/JoinChallenge.js";
 
 export const gamificationRoutes = async (app: FastifyInstance) => {
   app.addHook("onRequest", authenticate);
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/challenges/:id",
+    schema: {
+      operationId: "getChallengeById",
+      tags: ["Gamification"],
+      summary: "Get challenge details and participant progress",
+      params: z.object({
+        id: z.string().uuid(),
+      }),
+      response: {
+        200: ChallengeProgressSchema,
+        401: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      const getChallengeById = new GetChallengeById(prisma);
+      const result = await getChallengeById.execute({
+        userId: request.session.user.id,
+        challengeId: request.params.id,
+      });
+
+      return reply.status(200).send(result);
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "POST",
+    url: "/challenges",
+    schema: {
+      operationId: "createChallenge",
+      tags: ["Gamification"],
+      summary: "Create a new challenge (duel)",
+      body: CreateChallengeSchema,
+      response: {
+        201: ChallengeSchema,
+        401: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      const createChallenge = new CreateChallenge(prisma);
+      const result = await createChallenge.execute({
+        userId: request.session.user.id,
+        ...request.body,
+      });
+
+      return reply.status(201).send({
+        ...result,
+        participantsCount: 1,
+        isJoined: true,
+      });
+    },
+  });
 
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",

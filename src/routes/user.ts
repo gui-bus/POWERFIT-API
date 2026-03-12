@@ -4,24 +4,8 @@ import { z } from "zod";
 
 import { authenticate } from "../lib/auth-middleware.js";
 import { prisma } from "../lib/db.js";
-import {
-  BodyProgressLogSchema,
-  ErrorSchema,
-  GetRankingQuerySchema,
-  GetUserTrainDataResponseSchema,
-  PersonalRecordSchema,
-  PublicProfileResponseSchema,
-  SearchUsersQuerySchema,
-  SearchUsersResponseSchema,
-  UpdatePrivacySchema,
-  UpsertPersonalRecordSchema,
-  UserRankingResponseSchema,
-  UserTrainDataSchema,
-} from "../schemas/index.js";
-import { UpdateProfileSchema } from "../schemas/index.js";
 import { GetBodyProgressHistory } from "../modules/user/use-cases/GetBodyProgressHistory.js";
 import { GetPersonalRecords } from "../modules/user/use-cases/GetPersonalRecords.js";
-import { GetRanking } from "../modules/gamification/use-cases/GetRanking.js";
 import { GetUserProfile } from "../modules/user/use-cases/GetUserProfile.js";
 import { GetUserTrainData } from "../modules/user/use-cases/GetUserTrainData.js";
 import { LogBodyProgress } from "../modules/user/use-cases/LogBodyProgress.js";
@@ -30,6 +14,19 @@ import { UpdatePrivacySettings } from "../modules/user/use-cases/UpdatePrivacySe
 import { UpdateProfile } from "../modules/user/use-cases/UpdateProfile.js";
 import { UpsertPersonalRecord } from "../modules/user/use-cases/UpsertPersonalRecord.js";
 import { UpsertUserTrainData } from "../modules/user/use-cases/UpsertUserTrainData.js";
+import {
+  BodyProgressLogSchema,
+  ErrorSchema,
+  GetUserTrainDataResponseSchema,
+  PersonalRecordSchema,
+  PublicProfileResponseSchema,
+  SearchUsersQuerySchema,
+  SearchUsersResponseSchema,
+  UpdatePrivacySchema,
+  UpsertPersonalRecordSchema,
+  UserTrainDataSchema,
+} from "../schemas/index.js";
+import { UpdateProfileSchema } from "../schemas/index.js";
 
 export const userRoutes = async (app: FastifyInstance) => {
   app.addHook("onRequest", authenticate);
@@ -237,33 +234,6 @@ export const userRoutes = async (app: FastifyInstance) => {
       });
 
       return reply.status(204).send(null);
-    },
-  });
-
-  app.withTypeProvider<ZodTypeProvider>().route({
-    method: "GET",
-    url: "/ranking",
-    schema: {
-      operationId: "getRanking",
-      tags: ["User"],
-      summary: "Get users ranking",
-      querystring: GetRankingQuerySchema,
-      response: {
-        200: UserRankingResponseSchema,
-        401: ErrorSchema,
-        500: ErrorSchema,
-      },
-    },
-    handler: async (request, reply) => {
-      const { sortBy } = request.query as { sortBy: "STREAK" | "XP" };
-
-      const getRanking = new GetRanking(prisma);
-      const result = await getRanking.execute({
-        userId: request.session.user.id,
-        sortBy,
-      });
-
-      return reply.status(200).send(result);
     },
   });
 

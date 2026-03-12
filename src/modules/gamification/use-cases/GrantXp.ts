@@ -1,7 +1,8 @@
-import { XpReason } from "../../../generated/prisma/enums.js";
+import { ChallengeGoal, XpReason } from "../../../generated/prisma/enums.js";
 import { PrismaClient, PrismaTransaction } from "../../../lib/db.js";
 import { calculateLevel } from "../../../lib/gamification.js";
 import { createAndEmitNotification } from "../../../lib/notifications.js";
+import { UpdateChallengeProgress } from "./UpdateChallengeProgress.js";
 
 interface InputDto {
   userId: string;
@@ -53,6 +54,16 @@ export class GrantXp {
         relatedId: dto.relatedId,
       },
     });
+
+    const updateChallengeProgress = new UpdateChallengeProgress(this.prisma);
+    await updateChallengeProgress.execute(
+      {
+        userId: dto.userId,
+        goalType: ChallengeGoal.TOTAL_XP,
+        increment: dto.amount,
+      },
+      client as PrismaTransaction,
+    );
 
     if (newLevel > user.level) {
       await createAndEmitNotification(

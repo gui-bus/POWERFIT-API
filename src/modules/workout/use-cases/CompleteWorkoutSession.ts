@@ -5,10 +5,12 @@ import {
   NotFoundError,
   SessionAlreadyCompletedError,
 } from "../../../errors/index.js";
+import { ChallengeGoal } from "../../../generated/prisma/enums.js";
 import { PrismaClient } from "../../../lib/db.js";
 import { createAndEmitNotifications } from "../../../lib/notifications.js";
 import { CheckAchievements } from "../../gamification/use-cases/CheckAchievements.js";
 import { GrantXp } from "../../gamification/use-cases/GrantXp.js";
+import { UpdateChallengeProgress } from "../../gamification/use-cases/UpdateChallengeProgress.js";
 
 interface InputDto {
   userId: string;
@@ -117,6 +119,16 @@ export class CompleteWorkoutSession {
           amount: 50,
           reason: "WORKOUT_COMPLETED",
           relatedId: updatedSession.id,
+        },
+        tx,
+      );
+
+      const updateChallengeProgress = new UpdateChallengeProgress(this.prisma);
+      await updateChallengeProgress.execute(
+        {
+          userId: dto.userId,
+          goalType: ChallengeGoal.WORKOUT_COUNT,
+          increment: 1,
         },
         tx,
       );
