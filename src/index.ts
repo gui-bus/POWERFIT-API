@@ -103,7 +103,7 @@ await app.register(fastifySwagger, {
 });
 
 await app.register(fastifyCors, {
-  origin: [env.WEB_APP_BASE_URL || "http://localhost:3000"],
+  origin: [process.env.WEB_APP_BASE_URL || "http://localhost:3000"],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   credentials: true,
 });
