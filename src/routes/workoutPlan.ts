@@ -4,6 +4,14 @@ import { z } from "zod";
 
 import { authenticate } from "../lib/auth-middleware.js";
 import { prisma } from "../lib/db.js";
+import { CompleteWorkoutSession } from "../modules/workout/use-cases/CompleteWorkoutSession.js";
+import { CreateWorkoutPlan } from "../modules/workout/use-cases/CreateWorkoutPlan.js";
+import { GetWorkoutDay } from "../modules/workout/use-cases/GetWorkoutDay.js";
+import { GetWorkoutExerciseHistory } from "../modules/workout/use-cases/GetWorkoutExerciseHistory.js";
+import { GetWorkoutPlanById } from "../modules/workout/use-cases/GetWorkoutPlanById.js";
+import { GetWorkoutPlans } from "../modules/workout/use-cases/GetWorkoutPlans.js";
+import { StartWorkoutSession } from "../modules/workout/use-cases/StartWorkoutSession.js";
+import { UpsertWorkoutSet } from "../modules/workout/use-cases/UpsertWorkoutSet.js";
 import {
   ErrorSchema,
   GetWorkoutDayResponseSchema,
@@ -15,14 +23,6 @@ import {
   WorkoutPlanSchema,
   WorkoutSessionSchema,
 } from "../schemas/index.js";
-import { CompleteWorkoutSession } from "../modules/workout/use-cases/CompleteWorkoutSession.js";
-import { CreateWorkoutPlan } from "../modules/workout/use-cases/CreateWorkoutPlan.js";
-import { GetWorkoutDay } from "../modules/workout/use-cases/GetWorkoutDay.js";
-import { GetWorkoutExerciseHistory } from "../modules/workout/use-cases/GetWorkoutExerciseHistory.js";
-import { GetWorkoutPlanById } from "../modules/workout/use-cases/GetWorkoutPlanById.js";
-import { GetWorkoutPlans } from "../modules/workout/use-cases/GetWorkoutPlans.js";
-import { StartWorkoutSession } from "../modules/workout/use-cases/StartWorkoutSession.js";
-import { UpsertWorkoutSet } from "../modules/workout/use-cases/UpsertWorkoutSet.js";
 
 export const workoutPlanRoutes = async (app: FastifyInstance) => {
   app.addHook("onRequest", authenticate);
@@ -33,7 +33,8 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "getWorkoutPlans",
       tags: ["Workout Plan"],
-      summary: "Get all workout plans",
+      summary: "List workout plans",
+      description: "Returns all of the user's workout plans, with the option to filter by currently active plans.",
       query: GetWorkoutPlansQuerySchema,
       response: {
         200: GetWorkoutPlansResponseSchema,
@@ -61,7 +62,8 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "getWorkoutDayById",
       tags: ["Workout Day"],
-      summary: "Get workout day by id",
+      summary: "Get workout day details",
+      description: "Returns the complete list of exercises and configurations for a specific day within a workout plan.",
       params: z.object({
         workoutPlanId: z.string().uuid(),
         workoutDayId: z.string().uuid(),
@@ -93,7 +95,8 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "getWorkoutPlanById",
       tags: ["Workout Plan"],
-      summary: "Get workout plan by id",
+      summary: "Get workout plan by ID",
+      description: "Returns complete details for a specific workout plan, including all associated days and exercises.",
       params: z.object({
         id: z.string().uuid(),
       }),
@@ -123,7 +126,8 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "createWorkoutPlan",
       tags: ["Workout Plan"],
-      summary: "Create a workout plan",
+      summary: "Create new workout plan",
+      description: "Allows the creation of a complete workout plan, defining days of the week, exercises, sets, and repetitions.",
       body: WorkoutPlanSchema.omit({ id: true }),
       response: {
         201: WorkoutPlanSchema,
@@ -152,6 +156,7 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
       operationId: "startWorkoutSession",
       tags: ["Workout Session"],
       summary: "Start a workout session",
+      description: "Logs the start of a real-time workout for a specific day. Only one session can be active at a time.",
       params: z.object({
         workoutPlanId: z.string().uuid(),
         workoutDayId: z.string().uuid(),
@@ -185,7 +190,8 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "completeWorkoutSession",
       tags: ["Workout Session"],
-      summary: "Update a workout session",
+      summary: "Complete workout session",
+      description: "Concludes an active workout session, allowing for the addition of a status message, photo, and tagged friends.",
       params: z.object({
         workoutPlanId: z.string().uuid(),
         workoutDayId: z.string().uuid(),
@@ -231,7 +237,8 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "upsertWorkoutSet",
       tags: ["Workout Session"],
-      summary: "Log or update a workout set",
+      summary: "Record workout set",
+      description: "Saves or updates load and repetition data for a specific set during an active workout.",
       params: z.object({
         sessionId: z.string().uuid(),
         exerciseId: z.string().uuid(),
@@ -265,7 +272,8 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "getWorkoutExerciseHistory",
       tags: ["Workout Session"],
-      summary: "Get the last log for a specific exercise",
+      summary: "Get exercise history",
+      description: "Returns the latest load and repetition record for a specific exercise to serve as a baseline for the current workout.",
       params: z.object({
         exerciseId: z.string().uuid(),
       }),

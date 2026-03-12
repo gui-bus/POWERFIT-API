@@ -6,19 +6,25 @@ import { Notification } from "../generated/prisma/client.js";
 import { authenticate } from "../lib/auth-middleware.js";
 import { prisma } from "../lib/db.js";
 import { notificationEvents } from "../lib/events.js";
+import { GetNotifications } from "../modules/social/use-cases/GetNotifications.js";
+import { MarkAllNotificationsAsRead } from "../modules/social/use-cases/MarkAllNotificationsAsRead.js";
+import { MarkNotificationAsRead } from "../modules/social/use-cases/MarkNotificationAsRead.js";
 import {
   ErrorSchema,
   GetNotificationsResponseSchema,
   PaginationQuerySchema,
 } from "../schemas/index.js";
-import { GetNotifications } from "../modules/social/use-cases/GetNotifications.js";
-import { MarkAllNotificationsAsRead } from "../modules/social/use-cases/MarkAllNotificationsAsRead.js";
-import { MarkNotificationAsRead } from "../modules/social/use-cases/MarkNotificationAsRead.js";
 
 export const notificationRoutes = async (app: FastifyInstance) => {
   app.addHook("onRequest", authenticate);
 
-  app.get("/stream", async (request, reply) => {
+  app.withTypeProvider<ZodTypeProvider>().get("/stream", {
+    schema: {
+      tags: ["Notification"],
+      summary: "Real-time notification stream",
+      description: "Establish a Server-Sent Events (SSE) connection to receive real-time notifications.",
+    },
+  }, async (request, reply) => {
     const userId = request.session.user.id;
 
     reply.raw.setHeader("Content-Type", "text/event-stream");
@@ -49,7 +55,8 @@ export const notificationRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "getNotifications",
       tags: ["Notification"],
-      summary: "Get my notifications",
+      summary: "List notifications",
+      description: "Returns a paginated list of user notifications (friendships, powerups, comments, challenges).",
       querystring: PaginationQuerySchema,
       response: {
         200: GetNotificationsResponseSchema,
@@ -80,7 +87,8 @@ export const notificationRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "markAllNotificationsAsRead",
       tags: ["Notification"],
-      summary: "Mark all my notifications as read",
+      summary: "Mark all as read",
+      description: "Updates the status of all pending user notifications to read.",
       response: {
         204: z.null(),
         401: ErrorSchema,
@@ -103,7 +111,8 @@ export const notificationRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "markNotificationAsRead",
       tags: ["Notification"],
-      summary: "Mark a notification as read",
+      summary: "Mark notification as read",
+      description: "Updates the status of a specific notification to read using its ID.",
       params: z.object({
         id: z.string().uuid(),
       }),

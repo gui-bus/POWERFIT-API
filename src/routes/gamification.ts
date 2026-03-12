@@ -29,7 +29,8 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "getChallengeById",
       tags: ["Gamification"],
-      summary: "Get challenge details and participant progress",
+      summary: "Get challenge details",
+      description: "Returns full information about a challenge (duel) and the current progress of all participants.",
       params: z.object({
         id: z.string().uuid(),
       }),
@@ -58,6 +59,7 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
       operationId: "createChallenge",
       tags: ["Gamification"],
       summary: "Create a new challenge (duel)",
+      description: "Creates a competitive challenge between friends. The creator automatically joins the challenge.",
       body: CreateChallengeSchema,
       response: {
         201: ChallengeSchema,
@@ -87,7 +89,8 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "getRanking",
       tags: ["Gamification"],
-      summary: "Get users ranking",
+      summary: "Get user ranking",
+      description: "Returns the global user ranking, which can be sorted by total XP or consecutive workout days (streak).",
       querystring: z.object({
         sortBy: z.enum(["XP", "STREAK"]),
       }),
@@ -116,7 +119,8 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "getAchievements",
       tags: ["Gamification"],
-      summary: "Get all achievements and user progress",
+      summary: "List achievements and medals",
+      description: "Returns all available achievements in the system and the user's current progress in each.",
       response: {
         200: GetAchievementsResponseSchema,
         401: ErrorSchema,
@@ -139,7 +143,8 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "getChallenges",
       tags: ["Gamification"],
-      summary: "Get available challenges",
+      summary: "List available challenges",
+      description: "Returns the list of challenges (duels) the user is participating in or that are open to join.",
       response: {
         200: GetChallengesResponseSchema,
         401: ErrorSchema,
@@ -163,6 +168,7 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
       operationId: "joinChallenge",
       tags: ["Gamification"],
       summary: "Join a challenge",
+      description: "Enrolls the authenticated user into an existing challenge using the ID.",
       params: z.object({
         id: z.string().uuid(),
       }),
@@ -190,7 +196,8 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "getXpHistory",
       tags: ["Gamification"],
-      summary: "Get XP transaction history",
+      summary: "Get XP history",
+      description: "Returns a detailed statement of all XP points earned by the user, indicating the source (workout, challenge, achievement).",
       response: {
         200: GetXpHistoryResponseSchema,
         401: ErrorSchema,

@@ -4,8 +4,8 @@ import z from "zod";
 
 import { authenticate } from "../lib/auth-middleware.js";
 import { prisma } from "../lib/db.js";
-import { ErrorSchema, StatsResponseSchema } from "../schemas/index.js";
 import { GetStats } from "../modules/workout/use-cases/GetStats.js";
+import { ErrorSchema, StatsResponseSchema } from "../schemas/index.js";
 
 export const statsRoutes = async (app: FastifyInstance) => {
   app.addHook("onRequest", authenticate);
@@ -16,7 +16,8 @@ export const statsRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "getStats",
       tags: ["Stats"],
-      summary: "Get user workout stats",
+      summary: "Get workout statistics",
+      description: "Returns a compilation of the user's workout metrics within a specific period, such as total workouts performed, load volume, and time spent.",
       query: z.object({
         from: z
           .string()

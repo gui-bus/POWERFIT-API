@@ -82,18 +82,29 @@ app.setErrorHandler((error, _request, reply) => {
 await app.register(fastifySwagger, {
   openapi: {
     info: {
-      title: "Fit App API",
-      description: "Documentação da API do Fit App",
+      title: "PowerFIT API",
+      description: "Complete PowerFIT API documentation - Workout management, gamification, and fitness social network.",
       version: "1.0.0",
     },
     servers: [
       {
-        description: "API Base URL",
+        description: "Production Server",
         url: env.API_BASE_URL || "http://localhost:8080",
       },
     ],
   },
   transform: jsonSchemaTransform,
+});
+
+app.addHook("onRoute", (routeOptions) => {
+  if (routeOptions.url.includes("uploadthing")) {
+    routeOptions.schema = {
+      ...routeOptions.schema,
+      tags: ["Upload"],
+      summary: "UploadThing API",
+      hide: true,
+    };
+  }
 });
 
 await app.register(fastifyCors, {
@@ -110,12 +121,12 @@ await app.register(createRouteHandler, {
 });
 
 await app.register(fastifyApiReference, {
-  routePrefix: "/docs",
+  routePrefix: "/",
   configuration: {
     sources: [
       {
-        title: "Fit App API",
-        slug: "fit-app-api",
+        title: "PowerFIT API",
+        slug: "powerfit-api",
         url: "/swagger.json",
       },
       {
@@ -155,6 +166,7 @@ app.withTypeProvider<ZodTypeProvider>().route({
     hide: true,
     tags: ["Auth"],
     summary: "Better Auth API",
+    description: "External authentication API handling login, registration, and session management.",
   },
   async handler(request, reply) {
     try {

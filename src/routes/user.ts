@@ -38,6 +38,7 @@ export const userRoutes = async (app: FastifyInstance) => {
       operationId: "updateProfile",
       tags: ["User"],
       summary: "Update my profile",
+      description: "Allows the user to change basic information such as name and profile picture.",
       body: UpdateProfileSchema,
       response: {
         200: z.object({
@@ -66,7 +67,8 @@ export const userRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "searchUsers",
       tags: ["User"],
-      summary: "Search for users",
+      summary: "Search users",
+      description: "Performs a user search by name, facilitating friend discovery.",
       query: SearchUsersQuerySchema,
       response: {
         200: SearchUsersResponseSchema,
@@ -93,7 +95,8 @@ export const userRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "getUserProfile",
       tags: ["User"],
-      summary: "Get a user's public profile",
+      summary: "Get public profile",
+      description: "Returns the public profile of any user in the system, respecting their privacy settings.",
       params: z.object({
         userId: z.string(),
       }),
@@ -123,6 +126,7 @@ export const userRoutes = async (app: FastifyInstance) => {
       operationId: "updatePrivacySettings",
       tags: ["User"],
       summary: "Update privacy settings",
+      description: "Allows the user to define who can see their profile, feed, and other social information.",
       body: UpdatePrivacySchema,
       response: {
         204: z.null(),
@@ -147,7 +151,8 @@ export const userRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "getPersonalRecords",
       tags: ["User"],
-      summary: "Get user personal records",
+      summary: "Get personal records",
+      description: "Returns the user's list of PRs (Personal Records) in different exercises (e.g., Bench Press, Squat).",
       response: {
         200: z.array(PersonalRecordSchema),
         401: ErrorSchema,
@@ -170,7 +175,8 @@ export const userRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "upsertPersonalRecord",
       tags: ["User"],
-      summary: "Upsert a personal record",
+      summary: "Save personal record",
+      description: "Registers or updates a user's personal record for a specific exercise.",
       body: UpsertPersonalRecordSchema,
       response: {
         204: z.null(),
@@ -195,7 +201,8 @@ export const userRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "getBodyProgressHistory",
       tags: ["User"],
-      summary: "Get body progress history",
+      summary: "Get body measurement history",
+      description: "Returns the detailed history of the user's weight, height, and body fat records.",
       response: {
         200: z.array(BodyProgressLogSchema),
         401: ErrorSchema,
@@ -218,7 +225,8 @@ export const userRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "logBodyProgress",
       tags: ["User"],
-      summary: "Log a new body progress entry",
+      summary: "Record body measurements",
+      description: "Saves a new entry in the body progress diary (weight, BF, etc.).",
       body: UserTrainDataSchema,
       response: {
         204: z.null(),
@@ -243,7 +251,8 @@ export const userRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "getUserTrainData",
       tags: ["User"],
-      summary: "Get user training data",
+      summary: "Get current training data",
+      description: "Returns the latest measurements recorded by the user (weight, height, age).",
       response: {
         200: GetUserTrainDataResponseSchema,
         401: ErrorSchema,
@@ -266,7 +275,8 @@ export const userRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "upsertUserTrainData",
       tags: ["User"],
-      summary: "Upsert user training data",
+      summary: "Update training data",
+      description: "Sets or updates the user's current physical data used for performance calculations.",
       body: UserTrainDataSchema,
       response: {
         200: UserTrainDataSchema,

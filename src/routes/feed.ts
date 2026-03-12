@@ -4,16 +4,16 @@ import z from "zod";
 
 import { authenticate } from "../lib/auth-middleware.js";
 import { prisma } from "../lib/db.js";
+import { AddComment } from "../modules/social/use-cases/AddComment.js";
+import { DeleteActivity } from "../modules/social/use-cases/DeleteActivity.js";
+import { GetFeed } from "../modules/social/use-cases/GetFeed.js";
+import { TogglePowerup } from "../modules/social/use-cases/TogglePowerup.js";
 import {
   CreateCommentSchema,
   ErrorSchema,
   GetFeedResponseSchema,
   PaginationQuerySchema,
 } from "../schemas/index.js";
-import { AddComment } from "../modules/social/use-cases/AddComment.js";
-import { DeleteActivity } from "../modules/social/use-cases/DeleteActivity.js";
-import { GetFeed } from "../modules/social/use-cases/GetFeed.js";
-import { TogglePowerup } from "../modules/social/use-cases/TogglePowerup.js";
 
 export const feedRoutes = async (app: FastifyInstance) => {
   app.addHook("onRequest", authenticate);
@@ -24,7 +24,8 @@ export const feedRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "getFeed",
       tags: ["Feed"],
-      summary: "Get activities feed",
+      summary: "Get activity feed",
+      description: "Returns a paginated list of activities (completed workouts) from the authenticated user's friends and the user themselves.",
       querystring: PaginationQuerySchema,
       response: {
         200: GetFeedResponseSchema,
@@ -55,7 +56,8 @@ export const feedRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "getUserFeed",
       tags: ["Feed"],
-      summary: "Get activities feed for a specific user",
+      summary: "Get activity feed for a specific user",
+      description: "Returns a public list of activities for a specific user. Respects the target user's privacy settings.",
       params: z.object({
         userId: z.string(),
       }),
@@ -91,7 +93,8 @@ export const feedRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "togglePowerup",
       tags: ["Feed"],
-      summary: "Toggle powerup on an activity",
+      summary: "Give or remove Powerup from an activity",
+      description: "The Powerup is PowerFIT's equivalent to a 'like'. If the user has already given a Powerup, it will be removed (toggle).",
       params: z.object({
         id: z.string().uuid(),
       }),
@@ -120,7 +123,8 @@ export const feedRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "addComment",
       tags: ["Feed"],
-      summary: "Add a comment to an activity",
+      summary: "Add comment to an activity",
+      description: "Allows the user to interact with friends' activities through comments.",
       params: z.object({
         id: z.string().uuid(),
       }),
@@ -151,6 +155,7 @@ export const feedRoutes = async (app: FastifyInstance) => {
       operationId: "deleteActivity",
       tags: ["Feed"],
       summary: "Delete an activity",
+      description: "Allows the user to remove one of their own activities from the public feed.",
       params: z.object({
         id: z.string().uuid(),
       }),

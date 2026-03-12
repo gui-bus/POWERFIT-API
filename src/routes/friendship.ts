@@ -4,6 +4,12 @@ import z from "zod";
 
 import { authenticate } from "../lib/auth-middleware.js";
 import { prisma } from "../lib/db.js";
+import { AcceptFriendRequest } from "../modules/social/use-cases/AcceptFriendRequest.js";
+import { AddFriend } from "../modules/social/use-cases/AddFriend.js";
+import { DeclineFriendRequest } from "../modules/social/use-cases/DeclineFriendRequest.js";
+import { GetFriendRequests } from "../modules/social/use-cases/GetFriendRequests.js";
+import { GetFriends } from "../modules/social/use-cases/GetFriends.js";
+import { GetMe } from "../modules/user/use-cases/GetMe.js";
 import {
   AddFriendSchema,
   ErrorSchema,
@@ -11,12 +17,6 @@ import {
   GetFriendsResponseSchema,
   UserMeResponseSchema,
 } from "../schemas/index.js";
-import { AcceptFriendRequest } from "../modules/social/use-cases/AcceptFriendRequest.js";
-import { AddFriend } from "../modules/social/use-cases/AddFriend.js";
-import { DeclineFriendRequest } from "../modules/social/use-cases/DeclineFriendRequest.js";
-import { GetFriendRequests } from "../modules/social/use-cases/GetFriendRequests.js";
-import { GetFriends } from "../modules/social/use-cases/GetFriends.js";
-import { GetMe } from "../modules/user/use-cases/GetMe.js";
 
 export const friendshipRoutes = async (app: FastifyInstance) => {
   app.addHook("onRequest", authenticate);
@@ -27,7 +27,8 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "getMe",
       tags: ["Friendship"],
-      summary: "Get my user data and friend code",
+      summary: "Get my data and friend code",
+      description: "Returns the profile of the logged-in user, including their unique friend code used for invitations.",
       response: {
         200: UserMeResponseSchema,
         401: ErrorSchema,
@@ -51,7 +52,8 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "getFriends",
       tags: ["Friendship"],
-      summary: "Get friends list",
+      summary: "List friends",
+      description: "Returns the complete list of users with whom the authenticated user has a confirmed friendship.",
       response: {
         200: GetFriendsResponseSchema,
         401: ErrorSchema,
@@ -74,7 +76,8 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "getFriendRequests",
       tags: ["Friendship"],
-      summary: "Get pending friend requests",
+      summary: "List friend requests",
+      description: "Returns pending friend requests, with the option to filter between those received or sent by the user.",
       querystring: z.object({
         type: z.enum(["RECEIVED", "SENT"]).default("RECEIVED"),
       }),
@@ -103,7 +106,8 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "addFriend",
       tags: ["Friendship"],
-      summary: "Send a friend request by code or email",
+      summary: "Send friend request",
+      description: "Initiates a friendship request by searching for the target user via their friend code or email.",
       body: AddFriendSchema,
       response: {
         200: UserMeResponseSchema,
@@ -130,7 +134,8 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "acceptFriendRequest",
       tags: ["Friendship"],
-      summary: "Accept a friend request",
+      summary: "Accept friend request",
+      description: "Confirms friendship with another user from a received request.",
       params: z.object({
         id: z.string().uuid(),
       }),
@@ -158,7 +163,8 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "declineFriendRequest",
       tags: ["Friendship"],
-      summary: "Decline or cancel a friend request",
+      summary: "Decline or cancel friend request",
+      description: "Declines a received friendship request or cancels a request that the user themselves sent.",
       params: z.object({
         id: z.string().uuid(),
       }),

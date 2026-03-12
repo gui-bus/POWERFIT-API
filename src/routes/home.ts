@@ -4,8 +4,8 @@ import z from "zod";
 
 import { authenticate } from "../lib/auth-middleware.js";
 import { prisma } from "../lib/db.js";
-import { ErrorSchema, HomeDataSchema } from "../schemas/index.js";
 import { GetHomeData } from "../modules/workout/use-cases/GetHomeData.js";
+import { ErrorSchema, HomeDataSchema } from "../schemas/index.js";
 
 export const homeRoutes = async (app: FastifyInstance) => {
   app.addHook("onRequest", authenticate);
@@ -16,7 +16,8 @@ export const homeRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "getHomeData",
       tags: ["Home screen"],
-      summary: "Get home page data",
+      summary: "Get home screen data",
+      description: "Returns a complete summary for the user's home screen on the specified date, including the workout of the day, XP progress, current streak, and daily goals.",
       params: z.object({
         date: z
           .string()

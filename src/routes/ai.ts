@@ -14,10 +14,10 @@ import { WeekDay } from "../generated/prisma/enums.js";
 import { AI_SYSTEM_PROMPT } from "../lib/ai-prompt.js";
 import { authenticate } from "../lib/auth-middleware.js";
 import { prisma } from "../lib/db.js";
-import { CreateWorkoutPlan } from "../modules/workout/use-cases/CreateWorkoutPlan.js";
 import { GetUserTrainData } from "../modules/user/use-cases/GetUserTrainData.js";
-import { GetWorkoutPlans } from "../modules/workout/use-cases/GetWorkoutPlans.js";
 import { UpsertUserTrainData } from "../modules/user/use-cases/UpsertUserTrainData.js";
+import { CreateWorkoutPlan } from "../modules/workout/use-cases/CreateWorkoutPlan.js";
+import { GetWorkoutPlans } from "../modules/workout/use-cases/GetWorkoutPlans.js";
 
 export const aiRoutes = async (app: FastifyInstance) => {
   app.addHook("onRequest", authenticate);
@@ -28,7 +28,8 @@ export const aiRoutes = async (app: FastifyInstance) => {
     schema: {
       operationId: "aiChat",
       tags: ["AI"],
-      summary: "Chat with AI personal trainer",
+      summary: "Chat with AI Personal Trainer",
+      description: "Start an interactive chat session with the AI (Gemini). The AI has access to tools to query and update your training data, as well as create personalized workout plans based on the conversation.",
     },
     handler: async (request, reply) => {
       const userId = request.session.user.id;
