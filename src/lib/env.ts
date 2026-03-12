@@ -3,11 +3,11 @@ import "dotenv/config";
 import { z } from "zod";
 
 const envSchema = z.object({
-  PORT: z.coerce.number().default(8080),
-  DATABASE_URL: z.string().min(1),
-  BETTER_AUTH_SECRET: z.string().min(1),
-  BETTER_AUTH_URL: z.string().url(),
-  API_BASE_URL: z.string().url().default("http://localhost:8080"),
+  PORT: z.coerce.number().default(8080).optional(),
+  DATABASE_URL: z.string().min(1).optional(),
+  BETTER_AUTH_SECRET: z.string().min(1).optional(),
+  BETTER_AUTH_URL: z.string().url().optional(),
+  API_BASE_URL: z.string().url().default("http://localhost:8080").optional(),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
