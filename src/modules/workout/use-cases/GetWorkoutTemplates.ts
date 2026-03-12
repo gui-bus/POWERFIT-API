@@ -33,11 +33,26 @@ interface OutputDto {
 
 export class GetWorkoutTemplates {
   async execute(dto: InputDto): Promise<OutputDto> {
+    const translateTerm = (term?: string) => {
+      if (!term) return term;
+      const map: Record<string, string> = {
+        beginner: "Iniciante",
+        intermediate: "Intermediário",
+        advanced: "Avançado",
+        "muscle gain": "Ganho de Massa",
+        "weight loss": "Emagrecimento",
+      };
+      return map[term.toLowerCase()] || term;
+    };
+
+    const category = translateTerm(dto.category);
+    const difficulty = translateTerm(dto.difficulty);
+
     const templates = await prisma.workoutTemplate.findMany({
       where: {
         AND: [
-          dto.category ? { category: { equals: dto.category, mode: "insensitive" } } : {},
-          dto.difficulty ? { difficulty: { equals: dto.difficulty, mode: "insensitive" } } : {},
+          category ? { category: { contains: category, mode: "insensitive" } } : {},
+          difficulty ? { difficulty: { contains: difficulty, mode: "insensitive" } } : {},
           dto.query ? {
             OR: [
               { name: { contains: dto.query, mode: "insensitive" } },
