@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 
+import { WeekDay } from "../generated/prisma/enums.js";
 import { authenticate } from "../lib/auth-middleware.js";
 import { prisma } from "../lib/db.js";
 import { ActivateWorkoutPlan } from "../modules/workout/use-cases/ActivateWorkoutPlan.js";
@@ -13,6 +14,7 @@ import { GetWorkoutExerciseHistory } from "../modules/workout/use-cases/GetWorko
 import { GetWorkoutPlanById } from "../modules/workout/use-cases/GetWorkoutPlanById.js";
 import { GetWorkoutPlans } from "../modules/workout/use-cases/GetWorkoutPlans.js";
 import { StartWorkoutSession } from "../modules/workout/use-cases/StartWorkoutSession.js";
+import { UpdateWorkoutDay } from "../modules/workout/use-cases/UpdateWorkoutDay.js";
 import { UpsertWorkoutSet } from "../modules/workout/use-cases/UpsertWorkoutSet.js";
 import {
   ErrorSchema,
@@ -88,6 +90,54 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
       });
 
       return reply.status(200).send(result);
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "PATCH",
+    url: "/:workoutPlanId/days/:workoutDayId",
+    schema: {
+      operationId: "updateWorkoutDay",
+      tags: ["Workout Day"],
+      summary: "Update a workout day",
+      description: "Updates workout day details and synchronizes its exercises (upsert logic).",
+      params: z.object({
+        workoutPlanId: z.string().uuid(),
+        workoutDayId: z.string().uuid(),
+      }),
+      body: z.object({
+        name: z.string().trim().min(1),
+        weekDay: z.enum(WeekDay),
+        isRestDay: z.boolean(),
+        estimatedDurationInSeconds: z.number().int().min(0),
+        coverImageUrl: z.string().url().nullable().optional(),
+        exercises: z.array(
+          z.object({
+            name: z.string().trim().min(1),
+            order: z.number().int().min(0),
+            sets: z.number().int().min(1),
+            reps: z.number().int().min(1),
+            restTimeInSeconds: z.number().int().min(0),
+          }),
+        ),
+      }),
+      response: {
+        204: z.null(),
+        401: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      const updateWorkoutDay = new UpdateWorkoutDay();
+      await updateWorkoutDay.execute({
+        userId: request.session.user.id,
+        workoutPlanId: request.params.workoutPlanId,
+        workoutDayId: request.params.workoutDayId,
+        ...request.body,
+      });
+
+      return reply.status(204).send(null);
     },
   });
 
