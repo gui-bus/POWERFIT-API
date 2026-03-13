@@ -5,6 +5,7 @@ import { z } from "zod";
 import { authenticate } from "../lib/auth-middleware.js";
 import { prisma } from "../lib/db.js";
 import { GetBodyProgressHistory } from "../modules/user/use-cases/GetBodyProgressHistory.js";
+import { GetMe } from "../modules/user/use-cases/GetMe.js";
 import { GetPersonalRecords } from "../modules/user/use-cases/GetPersonalRecords.js";
 import { GetUserProfile } from "../modules/user/use-cases/GetUserProfile.js";
 import { GetUserTrainData } from "../modules/user/use-cases/GetUserTrainData.js";
@@ -24,6 +25,7 @@ import {
   SearchUsersResponseSchema,
   UpdatePrivacySchema,
   UpsertPersonalRecordSchema,
+  UserMeResponseSchema,
   UserTrainDataSchema,
 } from "../schemas/index.js";
 import { UpdateProfileSchema } from "../schemas/index.js";
@@ -266,6 +268,32 @@ export const userRoutes = async (app: FastifyInstance) => {
       });
 
       return reply.status(200).send(result);
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/me/profile",
+    schema: {
+      operationId: "getMeProfile",
+      tags: ["User"],
+      summary: "Get my full profile",
+      description: "Returns the logged-in user's profile information, including role and level.",
+      response: {
+        200: z.object({
+          data: UserMeResponseSchema,
+        }),
+        401: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      const getMe = new GetMe(prisma);
+      const result = await getMe.execute({
+        userId: request.session.user.id,
+      });
+
+      return reply.status(200).send({ data: result });
     },
   });
 

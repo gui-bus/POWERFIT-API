@@ -7,6 +7,11 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 enum WeekDay {
   MONDAY
   TUESDAY
@@ -73,6 +78,8 @@ model User {
   workoutPlans           WorkoutPlan[]
   name                   String
   email                  String
+  role                   Role                   @default(USER)
+  isBanned               Boolean                @default(false)
   emailVerified          Boolean                @default(false)
   image                  String?
   bio                    String?

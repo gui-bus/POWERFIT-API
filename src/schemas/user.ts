@@ -35,6 +35,7 @@ export const UserMeResponseSchema = z.object({
   friendCode: z.string().nullable(),
   xp: z.number(),
   level: z.number(),
+  role: z.string(),
   isPublicProfile: z.boolean(),
   showStats: z.boolean(),
 });

@@ -19,6 +19,7 @@ interface OutputDto {
   friendCode: string | null;
   xp: number;
   level: number;
+  role: string;
   isPublicProfile: boolean;
   showStats: boolean;
 }
@@ -90,6 +91,7 @@ export class AddFriend {
       friendCode: friend.friendCode,
       xp: friend.xp,
       level: friend.level,
+      role: friend.role,
       isPublicProfile: friend.isPublicProfile,
       showStats: friend.showStats,
     };

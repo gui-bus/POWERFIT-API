@@ -21,6 +21,7 @@ import { auth } from "./lib/auth.js";
 import { authenticate } from "./lib/auth-middleware.js";
 import { env } from "./lib/env.js";
 import { uploadRouter } from "./lib/uploadthing.js";
+import { adminRoutes } from "./routes/admin.js";
 import { aiRoutes } from "./routes/ai.js";
 import { exerciseRoutes } from "./routes/exercise.js";
 import { feedRoutes } from "./routes/feed.js";
@@ -162,6 +163,7 @@ await app.register(fastifyApiReference, {
 });
 
 await app.register(workoutPlanRoutes, { prefix: "/workout-plans" });
+await app.register(adminRoutes, { prefix: "/admin" });
 await app.register(homeRoutes, { prefix: "/home" });
 await app.register(statsRoutes, { prefix: "/stats" });
 await app.register(friendshipRoutes, { prefix: "/friendships" });

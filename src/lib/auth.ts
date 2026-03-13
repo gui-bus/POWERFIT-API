@@ -19,6 +19,20 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+        required: false,
+        defaultValue: "USER",
+      },
+      isBanned: {
+        type: "boolean",
+        required: false,
+        defaultValue: false,
+      },
+    },
+  },
   plugins: [openAPI()],
   advanced: {
     crossSubDomainCookies: {
