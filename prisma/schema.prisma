@@ -49,6 +49,7 @@ enum XpReason {
   CHALLENGE_COMPLETED
   CHALLENGE_WON
   COMMENT_GIVEN
+  STREAK_REPAIR
 }
 
 enum ChallengeType {
@@ -81,6 +82,8 @@ model User {
   email                 String
   emailVerified         Boolean        @default(false)
   image                 String?
+  bio                   String?
+  socialLinks           Json?
   friendCode            String?        @unique
   xp                    Int            @default(0)
   level                 Int            @default(1)
@@ -107,6 +110,9 @@ model User {
   challengesParticipated ChallengeParticipant[]
   challengesCreated     Challenge[]    @relation("ChallengeCreator")
   challengesTargeted    Challenge[]    @relation("ChallengeTarget")
+  userExercises         UserExercise[]
+  blocks                Block[]        @relation("UserBlocks")
+  blockedBy             Block[]        @relation("UserBlockedBy")
 
   @@unique([email])
   @@map("user")
@@ -121,11 +127,36 @@ model Exercise {
   instructions     String?
   imageUrl         String?
   videoUrl         String?
-  difficulty       String?  // Beginner, Intermediate, Advanced
+  difficulty       String?
   createdAt        DateTime @default(now()) @db.Timestamptz()
   updatedAt        DateTime @updatedAt @db.Timestamptz()
+  userFavorites    UserExercise[]
 
   @@map("exercise")
+}
+
+model UserExercise {
+  id         String   @id @default(uuid())
+  userId     String
+  exerciseId String
+  isFavorite Boolean  @default(false)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, exerciseId])
+  @@map("user_exercise")
+}
+
+model Block {
+  id         String   @id @default(uuid())
+  blockerId  String
+  blockedId  String
+  blocker    User     @relation("UserBlocks", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked    User     @relation("UserBlockedBy", fields: [blockedId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now()) @db.Timestamptz()
+
+  @@unique([blockerId, blockedId])
+  @@map("block")
 }
 
 model WaterLog {

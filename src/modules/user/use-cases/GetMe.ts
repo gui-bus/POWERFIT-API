@@ -10,6 +10,8 @@ interface OutputDto {
   name: string;
   email: string;
   image: string | null;
+  bio: string | null;
+  socialLinks: any;
   friendCode: string | null;
   xp: number;
   level: number;
@@ -60,6 +62,8 @@ export class GetMe {
         name: updatedUser.name,
         email: updatedUser.email,
         image: updatedUser.image,
+        bio: updatedUser.bio,
+        socialLinks: updatedUser.socialLinks,
         friendCode: updatedUser.friendCode,
         xp: updatedUser.xp,
         level: updatedUser.level,
@@ -73,6 +77,8 @@ export class GetMe {
       name: user.name,
       email: user.email,
       image: user.image,
+      bio: user.bio,
+      socialLinks: user.socialLinks,
       friendCode: user.friendCode,
       xp: user.xp,
       level: user.level,

@@ -76,6 +76,15 @@ export const CreateCommentSchema = z.object({
   content: z.string().trim().min(1).max(500),
 });
 
+export const UpdateCommentSchema = z.object({
+  content: z.string().trim().min(1).max(500),
+});
+
+export const BlockUserResponseSchema = z.object({
+  blockedId: z.string(),
+  isBlocked: z.boolean(),
+});
+
 export const NotificationSchema = z.object({
   id: z.string().uuid(),
   type: z.enum(NotificationType),

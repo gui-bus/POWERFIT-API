@@ -171,6 +171,15 @@ export const StatsResponseSchema = z.object({
   totalVolumeInGrams: z.number(),
 });
 
+export const RenameWorkoutPlanSchema = z.object({
+  name: z.string().trim().min(1),
+});
+
+export const ToggleFavoriteExerciseResponseSchema = z.object({
+  exerciseId: z.string().uuid(),
+  isFavorite: z.boolean(),
+});
+
 export const WorkoutTemplateSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),

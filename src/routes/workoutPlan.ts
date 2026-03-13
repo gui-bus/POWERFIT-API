@@ -6,6 +6,7 @@ import { WeekDay } from "../generated/prisma/enums.js";
 import { authenticate } from "../lib/auth-middleware.js";
 import { prisma } from "../lib/db.js";
 import { ActivateWorkoutPlan } from "../modules/workout/use-cases/ActivateWorkoutPlan.js";
+import { CloneWorkoutPlan } from "../modules/workout/use-cases/CloneWorkoutPlan.js";
 import { CompleteWorkoutSession } from "../modules/workout/use-cases/CompleteWorkoutSession.js";
 import { CreateWorkoutPlan } from "../modules/workout/use-cases/CreateWorkoutPlan.js";
 import { DeleteWorkoutPlan } from "../modules/workout/use-cases/DeleteWorkoutPlan.js";
@@ -13,6 +14,7 @@ import { GetWorkoutDay } from "../modules/workout/use-cases/GetWorkoutDay.js";
 import { GetWorkoutExerciseHistory } from "../modules/workout/use-cases/GetWorkoutExerciseHistory.js";
 import { GetWorkoutPlanById } from "../modules/workout/use-cases/GetWorkoutPlanById.js";
 import { GetWorkoutPlans } from "../modules/workout/use-cases/GetWorkoutPlans.js";
+import { RenameWorkoutPlan } from "../modules/workout/use-cases/RenameWorkoutPlan.js";
 import { StartWorkoutSession } from "../modules/workout/use-cases/StartWorkoutSession.js";
 import { UpdateWorkoutDay } from "../modules/workout/use-cases/UpdateWorkoutDay.js";
 import { UpsertWorkoutSet } from "../modules/workout/use-cases/UpsertWorkoutSet.js";
@@ -405,6 +407,58 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
       });
 
       return reply.status(204).send(null);
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "PATCH",
+    url: "/:id",
+    schema: {
+      operationId: "renameWorkoutPlan",
+      tags: ["Workout Plan"],
+      summary: "Rename a workout plan",
+      params: z.object({ id: z.string().uuid() }),
+      body: z.object({ name: z.string().trim().min(1) }),
+      response: {
+        200: z.object({ id: z.string().uuid(), name: z.string() }),
+        401: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      const renameWorkoutPlan = new RenameWorkoutPlan();
+      const result = await renameWorkoutPlan.execute({
+        userId: request.session.user.id,
+        workoutPlanId: request.params.id,
+        name: request.body.name,
+      });
+      return reply.status(200).send(result);
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "POST",
+    url: "/:id/clone",
+    schema: {
+      operationId: "cloneWorkoutPlan",
+      tags: ["Workout Plan"],
+      summary: "Clone a workout plan",
+      params: z.object({ id: z.string().uuid() }),
+      response: {
+        201: z.object({ id: z.string().uuid(), name: z.string() }),
+        401: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      const cloneWorkoutPlan = new CloneWorkoutPlan();
+      const result = await cloneWorkoutPlan.execute({
+        userId: request.session.user.id,
+        workoutPlanId: request.params.id,
+      });
+      return reply.status(201).send(result);
     },
   });
 };

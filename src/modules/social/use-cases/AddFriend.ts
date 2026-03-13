@@ -14,6 +14,8 @@ interface OutputDto {
   name: string;
   email: string;
   image: string | null;
+  bio: string | null;
+  socialLinks: any;
   friendCode: string | null;
   xp: number;
   level: number;
@@ -83,6 +85,8 @@ export class AddFriend {
       name: friend.name,
       email: friend.email,
       image: friend.image,
+      bio: friend.bio,
+      socialLinks: friend.socialLinks,
       friendCode: friend.friendCode,
       xp: friend.xp,
       level: friend.level,

@@ -18,6 +18,17 @@ export const UserRankingSchema = z.object({
 
 export const GetRankingQuerySchema = z.object({
   sortBy: z.enum(["STREAK", "XP"]).default("STREAK"),
+  friendsOnly: z
+    .enum(["true", "false"])
+    .optional()
+    .transform((val) => val === "true")
+    .default("false" as any),
+});
+
+export const StreakRepairResponseSchema = z.object({
+  success: z.boolean(),
+  newXp: z.number(),
+  streakRestored: z.number(),
 });
 
 export const UserRankingResponseSchema = z.object({

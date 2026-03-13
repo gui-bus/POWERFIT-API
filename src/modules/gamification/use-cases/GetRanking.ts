@@ -9,6 +9,7 @@ dayjs.extend(utc);
 interface InputDto {
   userId: string;
   sortBy: "STREAK" | "XP";
+  friendsOnly?: boolean;
 }
 
 interface UserRanking {
@@ -30,13 +31,34 @@ export class GetRanking {
 
   async execute(dto: InputDto): Promise<OutputDto> {
     const today = dayjs.utc().startOf("day");
+
+    let userIds: string[] | undefined = undefined;
+
+    if (dto.friendsOnly) {
+      const friendships = await this.prisma.friendship.findMany({
+        where: {
+          OR: [{ userId: dto.userId }, { friendId: dto.userId }],
+          status: "ACCEPTED",
+        },
+      });
+
+      userIds = friendships.map((f) =>
+        f.userId === dto.userId ? f.friendId : f.userId,
+      );
+      userIds.push(dto.userId);
+    }
     
     // Only fetch users who have at least some XP or are the current user
     const users = await this.prisma.user.findMany({
       where: {
-        OR: [
-          { xp: { gt: 0 } },
-          { id: dto.userId }
+        AND: [
+          userIds ? { id: { in: userIds } } : {},
+          {
+            OR: [
+              { xp: { gt: 0 } },
+              { id: dto.userId }
+            ]
+          }
         ]
       },
       select: {

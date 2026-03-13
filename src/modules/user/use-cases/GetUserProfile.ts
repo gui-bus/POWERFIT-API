@@ -16,6 +16,8 @@ interface OutputDto {
   id: string;
   name: string;
   image: string | null;
+  bio: string | null;
+  socialLinks: any;
   level: number;
   xp: number;
   streak: number;
@@ -93,6 +95,8 @@ export class GetUserProfile {
       id: targetUser.id,
       name: targetUser.name,
       image: targetUser.image,
+      bio: targetUser.bio,
+      socialLinks: targetUser.socialLinks,
       level: targetUser.level,
       xp: targetUser.xp,
       streak,

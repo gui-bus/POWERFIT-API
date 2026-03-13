@@ -21,6 +21,8 @@ export const GetUserTrainDataResponseSchema = z
 export const UpdateProfileSchema = z.object({
   name: z.string().trim().min(1).optional(),
   image: z.string().url().optional(),
+  bio: z.string().max(500).optional().nullable(),
+  socialLinks: z.record(z.string(), z.string().url()).optional().nullable(),
 });
 
 export const UserMeResponseSchema = z.object({
@@ -28,6 +30,8 @@ export const UserMeResponseSchema = z.object({
   name: z.string(),
   email: z.string().email(),
   image: z.string().nullable(),
+  bio: z.string().nullable(),
+  socialLinks: z.record(z.string(), z.string().url()).nullable(),
   friendCode: z.string().nullable(),
   xp: z.number(),
   level: z.number(),
@@ -60,6 +64,8 @@ export const PublicProfileResponseSchema = z.object({
   id: z.string(),
   name: z.string(),
   image: z.string().nullable(),
+  bio: z.string().nullable(),
+  socialLinks: z.record(z.string(), z.string().url()).nullable(),
   level: z.number(),
   xp: z.number(),
   streak: z.number(),

@@ -11,6 +11,7 @@ import { GetChallenges } from "../modules/gamification/use-cases/GetChallenges.j
 import { GetRanking } from "../modules/gamification/use-cases/GetRanking.js";
 import { GetXpHistory } from "../modules/gamification/use-cases/GetXpHistory.js";
 import { JoinChallenge } from "../modules/gamification/use-cases/JoinChallenge.js";
+import { StreakRepair } from "../modules/gamification/use-cases/StreakRepair.js";
 import { ChallengeProgressSchema,ChallengeSchema, CreateChallengeSchema } from "../schemas/gamification.js";
 import {
   ErrorSchema,
@@ -22,6 +23,28 @@ import {
 
 export const gamificationRoutes = async (app: FastifyInstance) => {
   app.addHook("onRequest", authenticate);
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "POST",
+    url: "/streak-repair",
+    schema: {
+      operationId: "streakRepair",
+      tags: ["Gamification"],
+      summary: "Repair broken streak",
+      description: "Uses 500 XP to restore a broken workout streak to 1 day.",
+      response: {
+        200: z.object({ newStreak: z.number(), newXp: z.number() }),
+        400: ErrorSchema,
+        401: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      const streakRepair = new StreakRepair();
+      const result = await streakRepair.execute({ userId: request.session.user.id });
+      return reply.status(200).send(result);
+    },
+  });
 
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "GET",
@@ -93,6 +116,7 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
       description: "Returns the global user ranking, which can be sorted by total XP or consecutive workout days (streak).",
       querystring: z.object({
         sortBy: z.enum(["XP", "STREAK"]),
+        friendsOnly: z.coerce.boolean().optional(),
       }),
       response: {
         200: UserRankingResponseSchema,
@@ -101,12 +125,16 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const { sortBy } = request.query as { sortBy: "XP" | "STREAK" };
+      const { sortBy, friendsOnly } = request.query as {
+        sortBy: "XP" | "STREAK";
+        friendsOnly?: boolean;
+      };
 
       const getRanking = new GetRanking(prisma);
       const result = await getRanking.execute({
         userId: request.session.user.id,
         sortBy,
+        friendsOnly,
       });
 
       return reply.status(200).send(result);
