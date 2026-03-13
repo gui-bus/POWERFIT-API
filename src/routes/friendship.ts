@@ -9,6 +9,7 @@ import { AddFriend } from "../modules/social/use-cases/AddFriend.js";
 import { DeclineFriendRequest } from "../modules/social/use-cases/DeclineFriendRequest.js";
 import { GetFriendRequests } from "../modules/social/use-cases/GetFriendRequests.js";
 import { GetFriends } from "../modules/social/use-cases/GetFriends.js";
+import { RemoveFriend } from "../modules/social/use-cases/RemoveFriend.js";
 import { GetMe } from "../modules/user/use-cases/GetMe.js";
 import {
   AddFriendSchema,
@@ -180,6 +181,35 @@ export const friendshipRoutes = async (app: FastifyInstance) => {
       await declineFriendRequest.execute({
         userId: request.session.user.id,
         requestId: request.params.id,
+      });
+
+      return reply.status(204).send(null);
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "DELETE",
+    url: "/:friendId",
+    schema: {
+      operationId: "removeFriend",
+      tags: ["Friendship"],
+      summary: "Remove a friend",
+      description: "Ends a friendship with another user.",
+      params: z.object({
+        friendId: z.string().uuid(),
+      }),
+      response: {
+        204: z.null(),
+        401: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      const removeFriend = new RemoveFriend();
+      await removeFriend.execute({
+        userId: request.session.user.id,
+        friendId: request.params.friendId,
       });
 
       return reply.status(204).send(null);
