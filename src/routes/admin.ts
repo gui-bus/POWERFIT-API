@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { Role } from "../generated/prisma/enums.js";
 import { authenticate, authorize } from "../lib/auth-middleware.js";
+import { prisma } from "../lib/db.js";
 import { AdminDeleteActivity } from "../modules/social/use-cases/AdminDeleteActivity.js";
 import { AdminDeleteComment } from "../modules/social/use-cases/AdminDeleteComment.js";
 import { CreateExercise } from "../modules/user/use-cases/CreateExercise.js";
@@ -13,6 +14,7 @@ import { GetAllUsers } from "../modules/user/use-cases/GetAllUsers.js";
 import { ToggleBanUser } from "../modules/user/use-cases/ToggleBanUser.js";
 import { UpdateExercise } from "../modules/user/use-cases/UpdateExercise.js";
 import { UpdateUserRole } from "../modules/user/use-cases/UpdateUserRole.js";
+import { CreateWorkoutTemplate } from "../modules/workout/use-cases/CreateWorkoutTemplate.js";
 import { ErrorSchema } from "../schemas/index.js";
 
 export const adminRoutes = async (app: FastifyInstance) => {
@@ -177,6 +179,67 @@ export const adminRoutes = async (app: FastifyInstance) => {
 
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "POST",
+    url: "/workout-templates",
+    schema: {
+      tags: ["Admin"],
+      summary: "Create a new workout template (Admin only)",
+      body: z.object({
+        name: z.string().trim().min(1),
+        description: z.string().optional(),
+        category: z.string().optional(),
+        difficulty: z.string().optional(),
+        imageUrl: z.string().url().optional(),
+        days: z.array(z.object({
+          name: z.string().trim().min(1),
+          weekDay: z.enum(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]),
+          isRestDay: z.boolean(),
+          estimatedDurationInSeconds: z.number().int().min(0),
+          exercises: z.array(z.object({
+            order: z.number().int(),
+            name: z.string().trim().min(1),
+            sets: z.number().int().min(1),
+            reps: z.number().int().min(1),
+            restTimeInSeconds: z.number().int().min(0),
+          })),
+        })),
+      }),
+      response: {
+        201: z.object({ id: z.string(), name: z.string() }),
+        401: ErrorSchema,
+        403: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      const createWorkoutTemplate = new CreateWorkoutTemplate();
+      const result = await createWorkoutTemplate.execute(request.body as any);
+      return reply.status(201).send(result);
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "DELETE",
+    url: "/workout-templates/:id",
+    schema: {
+      tags: ["Admin"],
+      summary: "Delete a workout template (Admin only)",
+      params: z.object({ id: z.string().uuid() }),
+      response: {
+        204: z.null(),
+        401: ErrorSchema,
+        403: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      await prisma.workoutTemplate.delete({ where: { id: request.params.id } });
+      return reply.status(204).send(null);
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "POST",
     url: "/exercises",
     schema: {
       tags: ["Admin"],
@@ -259,4 +322,3 @@ export const adminRoutes = async (app: FastifyInstance) => {
     },
   });
 };
-
