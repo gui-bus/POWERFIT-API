@@ -8,6 +8,8 @@ vi.mock("../src/lib/db.js", () => ({
     user: { findUnique: vi.fn(), update: vi.fn() },
     xpTransaction: { findFirst: vi.fn(), create: vi.fn() },
     notification: { create: vi.fn() },
+    challenge: { findMany: vi.fn().mockResolvedValue([]) },
+    challengeParticipant: { update: vi.fn() },
   },
 }));
 
@@ -27,6 +29,8 @@ describe("GrantXp Use Case", () => {
       notification: {
         create: vi.fn().mockResolvedValue({}),
       },
+      challenge: { findMany: vi.fn().mockResolvedValue([]) },
+      challengeParticipant: { update: vi.fn() },
     };
 
     const grantXp = new GrantXp(prisma as any);
@@ -56,6 +60,8 @@ describe("GrantXp Use Case", () => {
       notification: {
         create: vi.fn().mockResolvedValue({}),
       },
+      challenge: { findMany: vi.fn().mockResolvedValue([]) },
+      challengeParticipant: { update: vi.fn() },
     };
 
     const grantXp = new GrantXp(prisma as any);

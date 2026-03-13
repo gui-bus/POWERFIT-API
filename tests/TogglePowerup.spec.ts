@@ -19,6 +19,8 @@ vi.mock("../src/lib/db.js", () => ({
       findMany: vi.fn().mockResolvedValue([]),
     },
     userAchievement: { findMany: vi.fn().mockResolvedValue([]), create: vi.fn() },
+    challenge: { findMany: vi.fn().mockResolvedValue([]) },
+    challengeParticipant: { update: vi.fn() },
   },
 }));
 

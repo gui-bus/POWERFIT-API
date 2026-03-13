@@ -14,6 +14,8 @@ vi.mock("../src/lib/db.js", () => ({
     notification: { create: vi.fn() },
     user: { findUnique: vi.fn(), update: vi.fn() },
     xpTransaction: { findFirst: vi.fn(), create: vi.fn() },
+    challenge: { findMany: vi.fn().mockResolvedValue([]) },
+    challengeParticipant: { update: vi.fn() },
   },
 }));
 

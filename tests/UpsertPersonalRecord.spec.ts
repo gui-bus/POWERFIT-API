@@ -13,6 +13,8 @@ vi.mock("../src/lib/db.js", () => ({
     xpTransaction: { findFirst: vi.fn(), create: vi.fn() },
     achievement: { count: vi.fn(), findMany: vi.fn() },
     userAchievement: { findMany: vi.fn(), create: vi.fn() },
+    challenge: { findMany: vi.fn().mockResolvedValue([]) },
+    challengeParticipant: { update: vi.fn() },
   },
 }));
 

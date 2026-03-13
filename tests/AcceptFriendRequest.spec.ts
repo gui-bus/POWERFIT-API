@@ -32,7 +32,9 @@ vi.mock("../src/lib/db.js", () => ({
       create: vi.fn()
     },
     workoutSession: { count: vi.fn() },
-    powerup: { count: vi.fn() }
+    powerup: { count: vi.fn() },
+    challenge: { findMany: vi.fn().mockResolvedValue([]) },
+    challengeParticipant: { update: vi.fn() }
   },
 }));
 
