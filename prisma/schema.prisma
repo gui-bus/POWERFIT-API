@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -7,9 +6,6 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
-
-
-
 
 enum WeekDay {
   MONDAY
@@ -72,65 +68,62 @@ enum ChallengeGoal {
   STREAK_DAYS
 }
 
-
-
-
 model User {
-  id                    String         @id
-  workoutPlans          WorkoutPlan[]
-  name                  String
-  email                 String
-  emailVerified         Boolean        @default(false)
-  image                 String?
-  bio                   String?
-  socialLinks           Json?
-  friendCode            String?        @unique
-  xp                    Int            @default(0)
-  level                 Int            @default(1)
-  isPublicProfile       Boolean        @default(true)
-  showStats             Boolean        @default(true)
-  createdAt             DateTime       @default(now())
-  updatedAt             DateTime       @updatedAt
-  sessions              Session[]
-  accounts              Account[]
-  trainData             UserTrainData?
-  friends               Friendship[]   @relation("UserFriends")
-  friendOf              Friendship[]   @relation("FriendOfUser")
-  activities            Activity[]
-  taggedInActivities    Activity[]     @relation("ActivityTags")
-  powerupsGiven         Powerup[]      @relation("UserGivenPowerups")
-  comments              Comment[]
-  personalRecords       PersonalRecord[]
-  bodyProgressLogs      BodyProgressLog[]
-  waterLogs             WaterLog[]
-  notificationsReceived Notification[] @relation("RecipientNotifications")
-  notificationsSent     Notification[] @relation("SenderNotifications")
-  xpTransactions        XpTransaction[]
-  achievements          UserAchievement[]
+  id                     String                 @id
+  workoutPlans           WorkoutPlan[]
+  name                   String
+  email                  String
+  emailVerified          Boolean                @default(false)
+  image                  String?
+  bio                    String?
+  socialLinks            Json?
+  friendCode             String?                @unique
+  xp                     Int                    @default(0)
+  level                  Int                    @default(1)
+  isPublicProfile        Boolean                @default(true)
+  showStats              Boolean                @default(true)
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+  sessions               Session[]
+  accounts               Account[]
+  trainData              UserTrainData?
+  friends                Friendship[]           @relation("UserFriends")
+  friendOf               Friendship[]           @relation("FriendOfUser")
+  activities             Activity[]
+  taggedInActivities     Activity[]             @relation("ActivityTags")
+  powerupsGiven          Powerup[]              @relation("UserGivenPowerups")
+  comments               Comment[]
+  personalRecords        PersonalRecord[]
+  bodyProgressLogs       BodyProgressLog[]
+  waterLogs              WaterLog[]
+  notificationsReceived  Notification[]         @relation("RecipientNotifications")
+  notificationsSent      Notification[]         @relation("SenderNotifications")
+  xpTransactions         XpTransaction[]
+  achievements           UserAchievement[]
   challengesParticipated ChallengeParticipant[]
-  challengesCreated     Challenge[]    @relation("ChallengeCreator")
-  challengesTargeted    Challenge[]    @relation("ChallengeTarget")
-  userExercises         UserExercise[]
-  blocks                Block[]        @relation("UserBlocks")
-  blockedBy             Block[]        @relation("UserBlockedBy")
+  challengesCreated      Challenge[]            @relation("ChallengeCreator")
+  challengesTargeted     Challenge[]            @relation("ChallengeTarget")
+  userExercises          UserExercise[]
+  blocks                 Block[]                @relation("UserBlocks")
+  blockedBy              Block[]                @relation("UserBlockedBy")
 
   @@unique([email])
   @@map("user")
 }
 
 model Exercise {
-  id               String   @id @default(uuid())
-  name             String   @unique
-  description      String?
-  muscleGroup      String
-  equipment        String?
-  instructions     String?
-  imageUrl         String?
-  videoUrl         String?
-  difficulty       String?
-  createdAt        DateTime @default(now()) @db.Timestamptz()
-  updatedAt        DateTime @updatedAt @db.Timestamptz()
-  userFavorites    UserExercise[]
+  id            String         @id @default(uuid())
+  name          String         @unique
+  description   String?
+  muscleGroup   String
+  equipment     String?
+  instructions  String?
+  imageUrl      String?
+  videoUrl      String?
+  difficulty    String?
+  createdAt     DateTime       @default(now()) @db.Timestamptz()
+  updatedAt     DateTime       @updatedAt @db.Timestamptz()
+  userFavorites UserExercise[]
 
   @@map("exercise")
 }
@@ -148,38 +141,38 @@ model UserExercise {
 }
 
 model Block {
-  id         String   @id @default(uuid())
-  blockerId  String
-  blockedId  String
-  blocker    User     @relation("UserBlocks", fields: [blockerId], references: [id], onDelete: Cascade)
-  blocked    User     @relation("UserBlockedBy", fields: [blockedId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now()) @db.Timestamptz()
+  id        String   @id @default(uuid())
+  blockerId String
+  blockedId String
+  blocker   User     @relation("UserBlocks", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User     @relation("UserBlockedBy", fields: [blockedId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @db.Timestamptz()
 
   @@unique([blockerId, blockedId])
   @@map("block")
 }
 
 model WaterLog {
-  id            String   @id @default(uuid())
-  userId        String
-  amountInMl    Int
-  loggedAt      DateTime @default(now()) @db.Timestamptz()
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String   @id @default(uuid())
+  userId     String
+  amountInMl Int
+  loggedAt   DateTime @default(now()) @db.Timestamptz()
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, loggedAt])
   @@map("water_log")
 }
 
 model WorkoutTemplate {
-  id          String         @id @default(uuid())
+  id          String        @id @default(uuid())
   name        String
   description String?
-  category    String?        // e.g., "Muscle Gain", "Weight Loss"
-  difficulty  String?        // e.g., "Beginner", "Advanced"
+  category    String?
+  difficulty  String?
   imageUrl    String?
   days        TemplateDay[]
-  createdAt   DateTime       @default(now()) @db.Timestamptz()
-  updatedAt   DateTime       @updatedAt @db.Timestamptz()
+  createdAt   DateTime      @default(now()) @db.Timestamptz()
+  updatedAt   DateTime      @updatedAt @db.Timestamptz()
 
   @@map("workout_template")
 }
@@ -348,11 +341,11 @@ model Achievement {
 }
 
 model UserAchievement {
-  id            String   @id @default(uuid())
+  id            String      @id @default(uuid())
   userId        String
   achievementId String
-  unlockedAt    DateTime @default(now()) @db.Timestamptz()
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  unlockedAt    DateTime    @default(now()) @db.Timestamptz()
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
 
   @@unique([userId, achievementId])
@@ -360,22 +353,22 @@ model UserAchievement {
 }
 
 model Challenge {
-  id          String          @id @default(uuid())
-  name        String
-  description String
-  type        ChallengeType
-  status      ChallengeStatus @default(PENDING)
-  startDate   DateTime?       @db.Timestamptz()
-  endDate     DateTime?       @db.Timestamptz()
-  creatorId   String?
+  id           String          @id @default(uuid())
+  name         String
+  description  String
+  type         ChallengeType
+  status       ChallengeStatus @default(PENDING)
+  startDate    DateTime?       @db.Timestamptz()
+  endDate      DateTime?       @db.Timestamptz()
+  creatorId    String?
   targetUserId String?
-  xpReward    Int             @default(0)
-  goalType    ChallengeGoal?
-  goalTarget  Int?
-  
-  creator      User?          @relation("ChallengeCreator", fields: [creatorId], references: [id], onDelete: SetNull)
-  targetUser   User?          @relation("ChallengeTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
-  participants ChallengeParticipant[]
+  xpReward     Int             @default(0)
+  goalType     ChallengeGoal?
+  goalTarget   Int?
+
+  creator       User?                  @relation("ChallengeCreator", fields: [creatorId], references: [id], onDelete: SetNull)
+  targetUser    User?                  @relation("ChallengeTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
+  participants  ChallengeParticipant[]
   notifications Notification[]
 
   @@map("challenge")
@@ -389,8 +382,8 @@ model ChallengeParticipant {
   score       Int      @default(0)
   hasWon      Boolean  @default(false)
 
-  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([challengeId, userId])
   @@map("challenge_participant")
@@ -409,9 +402,6 @@ model UserTrainData {
 
   @@map("user_train_data")
 }
-
-
-
 
 model WorkoutPlan {
   id          String       @id @default(uuid())
@@ -445,16 +435,16 @@ model WorkoutDay {
 }
 
 model WorkoutExercise {
-  id                String     @id @default(uuid())
+  id                String       @id @default(uuid())
   name              String
   order             Int
   workoutDayId      String
-  workoutDay        WorkoutDay @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+  workoutDay        WorkoutDay   @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
   sets              Int
   reps              Int
   restTimeInSeconds Int
-  createdAt         DateTime   @default(now()) @db.Timestamptz()
-  updatedAt         DateTime   @updatedAt @db.Timestamptz()
+  createdAt         DateTime     @default(now()) @db.Timestamptz()
+  updatedAt         DateTime     @updatedAt @db.Timestamptz()
   loggedSets        WorkoutSet[]
 
   @@map("workout_exercise")
@@ -475,14 +465,14 @@ model WorkoutSession {
 }
 
 model WorkoutSet {
-  id                String         @id @default(uuid())
+  id                String   @id @default(uuid())
   sessionId         String
   workoutExerciseId String
   setIndex          Int
   weightInGrams     Int
   reps              Int
-  createdAt         DateTime       @default(now()) @db.Timestamptz()
-  updatedAt         DateTime       @updatedAt @db.Timestamptz()
+  createdAt         DateTime @default(now()) @db.Timestamptz()
+  updatedAt         DateTime @updatedAt @db.Timestamptz()
 
   session         WorkoutSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   workoutExercise WorkoutExercise @relation(fields: [workoutExerciseId], references: [id], onDelete: Cascade)
@@ -491,9 +481,6 @@ model WorkoutSet {
   @@index([workoutExerciseId])
   @@map("workout_set")
 }
-
-
-
 
 model Session {
   id        String   @id
@@ -542,5 +529,3 @@ model Verification {
   @@index([identifier])
   @@map("verification")
 }
-
-
