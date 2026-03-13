@@ -14,6 +14,7 @@ const envSchema = z.object({
   NEXT_PUBLIC_API_URL: z.string().optional(),
   WEB_APP_BASE_URL: z.string().optional(),
   UPLOADTHING_TOKEN: z.string().optional(),
+  SENTRY_DSN: z.string().optional(),
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),

@@ -1,8 +1,12 @@
+import "./instrument.js";
 import "dotenv/config";
 
 import fastifyCors from "@fastify/cors";
+import fastifyHelmet from "@fastify/helmet";
+import fastifyRateLimit from "@fastify/rate-limit";
 import fastifySwagger from "@fastify/swagger";
 import fastifyApiReference from "@scalar/fastify-api-reference";
+import * as Sentry from "@sentry/node";
 import Fastify from "fastify";
 import {
   jsonSchemaTransform,
@@ -52,6 +56,8 @@ const app = Fastify({
 
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
+
+Sentry.setupFastifyErrorHandler(app);
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -110,6 +116,13 @@ app.addHook("onRoute", (routeOptions) => {
       hide: true,
     };
   }
+});
+
+await app.register(fastifyHelmet);
+
+await app.register(fastifyRateLimit, {
+  max: 100,
+  timeWindow: "1 minute",
 });
 
 await app.register(fastifyCors, {
