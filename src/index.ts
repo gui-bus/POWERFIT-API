@@ -127,6 +127,7 @@ await app.register(createRouteHandler, {
 await app.register(fastifyApiReference, {
   routePrefix: "/",
   configuration: {
+    pageTitle: "PowerFIT API | Documentation",
     isEditable: false,
     hideTestRequestButton: env.NODE_ENV === "production",
     hideModels: false,
