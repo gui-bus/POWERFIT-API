@@ -1,9 +1,13 @@
 import "./instrument.js";
 import "dotenv/config";
 
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import fastifyCors from "@fastify/cors";
 import fastifyHelmet from "@fastify/helmet";
 import fastifyRateLimit from "@fastify/rate-limit";
+import fastifyStatic from "@fastify/static";
 import fastifySwagger from "@fastify/swagger";
 import fastifyApiReference from "@scalar/fastify-api-reference";
 import * as Sentry from "@sentry/node";
@@ -35,6 +39,9 @@ import { userRoutes } from "./routes/user.js";
 import { waterRoutes } from "./routes/water.js";
 import { workoutPlanRoutes } from "./routes/workoutPlan.js";
 import { workoutTemplateRoutes } from "./routes/workoutTemplate.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const envToLogger: any = {
   development: {
@@ -119,7 +126,21 @@ app.addHook("onRoute", (routeOptions) => {
   }
 });
 
-await app.register(fastifyHelmet);
+await app.register(fastifyHelmet, {
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+      imgSrc: ["'self'", "data:", "https://cdn.jsdelivr.net"],
+    },
+  },
+});
+
+await app.register(fastifyStatic, {
+  root: path.join(__dirname, "../public"),
+  prefix: "/public/",
+});
 
 await app.register(fastifyRateLimit, {
   max: 100,
@@ -143,6 +164,7 @@ await app.register(fastifyApiReference, {
   routePrefix: "/",
   configuration: {
     pageTitle: "PowerFIT API | Documentation",
+    favicon: "/public/favicon.ico",
     isEditable: false,
     hideTestRequestButton: env.NODE_ENV === "production",
     hideModels: false,
