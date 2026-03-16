@@ -1,4 +1,4 @@
-# <p align="center"><img src="https://raw.githubusercontent.com/gui-bus/POWERFIT-Frontend/master/public/images/powerfit-logo.svg?token=GHSAT0AAAAAADPR5MEMUXKXLAEUWHC7STHQ2NYGZUA" alt="POWER.FIT Logo" width="400" /></p>
+# <p align="center"><img src="https://raw.githubusercontent.com/gui-bus/POWERFIT-Frontend/refs/heads/master/public/images/powerfit-logo.svg" alt="POWER.FIT Logo" width="400" /></p>
 
 <p align="center">
   <strong>O Engine de Alta Performance para Gestão Fitness: Escalabilidade, IA e Gamificação.</strong>
