@@ -115,8 +115,13 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
       summary: "Get user ranking",
       description: "Returns the global user ranking, which can be sorted by total XP or consecutive workout days (streak).",
       querystring: z.object({
-        sortBy: z.enum(["XP", "STREAK"]),
-        friendsOnly: z.coerce.boolean().optional(),
+        sortBy: z.enum(["XP", "STREAK"]).optional(),
+        type: z.enum(["XP", "STREAK"]).optional(),
+        friendsOnly: z.preprocess((val) => {
+          if (val === "true") return true;
+          if (val === "false") return false;
+          return val;
+        }, z.boolean()).optional(),
       }),
       response: {
         200: UserRankingResponseSchema,
@@ -125,16 +130,20 @@ export const gamificationRoutes = async (app: FastifyInstance) => {
       },
     },
     handler: async (request, reply) => {
-      const { sortBy, friendsOnly } = request.query as {
-        sortBy: "XP" | "STREAK";
-        friendsOnly?: boolean;
+      const { sortBy, type, friendsOnly } = request.query as {
+        sortBy?: "XP" | "STREAK";
+        type?: "XP" | "STREAK";
+        friendsOnly?: boolean | string;
       };
+
+      const finalSortBy = sortBy || type || "XP";
+      const finalFriendsOnly = friendsOnly === true || friendsOnly === "true";
 
       const getRanking = new GetRanking(prisma);
       const result = await getRanking.execute({
         userId: request.session.user.id,
-        sortBy,
-        friendsOnly,
+        sortBy: finalSortBy as "XP" | "STREAK",
+        friendsOnly: finalFriendsOnly,
       });
 
       return reply.status(200).send(result);

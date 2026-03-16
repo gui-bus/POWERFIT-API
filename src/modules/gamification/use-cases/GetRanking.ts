@@ -34,7 +34,7 @@ export class GetRanking {
 
     let userIds: string[] | undefined = undefined;
 
-    if (dto.friendsOnly) {
+    if (dto.friendsOnly === true) {
       const friendships = await this.prisma.friendship.findMany({
         where: {
           OR: [{ userId: dto.userId }, { friendId: dto.userId }],
@@ -48,18 +48,11 @@ export class GetRanking {
       userIds.push(dto.userId);
     }
     
-    // Only fetch users who have at least some XP or are the current user
+    // Fetch users (all or friends) who are not banned
     const users = await this.prisma.user.findMany({
       where: {
-        AND: [
-          userIds ? { id: { in: userIds } } : {},
-          {
-            OR: [
-              { xp: { gt: 0 } },
-              { id: dto.userId }
-            ]
-          }
-        ]
+        id: userIds ? { in: userIds } : undefined,
+        isBanned: false,
       },
       select: {
         id: true,
@@ -70,8 +63,9 @@ export class GetRanking {
       },
     });
 
-    // Only fetch sessions from the last 40 days to calculate current streaks
-    // Streaks are current, so we only need recent history.
+    const fetchedUserIds = users.map((u) => u.id);
+
+    // Only fetch sessions from the last 40 days for the fetched users to calculate current streaks
     const sessions = await this.prisma.workoutSession.findMany({
       where: {
         completedAt: {
@@ -79,7 +73,12 @@ export class GetRanking {
         },
         startedAt: {
           gte: today.subtract(40, "day").toDate(),
-        }
+        },
+        workoutDay: {
+          workoutPlan: {
+            userId: { in: fetchedUserIds },
+          },
+        },
       },
       select: {
         startedAt: true,
@@ -96,7 +95,7 @@ export class GetRanking {
     });
 
     const userSessionsMap = new Map<string, Set<string>>();
-    sessions.forEach((session: any) => {
+    sessions.forEach((session) => {
       const userId = session.workoutDay.workoutPlan.userId;
       const date = dayjs.utc(session.startedAt).format("YYYY-MM-DD");
 
@@ -106,7 +105,7 @@ export class GetRanking {
       userSessionsMap.get(userId)!.add(date);
     });
 
-    const rankings: UserRanking[] = users.map((user: any) => {
+    const rankings: UserRanking[] = users.map((user) => {
       const completedDates = userSessionsMap.get(user.id) || new Set<string>();
       const streak = calculateStreak(completedDates, today);
 
