@@ -1,97 +1,96 @@
-# PowerFIT API 🚀
+# <p align="center"><img src="https://raw.githubusercontent.com/gui-bus/POWERFIT-Frontend/master/public/images/powerfit-logo.svg?token=GHSAT0AAAAAADPR5MEMUXKXLAEUWHC7STHQ2NYGZUA" alt="POWER.FIT Logo" width="400" /></p>
 
-**PowerFIT API** is a high-performance, industrial-grade backend service for a modern fitness ecosystem. It orchestrates complex workout management, real-time social interactions, advanced gamification, and AI-driven coaching.
+<p align="center">
+  <strong>O Engine de Alta Performance para Gestão Fitness: Escalabilidade, IA e Gamificação.</strong>
+</p>
 
-Designed with **Clean Architecture** principles, the system ensures maximum maintainability, security, and scalability.
+<p align="center">
+  <a href="https://powerfit.guibus.dev/"><img src="https://img.shields.io/badge/Live_Demo-POWER.FIT-orange?style=for-the-badge&logo=vercel" alt="Live Demo" /></a>
+  <a href="https://powerfit-api.guibus.dev/"><img src="https://img.shields.io/badge/API_Docs-Scalar-blue?style=for-the-badge&logo=scalar" alt="API Docs" /></a>
+</p>
 
----
-
-## 📖 In-Depth Documentation
-
-Explore specific modules and technical decisions:
-
-- [🏗 **Architecture & Design Patterns**](./docs/architecture.md) - Use-cases, DTOs, and project structure.
-- [🗄️ **Database Schema**](./docs/database.md) - Prisma models and entity relationships.
-- [🛡️ **Security & Authentication**](./docs/security.md) - RBAC, Helmet, Rate Limiting, and Session Management.
-- [🎖️ **Gamification Logic**](./docs/gamification.md) - XP systems, Streaks, Challenges, and Rankings.
-- [🤖 **AI Personal Trainer**](./docs/ai.md) - Integration with Google Gemini and Function Calling.
-- [🖥️ **Admin & Governance**](./docs/admin.md) - Moderation tools and system-wide metrics.
-
----
-
-## ✨ Key Capabilities
-
-- **Workout Ecosystem:** Real-time session tracking, custom plan builder, and exercise history.
-- **Social Feed:** Activity stream with "Powerups", comments, and friend discovery.
-- **Gamification Engine:** RPG-style leveling, unlockable achievements, and competitive challenges.
-- **AI Integration:** Automated workout generation and performance analysis via LLM.
-- **Admin Dashboard:** Full-featured governance tools for user moderation and content curation.
-- **Real-time:** SSE-based notification system for instant feedback.
+<p align="center">
+  <img src="https://img.shields.io/badge/Node.js-24.x-green?style=flat-square&logo=node.js" alt="Node.js" />
+  <img src="https://img.shields.io/badge/Fastify-5.x-black?style=flat-square&logo=fastify" alt="Fastify" />
+  <img src="https://img.shields.io/badge/TypeScript-5.x-blue?style=flat-square&logo=typescript" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Prisma-7.x-2D3748?style=flat-square&logo=prisma" alt="Prisma" />
+  <img src="https://img.shields.io/badge/PostgreSQL-16-336791?style=flat-square&logo=postgresql" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/BetterAuth-1.4-red?style=flat-square" alt="BetterAuth" />
+  <img src="https://img.shields.io/badge/AI_SDK-Vercel-black?style=flat-square&logo=vercel" alt="AI SDK" />
+  <img src="https://img.shields.io/badge/Vitest-3.x-yellow?style=flat-square&logo=vitest" alt="Vitest" />
+</p>
 
 ---
 
-## 🛠 Tech Stack
+## 📖 Panorama Geral
 
-| Layer | Technology |
-| :--- | :--- |
-| **Runtime** | Node.js v24+ (ESM) |
-| **Framework** | Fastify v5 (Type-safe with Zod) |
-| **Database** | PostgreSQL v16 + Prisma v7 |
-| **Auth** | Better-Auth v1.4 |
-| **AI** | Vercel AI SDK (Google Gemini 2.0) |
-| **Testing** | Vitest (140+ Unit Tests) |
-| **Observability**| Sentry + Structured Logging (Pino) |
-| **Security** | Helmet + Rate Limit |
+A **PowerFIT API** é o núcleo de processamento do ecossistema POWER.FIT, uma infraestrutura de backend de nível industrial projetada para suportar alta concorrência e operações complexas de fitness. Construída sobre o **Fastify 5**, a API entrega uma performance superior com tipagem estrita via **Zod**, garantindo segurança e integridade de dados em cada request.
+
+### 🎯 Diferenciais Estratégicos
+- **Arquitetura Orientada a Casos de Uso:** Implementação rigorosa de Clean Architecture, separando lógica de negócio de infraestrutura para máxima testabilidade.
+- **Contract-First Design:** Documentação interativa via **Scalar** e **Swagger**, servindo como fonte da verdade para a geração de tipos no frontend.
+- **Segurança Multicamadas:** Proteção nativa com Helmet, Rate Limiting dinâmico e gestão de sessões robusta via Better-Auth.
 
 ---
 
-## 🚀 Quick Start
+## ✨ Ecossistema de Funcionalidades
 
-### Prerequisites
-- **pnpm** (v10+)
-- **Docker**
-- **Node.js** (v24+)
+### 🧠 Engine de Inteligência Artificial
+Integrado ao **Vercel AI SDK** e **Google Gemini 2.0**, o backend atua como um personal trainer autônomo:
+- **Intelligent Workout Generation:** Processamento de linguagem natural para transformar intenções de treino em esquemas de dados estruturados.
+- **Function Calling:** Capacidade da IA de interagir diretamente com o banco de dados para criar e gerenciar planos em tempo real.
 
-### Installation
+### 🏋️ Gestão de Performance
+- **Workout Orchestrator:** Gerenciamento complexo de sessões de treino, templates reutilizáveis e histórico de volume de carga.
+- **Biometric Tracking:** Rastreamento de evolução corporal e hidratação com análises estatísticas integradas.
 
-1. **Setup:**
-   ```bash
-   git clone https://github.com/your-username/fit-app-api.git
-   pnpm install
-   cp .env.example .env
-   ```
-
-2. **Spin up Infrastructure:**
-   ```bash
-   docker compose up -d
-   pnpm prisma db push
-   ```
-
-3. **Development:**
-   ```bash
-   pnpm dev
-   ```
+### 🏆 Gamificação & Social Graph
+- **XP & Achievement Pipeline:** Sistema assíncrono de recompensas baseado em ações do usuário (treinos, interações, recordes).
+- **Social Interaction Engine:** Feed dinâmico com suporte a "Powerups" (curtidas), comentários e sistema de amizades bidirecional.
+- **Competitive Challenges:** Infraestrutura para desafios globais e rankings em tempo real.
 
 ---
 
-## 📝 API Documentation
+## 🛠️ Deep Dive Tecnológico
 
-Access the interactive API explorer (Powered by Scalar):
-- **URL:** `http://localhost:8080/`
-- **Spec:** `http://localhost:8080/swagger.json`
+### Arquitetura de Backend
+O projeto utiliza uma abordagem modular baseada em **Node.js 24 (ESM)** explorando:
+- **Fastify Type Provider Zod:** Validação e tipagem automática de entrada/saída, eliminando inconsistências de dados.
+- **Prisma ORM v7:** Modelagem de dados eficiente com PostgreSQL 16, utilizando transações ACID para operações críticas de gamificação.
+- **Better-Auth:** Framework de autenticação moderno que gerencia sessões, RBAC (Role-Based Access Control) e segurança de identidade.
 
----
-
-## 🛠 Maintenance & Quality
-
-| Command | Description |
-| :--- | :--- |
-| `pnpm test` | Run 140+ unit and integration tests |
-| `pnpm build` | Compile TypeScript and generate Prisma client |
-| `pnpm prisma studio` | Visual database manager |
+### Resiliência e Monitoramento
+- **Structured Logging:** Logs detalhados com **Pino**, facilitando a observabilidade em ambientes de produção.
+- **Sentry Integration:** Rastreamento de erros em tempo real com captura de contexto completo para depuração rápida.
+- **UploadThing:** Gestão segura e performática de arquivos e mídias de perfil/atividades.
 
 ---
 
-## 📄 License
+## 🏗️ Estrutura Arquitetural
 
-This project is licensed under the **ISC License**.
+```text
+├── prisma/               # Schema do banco de dados e migrações
+├── src/
+│   ├── routes/           # Entrypoints da API (Fastify) com schemas Zod
+│   ├── useCases/         # Lógica de negócio pura e independente
+│   ├── lib/              # Infraestrutura (DB, Auth, AI, Sentry)
+│   ├── schemas/          # Contratos de dados centralizados
+│   ├── errors/           # Definições de erros customizados
+│   └── index.ts          # Configuração e bootstrap do servidor
+├── tests/                # Engenharia de Qualidade (Vitest)
+└── docs/                 # Documentação técnica detalhada por módulo
+```
+
+---
+
+## 🧪 Engenharia de Qualidade
+
+A API mantém um padrão rigoroso de estabilidade com mais de 140 testes automatizados:
+- **Use Case Testing:** Validação isolada de todas as regras de negócio e cálculos de XP/Volume.
+- **Integration Testing:** Garantia de que o fluxo entre Banco de Dados, Auth e Rotas está íntegro.
+- **Contract Validation:** Testes que asseguram que os schemas Zod correspondem à realidade dos dados.
+
+Para rodar a suíte de testes:
+```bash
+pnpm test
+```
