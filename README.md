@@ -1,5 +1,7 @@
 # <p align="center"><img src="https://raw.githubusercontent.com/gui-bus/POWERFIT-Frontend/refs/heads/master/public/images/powerfit-logo.svg" alt="POWER.FIT Logo" width="400" /></p>
 
+<img src="https://github.com/gui-bus/portfolio/blob/master/public/projects/powerfit.png?raw=true" width="100%" alt="Thumbnail Powerfit">
+
 <p align="center">
   <img alt="Typescript" height="60" width="60" src="https://github.com/gui-bus/TechIcons/blob/main/Dark/Typescript.svg">
   <img alt="Zod" height="60" width="60" src="https://github.com/gui-bus/TechIcons/blob/main/Dark/Zod.svg">
