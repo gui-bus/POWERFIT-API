@@ -70,5 +70,3 @@ A API mantém um padrão rigoroso de estabilidade com mais de 140 testes automat
 - **Use Case Testing:** Validação isolada de todas as regras de negócio e cálculos de XP/Volume.
 - **Integration Testing:** Garantia de que o fluxo entre Banco de Dados, Auth e Rotas está íntegro.
 - **Contract Validation:** Testes que asseguram que os schemas Zod correspondem à realidade dos dados.
-pnpm test
-```
