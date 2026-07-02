@@ -20,6 +20,9 @@
 
 ---
 
+## 💻 Deploy
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge&logo=render)](https://powerfit-api.guibus.dev/#powerfit-api)
+
 ## 📖 Panorama Geral
 
 A **PowerFIT API** é o núcleo de processamento do ecossistema POWER.FIT, uma infraestrutura de backend de nível industrial projetada para suportar alta concorrência e operações complexas de fitness. Construída sobre o **Fastify 5**, a API entrega uma performance superior com tipagem estrita via **Zod**, garantindo segurança e integridade de dados em cada request.
