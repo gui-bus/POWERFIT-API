@@ -6,7 +6,7 @@
   <img alt="Node JS" height="60" width="60" src="https://github.com/gui-bus/TechIcons/blob/main/Dark/NodeJS.svg">
   <img alt="Fastify" height="60" width="60" src="https://github.com/gui-bus/TechIcons/blob/main/Dark/Fastify.svg">
   <img alt="Prisma" height="60" width="60" src="https://github.com/gui-bus/TechIcons/blob/main/Dark/PrismaORM.svg">
-  <img alt="Postgresql" height="60" width="60" src="https://github.com/gui-bus/TechIcons/blob/main/Dark/Postgresql.svg">
+  <img alt="Postgresql" height="60" width="60" src="https://github.com/gui-bus/TechIcons/blob/main/Dark/PostgreSQL.svg">
   <img alt="Next Auth" height="60" width="60" src="https://github.com/gui-bus/TechIcons/blob/main/Dark/Next%20Auth.svg">
   <img alt="Docker" height="60" width="60" src="https://github.com/gui-bus/TechIcons/blob/main/Dark/Docker.svg">
   <img alt="Vercel" height="60" width="60" src="https://github.com/gui-bus/TechIcons/blob/main/Dark/Vercel.svg">
